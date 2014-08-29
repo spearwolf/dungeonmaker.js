@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>createdungeon.js</title>
+  <script type="text/javascript" src="createdungeon.js"></script>
+  <style type="text/css">
+    canvas {
+      margin: 8px 8px;
+    }
+    .dungeon-designs > li {
+      cursor: pointer;
+    }
+    .dungeon-designs > li:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <p>try <pre>showDungeon(createDungeon('design'))</pre></p>
+  <p>
+    designs included
+    <ul class="dungeon-designs">
+      <li onclick="showDungeon(createDungeon('design'))">design</li>
+      <li onclick="showDungeon(createDungeon('design2'))">design2</li>
+      <li onclick="showDungeon(createDungeon('design3A'))">design3A</li>
+      <li onclick="showDungeon(createDungeon('design3WithTunnelers'))">design3WithTunnelers</li>
+      <li onclick="showDungeon(createDungeon('design4A'))">design4A</li>
+      <li onclick="showDungeon(createDungeon('design5'))">design5</li>
+      <li onclick="showDungeon(createDungeon('design6'))">design6</li>
+      <li onclick="showDungeon(createDungeon('design7'))">design7</li>
+      <li onclick="showDungeon(createDungeon('designEmpty'))">designEmpty</li>
+      <li onclick="showDungeon(createDungeon('designEmpty2'))">designEmpty2</li>
+      <li onclick="showDungeon(createDungeon('designOld1'))">designOld1</li>
+    </ul>
+  </p>
+</body>
+</html>
