@@ -1,33 +1,5 @@
 /* global Module */
 var createDungeon = (function(){
-    /*OLD
-    var _createDungeon = Module.cwrap('createDungeon', 'string', ['string', 'number']);
-    return function(design, seed) {
-        if (typeof seed !== 'number') {
-            seed = (Math.random() * 10000000)|0;
-        }
-        var raw = _createDungeon(design, seed);
-        var dungeon;
-        try {
-            dungeon = JSON.parse(raw);
-        } catch (err) {
-            console.debug(raw);
-            console.error(err);
-            return;
-        }
-        var width = dungeon.width;
-        dungeon.data = new Int8Array(dungeon.data);
-        dungeon.get = function(x, y) {
-            return dungeon.data[(y*width) + x];
-        };
-        dungeon.set = function(x, y, val) {
-            dungeon.data[(y*width) + x] = val;
-            return val;
-        };
-        dungeon.height = (dungeon.data.length / width)|0;
-        return dungeon;
-    };
-    */
     var _createDungeon = Module.cwrap('createDungeonData', '[number]', ['string', 'number']);
     return function(design, seed) {
         if (typeof seed !== 'number') {

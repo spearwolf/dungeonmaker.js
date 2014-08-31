@@ -15,3 +15,6 @@ emcc -O2 -o index.html dungeonmaker/.libs/DungeonMaker.o createdungeon.cpp \
 
 cp index.js createdungeon.js
 cat createdungeon.cwrap.js >>createdungeon.js
+
+cp index.js createdungeon_worker.js
+cat createdungeon_worker.cwrap.js >>createdungeon_worker.js
