@@ -25,8 +25,8 @@ cat createdungeon_worker.cwrap.js >>createdungeon_worker.js
 
 mkdir -p $DIST
 
-cp createdungeon_worker.html $DIST/index.html
-cp index.html.mem $DIST/index.html.mem
-cp createdungeon_worker.js $DIST/createdungeon_worker.js
-cp createdungeon_main.js $DIST/createdungeon_main.js
+cat createdungeon_worker.html|sed -e 's/createdungeon_main.js/createdungeon.js/g' >$DIST/index.html
+cp index.html.mem $DIST/createdungeon_worker.mem
+cp createdungeon_main.js $DIST/createdungeon.js
+cat createdungeon_worker.js|sed -e 's/index.html.mem/createdungeon_worker.mem/g' >$DIST/createdungeon_worker.js
 
