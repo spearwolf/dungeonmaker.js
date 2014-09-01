@@ -39,36 +39,47 @@
     // ---------------------------------------------------------------- }}}
 
     function Dungeon(data, uuid, design, seed) {  // {{{
-        var width = data[0];
-        var height = data[1];
 
-        Object.defineProperty(this, 'uuid', { enumerable: true, value: uuid });
-        Object.defineProperty(this, 'design', { enumerable: true, value: design });
-        Object.defineProperty(this, 'seed', { enumerable: true, value: seed });
-        Object.defineProperty(this, 'width', { enumerable: true, value: width });
-        Object.defineProperty(this, 'height', { enumerable: true, value: height });
-        Object.defineProperty(this, 'data', { value: data });
-
-        this.get = function(x, y) {
-            return this.data[(y*width) + x + 2];
-        };
-
-        this.set = function(x, y, val) {
-            this.data[(y*width) + x + 2] = val;
-            return val;
-        };
+        Object.defineProperties(this, {
+            uuid: { enumerable: true, value: uuid },
+            design: { enumerable: true, value: design },
+            seed: { enumerable: true, value: seed },
+            width: { enumerable: true, value: data[0] },
+            height: { enumerable: true, value: data[1] },
+            data: { value: data } });
     }
+
+    api.Dungeon = Dungeon;
+
+    Dungeon.prototype.get = function(x, y) {
+        return this.data[(y*this.width) + x + 2];
+    };
+
+    Dungeon.prototype.set = function(x, y, val) {
+        this.data[(y*this.width) + x + 2] = val;
+        return val;
+    };
     // }}}
 
     api.createDungeon = (function(){
-
-        var worker = new Worker('createdungeon_worker.js');
-
-        worker.addEventListener('message', function(e) {
-            trigger_listener(new Dungeon(e.data.data, e.data.uuid, e.data.design, e.data.seed));
-        }, false);
-
+        
+        var worker, workerReady;
+        
         return function(design, seed) {
+
+            if (!worker) {
+                worker = new Worker(api.createDungeon.workerUrl);
+                workerReady = new Promise(function(resolve){
+
+                    worker.addEventListener('message', function(e) {
+                        if (e.data === 'Ready.') {
+                            resolve();
+                        } else {
+                            trigger_listener(new Dungeon(e.data.data, e.data.uuid, e.data.design, e.data.seed));
+                        }
+                    }, false);
+                });
+            }
 
             var uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
                 var r = Math.random()*16|0, v = c === 'x' ? r : (r&0x3|0x8);
@@ -88,17 +99,22 @@
                     seed = (Math.random() * 10000000)|0;
                 }
 
-                worker.postMessage({ design: design, seed: seed, uuid: uuid });
+                workerReady.then(function(){
+                    worker.postMessage({ design: design, seed: seed, uuid: uuid });
+                });
             });
         };
     })();
+
+    api.createDungeon.workerUrl = 'createdungeon_worker.js';
 
     api.onCreateDungeon = function(callback) {
         return add_listener(callback);
     };
 
-    api.showDungeon = function(dungeon){
+    api.showDungeon = function(dungeon, element){
         if (!dungeon) return;
+        if (!element) element = document.body;
 
         var PIXEL_ZOOM = 2;
         var COLOR = [
@@ -144,7 +160,12 @@
             }
         }
 
-        document.body.appendChild(canvas);
+        if (element !== false) {
+            element.appendChild(canvas);
+        }
+
+        dungeon.canvas = canvas;
+
         return dungeon;
     };
 
@@ -155,12 +176,12 @@
         }); 
     } else {
         var root = (typeof exports !== 'undefined' && null !== exports) ? exports : this;
-        if (typeof root.dungeon_fu === 'undefined') {
-            root.dungeon_fu = Object.create(null);
+        if (typeof root.dungeonmaker === 'undefined') {
+            root.dungeonmaker = Object.create(null);
         }
         for (var key in api) {
             if (api.hasOwnProperty(key)) {
-                root.dungeon_fu[key] = api[key];
+                root.dungeonmaker[key] = api[key];
             }
         }
     }

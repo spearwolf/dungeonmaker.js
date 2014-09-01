@@ -6,7 +6,6 @@ var createDungeon = (function(){
         if (typeof seed !== 'number') {
             seed = (Math.random() * 10000000)|0;
         }
-        //console.log('_createDungeon(', design, seed, ')');
         var ptr = _createDungeon(design, seed);
         var size = Module.HEAP32.subarray((ptr>>2), (ptr>>2)+2);
         var width = size[0];

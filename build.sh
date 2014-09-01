@@ -1,7 +1,7 @@
 DIST=./dist
 
 emcc -O2 -o index.html dungeonmaker/.libs/DungeonMaker.o createdungeon.cpp \
-    -s EXPORTED_FUNCTIONS="['_createDungeon','_createDungeonData']" \
+    -s EXPORTED_FUNCTIONS="['_createDungeonData']" \
     --pre-js pre.js \
     --embed-file design \
     --embed-file design2 \
@@ -14,6 +14,7 @@ emcc -O2 -o index.html dungeonmaker/.libs/DungeonMaker.o createdungeon.cpp \
     --embed-file designEmpty \
     --embed-file designEmpty2 \
     --embed-file designOld1
+    #-s ASSERTIONS=1 \
 
 cp index.js createdungeon.js
 cat createdungeon.cwrap.js >>createdungeon.js
@@ -25,8 +26,8 @@ cat createdungeon_worker.cwrap.js >>createdungeon_worker.js
 
 mkdir -p $DIST
 
-cat createdungeon_worker.html|sed -e 's/createdungeon_main.js/createdungeon.js/g' >$DIST/index.html
-cp index.html.mem $DIST/createdungeon_worker.mem
-cp createdungeon_main.js $DIST/createdungeon.js
-cat createdungeon_worker.js|sed -e 's/index.html.mem/createdungeon_worker.mem/g' >$DIST/createdungeon_worker.js
+cat createdungeon_worker.html|sed -e 's/createdungeon_main.js/dungeonmaker.js/g' >$DIST/index.html
+cat createdungeon_main.js|sed -e 's/createdungeon_worker.js/dungeonmaker_worker.js/g' > $DIST/dungeonmaker.js
+cp index.html.mem $DIST/dungeonmaker_worker.mem
+cat createdungeon_worker.js|sed -e 's/index.html.mem/dungeonmaker_worker.mem/g' >$DIST/dungeonmaker_worker.js
 

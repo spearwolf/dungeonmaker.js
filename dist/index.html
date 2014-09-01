@@ -3,10 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <title>createdungeon.js (web worker)</title>
-  <script type="text/javascript" src="createdungeon.js"></script>
+  <script type="text/javascript" src="dungeonmaker.js"></script>
   <script type="text/javascript">
 
-    dungeon_fu.onCreateDungeon(dungeon_fu.showDungeon);
+    dungeonmaker.onCreateDungeon(dungeonmaker.showDungeon);
 
   </script>
   <style type="text/css">
@@ -22,21 +22,21 @@
   </style>
 </head>
 <body>
-  <p>try <pre>dungeon_fu.createDungeon('design')</pre></p>
+  <p>try <pre>dungeonmaker.createDungeon('design')</pre></p>
   <p>
     designs included
     <ul class="dungeon-designs">
-      <li onclick="dungeon_fu.createDungeon('design')">design</li>
-      <li onclick="dungeon_fu.createDungeon('design2')">design2</li>
-      <li onclick="dungeon_fu.createDungeon('design3A')">design3A</li>
-      <li onclick="dungeon_fu.createDungeon('design3WithTunnelers')">design3WithTunnelers</li>
-      <li onclick="dungeon_fu.createDungeon('design4A')">design4A</li>
-      <li onclick="dungeon_fu.createDungeon('design5')">design5</li>
-      <li onclick="dungeon_fu.createDungeon('design6')">design6</li>
-      <li onclick="dungeon_fu.createDungeon('design7')">design7</li>
-      <li onclick="dungeon_fu.createDungeon('designEmpty')">designEmpty</li>
-      <li onclick="dungeon_fu.createDungeon('designEmpty2')">designEmpty2</li>
-      <li onclick="dungeon_fu.createDungeon('designOld1')">designOld1</li>
+      <li onclick="dungeonmaker.createDungeon('design')">design</li>
+      <li onclick="dungeonmaker.createDungeon('design2')">design2</li>
+      <li onclick="dungeonmaker.createDungeon('design3A')">design3A</li>
+      <li onclick="dungeonmaker.createDungeon('design3WithTunnelers')">design3WithTunnelers</li>
+      <li onclick="dungeonmaker.createDungeon('design4A')">design4A</li>
+      <li onclick="dungeonmaker.createDungeon('design5')">design5</li>
+      <li onclick="dungeonmaker.createDungeon('design6')">design6</li>
+      <li onclick="dungeonmaker.createDungeon('design7')">design7</li>
+      <li onclick="dungeonmaker.createDungeon('designEmpty')">designEmpty</li>
+      <li onclick="dungeonmaker.createDungeon('designEmpty2')">designEmpty2</li>
+      <li onclick="dungeonmaker.createDungeon('designOld1')">designOld1</li>
     </ul>
   </p>
 </body>
