@@ -2,6 +2,8 @@
 
 *javascript port* (cross compiled with *emscripten* to *asmjs*) of the **dungeonmaker** library!
 
+## how to use
+
 ![preview](./preview.png)
 
 
