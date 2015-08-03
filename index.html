@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>createdungeon.js (web worker)</title>
+  <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/github-fork-ribbon-css/0.1.1/gh-fork-ribbon.min.css" />
+  <!--[if lt IE 9]>
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/github-fork-ribbon-css/0.1.1/gh-fork-ribbon.ie.min.css" />
+  <![endif]-->
+  <script type="text/javascript" src="dungeonmaker.js"></script>
+  <script type="text/javascript">
+
+    dungeonmaker.onCreateDungeon(dungeonmaker.showDungeon);
+
+  </script>
+  <style type="text/css">
+    body {
+      font-family: Avenir, GillSans, sans-serif;
+      font-size: 14px;
+      margin: 0 0;
+      padding: 0 0;
+    }
+    header {
+      position: fixed;
+      width: 100%;
+      border-bottom: 1px solid #aaa;
+      box-shadow: 0 1px 1px rgba(255,255,255, 0.8);
+      padding: 0 1em;
+      background-color: rgba(255,255,255, 0.9);
+    }
+    canvas {
+      margin: 8px 8px;
+    }
+    .headline {
+      font-family: 'Courier', monospace;
+      font-size: 18px;
+      white-space: nowrap;
+    }
+    .dungeon-designs {
+      list-style-type: none;
+      display: inline-block;
+      padding-left: 1em;
+      padding-right: 24px;
+    }
+    .dungeon-designs > li {
+      cursor: pointer;
+      display: inline-block;
+      border: 1px solid #aaa;
+      border-radius: 4px;
+      padding: 0.3em 0.5em;
+      font-size: 80%;
+      margin-bottom: 2px;
+    }
+    .dungeon-designs > li:hover {
+      background-color: #eaeaea;
+    }
+    .spacer {
+      height: 120px;
+    }
+  </style>
+</head>
+<body>
+  <div class="github-fork-ribbon-wrapper right" style="position:fixed">
+    <div class="github-fork-ribbon">
+      <a href="https://github.com/spearwolf/dungeonmaker.js">Fork me on GitHub</a>
+    </div>
+  </div>
+  <header>
+    <h1 class="headline">&gt; dungeonmaker.createDungeon('design')</h1>
+    <div>
+      designs included
+      <ul class="dungeon-designs">
+        <li onclick="dungeonmaker.createDungeon('design')">design</li>
+        <li onclick="dungeonmaker.createDungeon('design2')">design2</li>
+        <li onclick="dungeonmaker.createDungeon('design3A')">design3A</li>
+        <li onclick="dungeonmaker.createDungeon('design3WithTunnelers')">design3WithTunnelers</li>
+        <li onclick="dungeonmaker.createDungeon('design4A')">design4A</li>
+        <li onclick="dungeonmaker.createDungeon('design5')">design5</li>
+        <li onclick="dungeonmaker.createDungeon('design6')">design6</li>
+        <li onclick="dungeonmaker.createDungeon('design7')">design7</li>
+        <li onclick="dungeonmaker.createDungeon('designEmpty')">designEmpty</li>
+        <li onclick="dungeonmaker.createDungeon('designEmpty2')">designEmpty2</li>
+        <li onclick="dungeonmaker.createDungeon('designOld1')">designOld1</li>
+      </ul>
+    </div>
+  </header>
+  <div class="spacer"></div>
+</body>
+</html>
