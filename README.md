@@ -9,7 +9,7 @@
 
 you don't need this - a pre-built version can be found inside `dict/`
 
-### build *dungeonmaker* library with **emscripten**
+### build *dungeonmaker* library
 
 1. extract the **dungeonmaker** archive
 
@@ -18,7 +18,7 @@ you don't need this - a pre-built version can be found inside `dict/`
     $ ln -s dungeonmaker-2.05 dungeonmaker
    ```
 
-2. install **emscripten**
+2. install [emscripten](http://kripken.github.io/emscripten-site/)
 3. build the library
 
    ```
@@ -37,7 +37,7 @@ inside the root directory ..
 
 ### install http server
 
-you will need an local http server to run the example from `dist/` directory.
+you will need a http server to run the example from `dist/`
 
 
 
