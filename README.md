@@ -35,9 +35,9 @@ inside the root directory ..
   $ sh build.sh
 ```
 
-### http server
+### install http server
 
-you will need an http server to serve the `dist/` directory.
+you will need an local http server to run the example from `dist/` directory.
 
 
 
