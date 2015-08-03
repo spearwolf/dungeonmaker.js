@@ -2,6 +2,8 @@
 
 *javascript port* (cross compiled with *emscripten* to *asmjs*) of the **dungeonmaker** library!
 
+[[preview.png|width=700px]]
+
 
 ## how to build
 
