@@ -27,7 +27,7 @@ you don't need this - a pre-built version can be found inside `dict/`
     $ cd dungeonmaker/
     $ emconfigure ./configure
     $ emmake make
-  ```
+   ```
 
 ### build *dungeonmaker.js*
 
@@ -40,7 +40,3 @@ inside the root directory ..
 ### install http server
 
 you will need a http server to run the example from `dist/`
-
-
-
-
