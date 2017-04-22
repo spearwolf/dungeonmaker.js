@@ -1,6 +1,6 @@
 # dungeonmaker.js
 
-*javascript port* (cross compiled with *emscripten* to *asmjs*) of the **dungeonmaker** library!
+*javascript port* (cross compiled with *emscripten* to *asmjs*) of the [**dungeonmaker**](http://dungeonmaker.sourceforge.net/) library!
 
 ## how to use
 
