@@ -64,7 +64,9 @@ export async function loadCore(options: LoadCoreOptions = {}): Promise<DungeonMa
   const diagnostics = createDiagnostics();
   const mod: DungeonMakerWasmModule = await loadDungeonMakerWasm({
     instantiateWasm(imports, done) {
-      WebAssembly.instantiate(wasmModule, imports).then((instance) => done(instance, wasmModule));
+      // Synchronous on purpose: the glue calls this hook inside a Promise executor without a
+      // reject path, so only a synchronous throw turns a failed instantiation into a rejection.
+      done(new WebAssembly.Instance(wasmModule, imports), wasmModule);
       return {};
     },
     print: (line) => diagnostics.push(line),

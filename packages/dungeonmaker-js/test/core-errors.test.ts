@@ -84,3 +84,37 @@ test('assert abort becomes GenerationError and is recoverable', async () => {
   const fresh = await loadCore({ wasmModule: own.wasmModule });
   expect(fnv1a32(fresh.generate(readDesign('design'), 42).cells)).toBe(golden['design:42']);
 });
+
+test('loadCore rejects instead of hanging when instantiation fails', {
+  timeout: 5_000,
+}, async () => {
+  // A valid module that imports zz.zz, which the Emscripten glue does not provide.
+  const bytes = new Uint8Array([
+    0x00,
+    0x61,
+    0x73,
+    0x6d,
+    0x01,
+    0x00,
+    0x00,
+    0x00, // magic, version
+    0x01,
+    0x04,
+    0x01,
+    0x60,
+    0x00,
+    0x00, // type section: () -> ()
+    0x02,
+    0x09,
+    0x01,
+    0x02,
+    0x7a,
+    0x7a,
+    0x02,
+    0x7a,
+    0x7a,
+    0x00,
+    0x00, // import zz.zz func 0
+  ]);
+  await expect(loadCore({ wasmModule: new WebAssembly.Module(bytes) })).rejects.toThrow();
+});
