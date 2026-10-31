@@ -84,6 +84,7 @@ export function attachViewport(
   }
 
   function onDown(event: PointerEvent): void {
+    if (event.button !== 0) return; // primary button, touch contact or pen tip only
     dragging = { id: event.pointerId, x: event.clientX, y: event.clientY };
     canvas.setPointerCapture(event.pointerId);
   }
@@ -114,6 +115,8 @@ export function attachViewport(
     redraw();
   });
 
+  // Drag pans the map; the browser must not scroll or zoom the page instead.
+  canvas.style.touchAction = 'none';
   canvas.addEventListener('wheel', onWheel, { passive: false });
   canvas.addEventListener('pointerdown', onDown);
   canvas.addEventListener('pointermove', onMove);

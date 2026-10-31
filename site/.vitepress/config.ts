@@ -17,8 +17,14 @@ export default defineConfig({
   base: '/dungeonmaker.js/',
   ignoreDeadLinks: false,
   vite: {
-    // The client starts a module worker.
-    worker: { format: 'es' },
+    worker: {
+      // The client starts a module worker.
+      format: 'es',
+      // Core and wasm glue import node: builtins only on their Node path (`import()` behind an
+      // environment check); left external, they stay unresolved instead of being stubbed with an
+      // "externalized for browser compatibility" warning each.
+      rollupOptions: { external: [/^node:/] },
+    },
   },
   themeConfig: {
     search: { provider: 'local' },

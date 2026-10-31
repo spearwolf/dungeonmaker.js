@@ -18,5 +18,16 @@
   "formatter": { "enabled": true, "indentStyle": "space", "indentWidth": 2, "lineWidth": 100 },
   "linter": { "enabled": true, "rules": { "preset": "recommended" } },
   "javascript": { "formatter": { "quoteStyle": "single", "semicolons": "always" } },
+  "overrides": [
+    {
+      "includes": ["site/components/**/*.vue"],
+      "linter": {
+        "rules": {
+          "correctness": { "noUnusedVariables": "off", "noUnusedImports": "off" },
+          "style": { "useVueMultiWordComponentNames": "off" }
+        }
+      }
+    }
+  ],
   "assist": { "enabled": true, "actions": { "source": { "organizeImports": "on" } } }
 }

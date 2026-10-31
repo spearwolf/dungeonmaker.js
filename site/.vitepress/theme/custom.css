@@ -1,0 +1,51 @@
+/* Controls of the interactive components (playground, editor). The default theme resets
+   buttons and form fields to bare text, so they get a visible shape here. */
+.dm-ui button,
+.dm-ui select,
+.dm-ui input[type="number"] {
+  padding: 4px 10px;
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 6px;
+  background: var(--vp-c-bg);
+  color: var(--vp-c-text-1);
+  font-size: 14px;
+  line-height: 22px;
+}
+.dm-ui button {
+  font-weight: 500;
+  transition:
+    border-color 0.2s,
+    background-color 0.2s;
+}
+.dm-ui button:hover:not(:disabled) {
+  border-color: var(--vp-c-brand-1);
+}
+.dm-ui button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.dm-ui button.dm-primary {
+  border-color: var(--vp-c-brand-1);
+  background: var(--vp-c-brand-1);
+  color: var(--vp-c-white);
+}
+.dm-ui select {
+  /* The theme strips the native arrow; bring the platform's select back. */
+  appearance: auto;
+}
+.dm-ui input[type="checkbox"] {
+  accent-color: var(--vp-c-brand-1);
+}
+.dm-ui input[aria-invalid="true"] {
+  border-color: var(--vp-c-danger-1);
+}
+.dm-ui :focus-visible {
+  outline: 2px solid var(--vp-c-brand-1);
+  outline-offset: 1px;
+}
+
+.dm-home {
+  max-width: 1152px;
+  margin: 0 auto;
+  padding: 32px 24px 96px;
+}
