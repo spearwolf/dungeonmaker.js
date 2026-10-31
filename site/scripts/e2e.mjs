@@ -65,6 +65,34 @@ async function waitForNewSeed(page, seed) {
   );
 }
 
+const LINT_COUNT = '[data-testid="lint-count"]';
+const GENERATE = '[data-testid="generate"]';
+
+/** Opens the editor with the test hook and waits until its first lint has run. */
+async function openEditor(page, base) {
+  await page.goto(`${base}editor?test`);
+  await page.waitForFunction(() => window.__dmEditor !== undefined);
+  await waitForLint(page);
+}
+
+/** Waits for the lint of the current text; returns the number of diagnostics. */
+async function waitForLint(page) {
+  await page.waitForSelector(`${LINT_COUNT}[data-state="done"]`);
+  return Number(await page.locator(LINT_COUNT).textContent());
+}
+
+/** Replaces the editor text and waits for its lint. */
+async function setEditorText(page, text) {
+  await page.evaluate((t) => window.__dmEditor.setText(t), text);
+  return waitForLint(page);
+}
+
+/** Clicks Generate and waits until the request has settled. */
+async function generateOnce(page) {
+  await page.locator(GENERATE).click();
+  await page.waitForSelector(`${DUNGEON}:is([data-state="ready"], [data-state="error"])`);
+}
+
 /** Later tasks append their checks here. */
 export const checks = [
   {
@@ -202,6 +230,89 @@ export const checks = [
       for (let i = offsets[0]; i < offsets[1]; i++) first[index[i]] = cell[i];
       const frameHash = await player.getAttribute('data-frame-hash');
       assert(frameHash === fnv1a32(first), `frame 0 shows ${frameHash}, not the new dungeon's`);
+    },
+  },
+  {
+    name: 'legacy import fills the editor',
+    async run(page, base) {
+      await openEditor(page, base);
+      await page.locator('[data-testid="legacy-open"]').click();
+      const textarea = page.locator('textarea[data-testid="legacy-text"]');
+      await textarea.fill('not a design');
+      await page.locator('[data-testid="legacy-import"]').click();
+      const message = (await page.locator('[data-testid="legacy-error"]').textContent())?.trim();
+      assert(message, 'no legacy-error for text the parser rejects');
+      const legacy = readFileSync(
+        new URL('../../native/vendor/dungeonmaker-2.05/design3A', import.meta.url),
+        'utf8',
+      );
+      await textarea.fill(`\uFEFF${legacy.replace(/\n/g, '\r\n')}`);
+      await page.locator('[data-testid="legacy-import"]').click();
+      const count = await waitForLint(page);
+      assert(count === 0, `lint-count ${count} after the import, expected 0`);
+      const { design3A } = await import(new URL('presets.js', pkgDist).href);
+      const json = JSON.parse(await page.evaluate(() => window.__dmEditor.getText()));
+      const { $schema: _, ...imported } = json;
+      assert(
+        JSON.stringify(imported) === JSON.stringify(design3A),
+        'the editor does not hold the design3A JSON',
+      );
+      assert(await page.locator(GENERATE).isEnabled(), 'Generate is disabled after the import');
+      await generateOnce(page);
+      const state = await page.locator(DUNGEON).getAttribute('data-state');
+      assert(state === 'ready', `data-state ${state} after Generate, expected ready`);
+      const command = (await page.locator('[data-testid="cli-command"]').textContent())?.trim();
+      assert(
+        command?.includes('--design ./design.json'),
+        `command "${command}" lacks "--design ./design.json"`,
+      );
+    },
+  },
+  {
+    name: 'invalid edits block generate',
+    async run(page, base) {
+      await openEditor(page, base);
+      assert(await page.locator(GENERATE).isEnabled(), 'Generate is disabled for designEmpty');
+      const valid = await page.evaluate(() => window.__dmEditor.getText());
+      assert(valid.includes('"width": 80'), 'the start text is not designEmpty');
+      const count = await setEditorText(page, valid.replace('"width": 80', '"width": "x"'));
+      assert(count > 0, `lint-count ${count} for "width": "x", expected more than 0`);
+      assert(await page.locator(GENERATE).isDisabled(), 'Generate is enabled despite diagnostics');
+      const fixed = await setEditorText(page, valid);
+      assert(fixed === 0, `lint-count ${fixed} after the correction, expected 0`);
+      assert(await page.locator(GENERATE).isEnabled(), 'Generate stays disabled after the fix');
+    },
+  },
+  {
+    name: 'a bridge rejection shows an error and recovers',
+    async run(page, base) {
+      await openEditor(page, base);
+      await generateOnce(page);
+      const dungeon = page.locator(DUNGEON);
+      const good = await dungeon.getAttribute('data-hash');
+      assert((await dungeon.getAttribute('data-state')) === 'ready', 'designEmpty did not render');
+      const { designEmpty } = await import(new URL('presets.js', pkgDist).href);
+      const tiny = { ...designEmpty, map: { ...designEmpty.map, width: 3, height: 3 } };
+      assert(tiny.rectangles.length === 0, 'designEmpty has rectangles');
+      assert(tiny.crawlers.seeds.length === 0 && tiny.tunnelers.seeds.length === 0, 'seeds');
+      const count = await setEditorText(page, JSON.stringify(tiny, null, 2));
+      assert(count === 0, `lint-count ${count} for the 3x3 design, expected 0`);
+      await page.locator('[data-testid="entities"]').selectOption('list');
+      await generateOnce(page);
+      const state = await dungeon.getAttribute('data-state');
+      assert(state === 'error', `data-state ${state} for entities on 3x3, expected error`);
+      const error = (await page.locator('[data-testid="error"]').textContent())?.trim();
+      assert(error, 'the error element is empty');
+      const kept = await dungeon.getAttribute('data-hash');
+      assert(kept === good, `the last good dungeon was replaced (${kept}, expected ${good})`);
+      await page.locator('[data-testid="entities"]').selectOption('off');
+      await generateOnce(page);
+      const after = await dungeon.getAttribute('data-state');
+      assert(after === 'ready', `data-state ${after} after entities off, expected ready`);
+      const cleared = (await page.locator('[data-testid="error"]').textContent())?.trim();
+      assert(!cleared, `the error "${cleared}" is still shown`);
+      const hash = await dungeon.getAttribute('data-hash');
+      assert(hash !== good, 'the 3x3 dungeon did not replace the last good one');
     },
   },
 ];

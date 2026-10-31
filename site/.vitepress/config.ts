@@ -17,6 +17,12 @@ export default defineConfig({
   base: '/dungeonmaker.js/',
   ignoreDeadLinks: false,
   vite: {
+    build: {
+      // The editor chunk (CodeMirror plus codemirror-json-schema, which statically pulls in its
+      // YAML/JSON5 parsers and the markdown renderer for hover texts) is about 930 kB. It loads
+      // only on /editor, through import() after mount; the limit stays a tripwire above it.
+      chunkSizeWarningLimit: 1024,
+    },
     worker: {
       // The client starts a module worker.
       format: 'es',
@@ -28,7 +34,10 @@ export default defineConfig({
   },
   themeConfig: {
     search: { provider: 'local' },
-    nav: [{ text: 'Playground', link: '/' }],
+    nav: [
+      { text: 'Playground', link: '/' },
+      { text: 'Editor', link: '/editor' },
+    ],
     sidebar,
     socialLinks: [{ icon: 'github', link: 'https://github.com/spearwolf/dungeonmaker.js' }],
   },
