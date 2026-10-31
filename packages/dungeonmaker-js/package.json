@@ -49,5 +49,8 @@
     "build": "tsc -p tsconfig.build.json",
     "test": "vitest run",
     "prepack": "node ../../scripts/copy-legal.mjs && pnpm run build"
+  },
+  "dependencies": {
+    "typebox": "^1.4.3"
   }
 }
