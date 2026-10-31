@@ -33,3 +33,9 @@ test('tagging is a separate job that also runs when the version was published ea
   expect(jobs.tag.if).toContain("needs.check.outputs.tag == 'true'");
   expect(jobs.publish.permissions).not.toHaveProperty('contents', 'write');
 });
+
+test('npm publish gets an explicit file path, not something npm reads as a GitHub shorthand', () => {
+  // `npm publish out/x.tgz` is parsed as github:out/x.tgz; only ./ or / make it a local file.
+  const step = load('release.yml').jobs.publish.steps.find((s) => s.run?.includes('npm publish'));
+  expect(step?.run).toMatch(/npm publish "?(\.\/|\/|\$GITHUB_WORKSPACE\/)/);
+});

@@ -53,7 +53,7 @@ jobs:
       - name: npm >= 11.5.1 (Trusted Publishing)
         run: |
           node -e "process.exit(require('semver').gte(process.argv[1], '11.5.1') ? 0 : 1)" "$(npm --version)"
-      - run: npm publish "out/dungeonmaker-js-$VERSION.tgz" --access public --tag "$DIST_TAG"
+      - run: npm publish "./out/dungeonmaker-js-$VERSION.tgz" --access public --tag "$DIST_TAG"
 
   # Tag and GitHub release, separate from publishing so a failure here can be retried via
   # workflow_dispatch: release-check then sees the version on npm with this gitHead but no tag.
