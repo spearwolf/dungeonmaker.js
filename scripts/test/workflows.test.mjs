@@ -91,3 +91,9 @@ test('pages.yml deploys only from master with minimal permissions', () => {
   expect(deploy.environment.name).toBe('github-pages');
   expect(deploy.steps.some((s) => s.uses?.startsWith('actions/deploy-pages@'))).toBe(true);
 });
+
+test('the check job runs the tarball compliance check after the pack smoke test', () => {
+  const runs = load('ci.yml').jobs.check.steps.map((s) => s.run ?? '');
+  expect(runs.indexOf('pnpm compliance')).toBeGreaterThan(runs.indexOf('pnpm pack:smoke'));
+  expect(runs).toContain('pnpm compliance');
+});

@@ -19,6 +19,7 @@ jobs:
       - run: pnpm size
       - run: pnpm check:package
       - run: pnpm pack:smoke
+      - run: pnpm compliance
 
   # Native reference build (GCC and clang) must hit the same golden hashes as the wasm.
   native:

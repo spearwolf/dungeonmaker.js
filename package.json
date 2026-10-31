@@ -15,7 +15,8 @@
     "check:package": "publint --strict packages/dungeonmaker-js && pnpm --filter dungeonmaker-js exec attw --pack . --profile esm-only --exclude-entrypoints ./worker ./dungeonmaker.wasm ./design.schema.json ./dungeon.schema.json",
     "size": "node scripts/check-size.mjs",
     "pack:smoke": "node scripts/pack-smoke.mjs",
-    "bundler:smoke": "node scripts/bundler-smoke.mjs"
+    "bundler:smoke": "node scripts/bundler-smoke.mjs",
+    "compliance": "node scripts/compliance-check.mjs"
   },
   "devDependencies": {
     "@arethetypeswrong/cli": "0.18.5",

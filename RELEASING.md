@@ -71,6 +71,8 @@ pnpm --filter dungeonmaker-js exec npm version patch --no-git-tag-version
 git commit -am "release: dungeonmaker-js 0.0.3" && git push
 ```
 
+Add the changelog entry `## [<version>] - <date>` to `packages/dungeonmaker-js/CHANGELOG.md` in the same commit (moving the notes from `## [Unreleased]`). It is mandatory: `pnpm compliance` runs in the `check` job and fails the release if the packed tarball's CHANGELOG has no entry for the version.
+
 `npm version` updates `src/version.ts` through the package's `version` lifecycle script. When you
 bump the version by hand, run `node scripts/write-version.mjs` first, otherwise
 `test/version.test.ts` fails.

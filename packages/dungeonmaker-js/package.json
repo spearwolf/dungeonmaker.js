@@ -12,7 +12,7 @@
   ],
   "license": "GPL-3.0-or-later",
   "author": "Wolfger Schramm <wolfger@spearwolf.de>",
-  "homepage": "https://github.com/spearwolf/dungeonmaker.js",
+  "homepage": "https://spearwolf.github.io/dungeonmaker.js/",
   "bugs": "https://github.com/spearwolf/dungeonmaker.js/issues",
   "repository": {
     "type": "git",
@@ -75,6 +75,7 @@
     "wasm/dungeonmaker.wasm",
     "wasm/BUILD-INFO.json",
     "README.md",
+    "CHANGELOG.md",
     "LICENSE",
     "NOTICE"
   ],
