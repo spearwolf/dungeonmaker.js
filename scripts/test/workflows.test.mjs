@@ -55,3 +55,9 @@ test('browser tests are part of the required ci gate and run all three engines',
   expect(install?.run).toMatch(/chromium firefox webkit/);
   expect(JSON.stringify(jobs.browser)).not.toMatch(/DM_BROWSERS/);
 });
+
+test('the bundler smoke test is part of the required ci gate', () => {
+  const { jobs } = load('ci.yml');
+  expect(jobs.ci.needs).toContain('bundlers');
+  expect(jobs.bundlers.steps.some((s) => s.run?.includes('pnpm bundler:smoke'))).toBe(true);
+});

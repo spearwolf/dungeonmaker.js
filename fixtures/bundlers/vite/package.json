@@ -1,0 +1,8 @@
+{
+  "name": "dm-bundler-vite",
+  "private": true,
+  "type": "module",
+  "devDependencies": {
+    "vite": "8.3.5"
+  }
+}

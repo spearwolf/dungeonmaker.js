@@ -49,11 +49,22 @@ jobs:
       - run: pnpm exec playwright install --with-deps chromium firefox webkit
       - run: pnpm --filter dungeonmaker-js test:browser
 
+  # Vite and webpack consume the packed tarball without configuration, under a strict CSP.
+  bundlers:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: jdx/mise-action@v5
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec playwright install --with-deps chromium
+      - run: pnpm build
+      - run: pnpm bundler:smoke
+
   # Required status check. always() keeps it from being skipped (a skipped required check
   # counts as passed) when a dependency fails.
   ci:
     if: always()
-    needs: [check, native, wasm-drift, browser]
+    needs: [check, native, wasm-drift, browser, bundlers]
     runs-on: ubuntu-latest
     steps:
       - if: contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') || contains(needs.*.result, 'skipped')
