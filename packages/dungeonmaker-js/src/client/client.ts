@@ -90,6 +90,7 @@ interface Job {
   design: DesignConfig | string;
   seed: number;
   timeout: number;
+  signal: AbortSignal | undefined;
   resolve(dungeon: Dungeon): void;
   reject(reason: unknown): void;
   /** Runs when the job settles, whatever the outcome (timer, abort listener). Must not throw. */
@@ -145,7 +146,8 @@ export function createDungeonMaker(options: DungeonMakerOptions = {}): DungeonMa
   /** Ends the running job early (timeout, abort): its worker goes, the queue continues on a new one. */
   function interrupt(job: Job, reason: unknown): void {
     if (running !== job) return;
-    if (current) retire(current, reason);
+    // A pending ready() learns that the worker is gone, not another call's timeout or abort reason.
+    if (current) retire(current, new WorkerError('worker was terminated', { cause: reason }));
     settle(job, { ok: false, reason });
   }
 
@@ -269,7 +271,13 @@ export function createDungeonMaker(options: DungeonMakerOptions = {}): DungeonMa
 
   function pump(): void {
     if (disposed || running) return;
-    const job = queue.shift();
+    let job = queue.shift();
+    // Jobs sharing a signal with the one just aborted see `aborted` before their own listener
+    // runs; dispatching them would spawn a worker per job only to terminate it again.
+    while (job?.signal?.aborted) {
+      finish(job, { ok: false, reason: abortReason(job.signal) });
+      job = queue.shift();
+    }
     if (!job) return;
     running = job;
     let state: WorkerState;
@@ -327,6 +335,7 @@ export function createDungeonMaker(options: DungeonMakerOptions = {}): DungeonMa
         design,
         seed,
         timeout,
+        signal,
         resolve,
         reject,
         cleanup: [],
@@ -343,8 +352,22 @@ export function createDungeonMaker(options: DungeonMakerOptions = {}): DungeonMa
 
   async function ready(): Promise<void> {
     if (disposed) throw disposedError();
-    if (!current) current = spawn();
-    return current.ready.promise;
+    const state = current ?? spawn();
+    if (defaultTimeout === Number.POSITIVE_INFINITY) return state.ready.promise;
+    // The timeout only bounds this call; the worker itself stays (running jobs have their own timers).
+    return new Promise<void>((resolve, reject) => {
+      const timer = setTimeout(() => reject(new TimeoutError(defaultTimeout)), defaultTimeout);
+      state.ready.promise.then(
+        () => {
+          clearTimeout(timer);
+          resolve();
+        },
+        (reason: unknown) => {
+          clearTimeout(timer);
+          reject(reason);
+        },
+      );
+    });
   }
 
   function dispose(): void {

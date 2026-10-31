@@ -297,3 +297,75 @@ test('no timers or listeners are left after settling', async () => {
   expect(vi.getTimerCount()).toBe(0);
   expect(removed).toHaveBeenCalledTimes(2);
 });
+
+test('one shared controller aborting several jobs spawns one worker and terminates it once', async () => {
+  const { factory, workers } = fakeFactory();
+  const dm = createDungeonMaker({ worker: factory });
+  const controller = new AbortController();
+  const reason = new Error('component unmounted');
+  const all = Array.from({ length: 4 }, (_, i) =>
+    dm.create({ design: 'D', seed: i + 1 }, { signal: controller.signal }),
+  );
+  const w = workers[0] as FakeWorker;
+  const terminate = vi.spyOn(w, 'terminate');
+  controller.abort(reason);
+  for (const p of all) await expect(p).rejects.toBe(reason);
+  expect(workers).toHaveLength(1);
+  expect(terminate).toHaveBeenCalledTimes(1);
+  expect(w.posted.filter((m) => m.type === 'create')).toHaveLength(1);
+  expect(vi.getTimerCount()).toBe(0);
+});
+
+test('ready() rejects with TimeoutError when init gets no answer, and keeps the worker', async () => {
+  const { factory, workers } = fakeFactory();
+  const dm = createDungeonMaker({ worker: factory, timeout: 1000 });
+  const ready = dm.ready();
+  const readyState = track(ready);
+  const timedOut = expect(ready).rejects.toBeInstanceOf(TimeoutError);
+  await vi.advanceTimersByTimeAsync(999);
+  expect(readyState.settled).toBe(false);
+  await vi.advanceTimersByTimeAsync(1);
+  await timedOut;
+  expect(vi.getTimerCount()).toBe(0);
+  expect(workers[0]?.terminated).toBe(false);
+});
+
+test('ready() resolving clears its timer', async () => {
+  const { factory, workers } = fakeFactory();
+  const dm = createDungeonMaker({ worker: factory, timeout: 1000 });
+  const ready = dm.ready();
+  expect(vi.getTimerCount()).toBe(1);
+  workers[0]?.reply({ type: 'ready', v: 1 });
+  await ready;
+  expect(vi.getTimerCount()).toBe(0);
+});
+
+test('a pending ready() rejects with WorkerError when another request times out the worker', async () => {
+  const { factory } = fakeFactory();
+  const dm = createDungeonMaker({ worker: factory, timeout: 1000 });
+  const p = dm.create({ design: 'D', seed: 1 }, { timeout: 500 });
+  const ready = dm.ready();
+  const pResult = p.catch((x: unknown) => x);
+  const readyResult = ready.catch((x: unknown) => x);
+  await vi.advanceTimersByTimeAsync(500);
+  const pe = await pResult;
+  expect(pe).toBeInstanceOf(TimeoutError);
+  const re = await readyResult;
+  expect(re).toBeInstanceOf(WorkerError);
+  expect((re as WorkerError).cause).toBe(pe);
+  expect(vi.getTimerCount()).toBe(0);
+});
+
+test('a pending ready() rejects with WorkerError when a running request is aborted', async () => {
+  const { factory } = fakeFactory();
+  const dm = createDungeonMaker({ worker: factory, timeout: Number.POSITIVE_INFINITY });
+  const controller = new AbortController();
+  const reason = new Error('stop');
+  const p = dm.create({ design: 'D', seed: 1 }, { signal: controller.signal });
+  const ready = dm.ready();
+  controller.abort(reason);
+  await expect(p).rejects.toBe(reason);
+  const e = await ready.catch((x: unknown) => x);
+  expect(e).toBeInstanceOf(WorkerError);
+  expect((e as WorkerError).cause).toBe(reason);
+});
