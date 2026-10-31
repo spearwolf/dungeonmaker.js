@@ -3,6 +3,7 @@
 import Value from 'typebox/value';
 import type { CellName } from '../src/config/tokens.js';
 import {
+  type CrawlerPairMember,
   type CrawlerSeed,
   DESIGN_SCHEMA_ID,
   type DesignConfig,
@@ -16,6 +17,12 @@ test('enum types stay literal unions', () => {
   expectTypeOf<DesignConfig['map']['background']>().toEqualTypeOf<'open' | 'closed'>();
   expectTypeOf<CrawlerSeed['direction']>().toEqualTypeOf<'N' | 'E' | 'S' | 'W'>();
   expectTypeOf<Rectangle['cell']>().toEqualTypeOf<CellName>();
+});
+
+test('open is required on crawler seeds and absent from pair members', () => {
+  expectTypeOf<CrawlerSeed['open']>().toEqualTypeOf<boolean>();
+  expectTypeOf<Required<CrawlerSeed>>().toEqualTypeOf<CrawlerSeed>();
+  expectTypeOf<CrawlerPairMember>().not.toHaveProperty('open');
 });
 
 test('schema metadata', () => {

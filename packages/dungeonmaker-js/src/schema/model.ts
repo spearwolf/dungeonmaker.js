@@ -89,14 +89,12 @@ const genesOf = (description: string) =>
 export const GenesSchema = genesOf('Inheritable behaviour of a crawler.');
 export type Genes = Static<typeof GenesSchema>;
 
-const crawlerFields = (extra: { open?: boolean }) => ({
+const crawlerBaseFields = {
   location: pointOf('Start cell of the crawler. Upstream: WS locX locY.'),
   direction: CardinalDirectionSchema('Initial heading of the crawler. Upstream: WS dir.'),
   intendedDirection: Type.Union(
     [
-      Type.Enum([...DIRECTIONS], {
-        description: 'A compass direction the crawler tries to head to.',
-      }),
+      DirectionSchema('A compass direction the crawler tries to head to.'),
       Type.Literal(ANY_DIRECTION, { description: 'No preferred direction.' }),
     ],
     {
@@ -112,21 +110,22 @@ const crawlerFields = (extra: { open?: boolean }) => ({
     { min: 0 },
   ),
   stepLength: int('Length of one straight run in cells. Upstream: WS sL.', { min: 1 }),
-  ...(extra.open === undefined
-    ? {}
-    : {
-        open: bool(
-          'Whether the crawler digs open cells (true) or closed cells (false). Upstream: WS op.',
-        ),
-      }),
   corridorWidth: int('Width of the dug corridor in cells. Upstream: WS cW.', { min: 0 }),
   genes: genesOf('Gene set the crawler hands down to its offspring. Upstream: WS genes.'),
-});
+};
 
-export const CrawlerSeedSchema = Type.Object(crawlerFields({ open: true }), strict);
+export const CrawlerSeedSchema = Type.Object(
+  {
+    ...crawlerBaseFields,
+    open: bool(
+      'Whether the crawler digs open cells (true) or closed cells (false). Upstream: WS op.',
+    ),
+  },
+  strict,
+);
 export type CrawlerSeed = Static<typeof CrawlerSeedSchema>;
 
-export const CrawlerPairMemberSchema = Type.Object(crawlerFields({}), strict);
+export const CrawlerPairMemberSchema = Type.Object(crawlerBaseFields, strict);
 export type CrawlerPairMember = Static<typeof CrawlerPairMemberSchema>;
 
 export const TunnelerGenesSchema = Type.Object(
