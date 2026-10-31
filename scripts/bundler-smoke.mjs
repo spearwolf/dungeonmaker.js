@@ -106,6 +106,18 @@ async function serveStatic(dir, csp) {
   return { url: `http://127.0.0.1:${port}/`, close: () => server.close() };
 }
 
+/** Resolves once the child has exited, or after `ms` at the latest. */
+function exited(child, ms) {
+  if (child.exitCode !== null || child.signalCode !== null) return Promise.resolve();
+  return new Promise((resolve) => {
+    const timer = setTimeout(resolve, ms);
+    child.once('exit', () => {
+      clearTimeout(timer);
+      resolve();
+    });
+  });
+}
+
 /** Starts the Vite dev server on a free port and resolves once it reports readiness. */
 async function startViteDev(cwd) {
   const port = await freePort();
@@ -265,7 +277,9 @@ try {
       // already gone
     }
   }
-  for (const dir of tempDirs) rmSync(dir, { recursive: true, force: true });
+  // A dev server still shutting down may write to node_modules/.vite while its dir is removed.
+  await Promise.all(children.map((child) => exited(child, 5_000)));
+  for (const dir of tempDirs) rmSync(dir, { recursive: true, force: true, maxRetries: 3 });
 }
 
 if (failures.length > 0) {

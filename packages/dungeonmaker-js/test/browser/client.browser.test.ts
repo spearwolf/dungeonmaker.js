@@ -20,7 +20,7 @@ test('createDungeon generates the golden dungeon and transfers exactly the cells
   expect(d.cells.buffer.byteLength).toBe(d.width * d.height);
 });
 
-test('parallel calls resolve in order with their golden hashes', async () => {
+test('parallel calls each resolve with their golden hash', async () => {
   const seeds = [1, 2, 3, 42, 4294967295] as const;
   const all = await Promise.all(seeds.map((seed) => createDungeon({ design: design3A, seed })));
   expect(all.map((d) => fnv1a32(d.cells))).toEqual(seeds.map((s) => golden[`design3A:${s}`]));
