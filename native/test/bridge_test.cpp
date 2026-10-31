@@ -42,6 +42,23 @@ int main() {
   CHECK(dm_generate(drop_lines(design, "S ").c_str(), 1, 0) == 1);
   CHECK(error_contains("missing S record"));
 
+  // Malformed tokens must be rejected, never loop forever or read uninitialized values.
+  const std::string malformed[] = {
+      design + "\nT  abc 25 70 250 0 0 0 40 20 2\n",
+      "XX x\nD abc 50 CLOSED 12 18 NO\nXX\n" + design,
+      "XX x\nD 99999999999 50 CLOSED 12 18 NO\nXX\n" + design,
+      design + "\nR 1 1 5 x CLOSED\n",
+      design + "\nS 5 3",
+      design + "\nJ 5 3",
+      design + "\nGS 50 50 0",
+      design + "\nR 2 2 6 6 FOO\n",
+      "XX x\nD 50 50 CLOSED 12 18 WEE\nXX\n" + design,
+      "S 3 0 D 50 50 CLOSED 12 18 NO",
+  };
+  for (const std::string& text : malformed) {
+    CHECK(dm_generate(text.c_str(), 1, 0) == 1);
+  }
+
   CHECK(dm_generate(design.c_str(), 42, 0) == 0);
   dm_reset();
   CHECK(dm_width() == 0);

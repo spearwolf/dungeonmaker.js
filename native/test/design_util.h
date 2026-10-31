@@ -22,6 +22,19 @@ static std::string drop_lines(const std::string& text, const std::string& prefix
   return out;
 }
 
+/** Removes every line whose first token is `tag` (one record type). */
+static std::string drop_record(const std::string& text, const std::string& tag) {
+  std::istringstream in(text);
+  std::string line, out;
+  while (std::getline(in, line)) {
+    std::istringstream tokens(line);
+    std::string first;
+    tokens >> first;
+    if (first != tag) out += line + "\n";
+  }
+  return out;
+}
+
 /** Replaces the two dimension numbers of the first D line (library dimX, dimY). */
 static std::string with_dimensions(const std::string& text, int dimX, int dimY) {
   std::istringstream in(text);

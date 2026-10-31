@@ -26,5 +26,5 @@
     "--extern-pre-js",
     "native/src/license-banner.js"
   ],
-  "nativeSourceHash": "sha256:66f7c910e3fbf936c1768cec25068855848f8f220ace84bdb910aab546b392e8"
+  "nativeSourceHash": "sha256:2ef0ed6468b55fbe15bb3b53d5ba7bf89d3824dc5d16ca4e1a4c5f91b1c79a12"
 }

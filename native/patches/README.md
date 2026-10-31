@@ -21,3 +21,5 @@ release (see `native/vendor/README.md`), so every modification is visible as a f
 
 - `0001-sequence-random-arguments.patch` — fixes the order in which random values passed
   as several arguments of one call are drawn (spec §5.3, platform-independent output).
+- `0002-defined-config-and-strict-parsing.patch` — every `Config` field gets a defined value,
+  and `AcceptDesign` rejects malformed input instead of looping forever (spec §5.3, §5.4).

@@ -1,0 +1,245 @@
+Patch: 0002-defined-config-and-strict-parsing.patch
+Applies to: native/vendor/dungeonmaker-2.05/DungeonMaker.cpp (after 0001)
+What: Config's constructors give every scalar field a defined value (0/false), and
+  Config::AcceptDesign returns false as soon as a read fails: at the top of the main loop,
+  after every read inside a list loop, and for unknown SquareData/Direction tokens (which
+  now set failbit instead of leaving the target uninitialized).
+Why: A design missing a record (T, M, N, PR, PT, PU, U, ...) left Config fields
+  uninitialized, so the same text and seed produced different dungeons per compiler and
+  even per call (spec section 5.3). A non-numeric token or a list without terminator made
+  the parser loop forever or grow memory without bound (spec section 5.4). Valid designs
+  parse exactly as before.
+Date: 2026-10-31
+SPDX-License-Identifier: GPL-3.0-or-later
+
+--- a/DungeonMaker.cpp	2026-10-31 12:50:11.324999484 +0100
++++ b/DungeonMaker.cpp	2026-10-31 12:50:27.871151843 +0100
+@@ -100,7 +100,10 @@
+   else if(s == "TREAS3")
+     data = TREAS3;
+   else 
+-    cout << "Input operator >> is ignoring unknown SquareData: " << s << endl;
++    {
++      cout << "Input operator >> is ignoring unknown SquareData: " << s << endl;
++      stream.setstate(std::ios::failbit);  //patch 0002: unknown tokens are errors
++    }
+ 
+   return stream;
+ }
+@@ -129,7 +132,10 @@
+   else if(s == "XX")
+     dir = XX;
+   else 
+-    cout << "Input operator >> is ignoring unknown direction: " << s << endl;
++    {
++      cout << "Input operator >> is ignoring unknown direction: " << s << endl;
++      stream.setstate(std::ios::failbit);  //patch 0002: unknown tokens are errors
++    }
+ 
+   return stream;
+ }
+@@ -191,12 +197,22 @@
+   dX = 100;
+   dY = 100;
+   bg = OPEN;
++  //patch 0002: every scalar has a defined value, also when its record is missing
++  mut = nHP = jD = minRS = medRS = larRS = maxRS = numSmallL = numMedL = numLarL = numSmallD = numMedD = numLarD = rC_sSSP = rC_sDSP = rC_tSSP = rC_tDSP = rC_cDP = pat = tJD = sUGD = gSUOAR = sCIT = gSMOBLR = gSMOBDR = gSTreasL = gSTreasD = gSVMOBLR = gSVMOBDR = gSVTreasL = gSVTreasD = iARP = tCG = tCCP = gDLC = 0;
++  cIT = crIT = crIA = showM = storeM = false;
++  rAR = 0.0;
++  randSeed = 0;
+ }
+  alifegames::Config::Config(int x , int y)
+ {
+   dX = x;
+   dY = y;
+   bg = OPEN;
++  //patch 0002: every scalar has a defined value, also when its record is missing
++  mut = nHP = jD = minRS = medRS = larRS = maxRS = numSmallL = numMedL = numLarL = numSmallD = numMedD = numLarD = rC_sSSP = rC_sDSP = rC_tSSP = rC_tDSP = rC_cDP = pat = tJD = sUGD = gSUOAR = sCIT = gSMOBLR = gSMOBDR = gSTreasL = gSTreasD = gSVMOBLR = gSVMOBDR = gSVTreasL = gSVTreasD = iARP = tCG = tCCP = gDLC = 0;
++  cIT = crIT = crIA = showM = storeM = false;
++  rAR = 0.0;
++  randSeed = 0;
+ }
+ 
+ bool alifegames::Config::ValidateDirections(Direction d , Direction iD)
+@@ -263,9 +279,11 @@
+   //  char text[200];
+   string str;
+   int sX , sY , eX , eY , prob , intIn;
+-  SquareData t;
+-  Direction d;
++  SquareData t = OPEN;  //patch 0002: defined values
++  Direction d = XX;
+   do{
++      if( designFile.fail() )  //patch 0002: a failed read (bad token, missing values) rejects the design
++	return(false);
+       designFile >> c;
+ 	  	//cout << "First character is a " << c << endl;
+       if( designFile.eof() )
+@@ -373,6 +391,7 @@
+ 	      for(int ind = 0; ind <= 10; ind++)
+ 		{
+ 		  designFile >> prob;
++		  if( designFile.fail() ) return(false);  //patch 0002: stop endless reading
+ 		  sum = sum + prob;
+ 		  BDPFGC.push_back(prob);
+ 		}
+@@ -385,6 +404,7 @@
+ 	      for(int ind = 0; ind <= 10; ind++)
+ 		{
+ 		  designFile >> prob;
++		  if( designFile.fail() ) return(false);  //patch 0002: stop endless reading
+ 		  sum = sum + prob;
+ 		  BDPFGR.push_back(prob);
+ 		}
+@@ -397,6 +417,7 @@
+ 	      for(int ind = 0; ind <= 10; ind++)
+ 		{
+ 		  designFile >> prob;
++		  if( designFile.fail() ) return(false);  //patch 0002: stop endless reading
+ 		  sum = sum + prob;
+ 		  BDPFGT.push_back(prob);
+ 		}
+@@ -432,6 +453,7 @@
+ 	  while(keepReading)
+ 	    {
+ 	      designFile >> intIn; 
++	      if( designFile.fail() ) return(false);  //patch 0002: stop endless reading
+ 	      if(0 == intIn)
+ 		keepReading = false;
+ 	      else
+@@ -444,6 +466,7 @@
+ 	  while(keepReading)
+ 	    {
+ 	      designFile >> intIn; 
++	      if( designFile.fail() ) return(false);  //patch 0002: stop endless reading
+ 	      if(0 == intIn)
+ 		keepReading = false;
+ 	      else
+@@ -460,6 +483,7 @@
+ 	      while(keepReading)
+ 		{
+ 		  designFile >> in1 >> in2 >> in3;
++		  if( designFile.fail() ) return(false);  //patch 0002: stop endless reading
+ 		  if( ( 100 != in1+in2+in3 ) || ( in1 < 0 ) || ( in2 < 0 ) || ( in3 < 0 ) )
+ 		    {
+ 		      cout << "Bailing out because roomSize probabilities have illegal values : " << in1 << " , " << in2 << " , " << in3 << endl; 
+@@ -477,6 +501,7 @@
+ 	      while(keepReading)
+ 		{
+ 		  designFile >> in1 >> in2 >> in3;
++		  if( designFile.fail() ) return(false);  //patch 0002: stop endless reading
+ 		  if( ( 100 != in1+in2+in3 ) || ( in1 < 0 ) || ( in2 < 0 ) || ( in3 < 0 ) )
+ 		    {
+ 		      cout << "Bailing out because roomSize probabilities have illegal values : " << in1 << " , " << in2 << " , " << in3 << endl; 
+@@ -495,6 +520,7 @@
+ 	  while(keepReading)
+ 	    {
+ 	      designFile >> intIn; 
++	      if( designFile.fail() ) return(false);  //patch 0002: stop endless reading
+ 	      aRP.push_back(intIn);
+ 	      if(100 == intIn)
+ 		keepReading = false;
+@@ -506,6 +532,7 @@
+ 	  while(keepReading)
+ 	    {
+ 	      designFile >> intIn; 
++	      if( designFile.fail() ) return(false);  //patch 0002: stop endless reading
+ 	      if(-1 == intIn)
+ 		keepReading = false;
+ 	      else
+@@ -521,6 +548,7 @@
+ 	      while(keepReading)
+ 		{
+ 		  designFile >> intIn; 
++		  if( designFile.fail() ) return(false);  //patch 0002: stop endless reading
+ 		  if(0 == intIn)
+ 		    keepReading = false;
+ 		  else
+@@ -533,6 +561,7 @@
+ 	      while(keepReading)
+ 		{
+ 		  designFile >> intIn; 
++		  if( designFile.fail() ) return(false);  //patch 0002: stop endless reading
+ 		  if(0 == intIn)
+ 		    keepReading = false;
+ 		  else
+@@ -549,6 +578,7 @@
+ 	      while(keepReading)
+ 		{
+ 		  designFile >> intIn; 
++		  if( designFile.fail() ) return(false);  //patch 0002: stop endless reading
+ 		  if(-1 == intIn)
+ 		    keepReading = false;
+ 		  else
+@@ -561,6 +591,7 @@
+ 	      while(keepReading)
+ 		{
+ 		  designFile >> intIn; 
++		  if( designFile.fail() ) return(false);  //patch 0002: stop endless reading
+ 		  if(-1 == intIn)
+ 		    keepReading = false;
+ 		  else
+@@ -578,6 +609,7 @@
+ 	      while(keepReading)
+ 		{
+ 		  designFile >> intIn; 
++		  if( designFile.fail() ) return(false);  //patch 0002: stop endless reading
+ 		  if(intIn < 0)
+ 		    keepReading = false;
+ 		  else
+@@ -591,6 +623,7 @@
+ 	      while(keepReading)
+ 		{
+ 		  designFile >> intIn; 
++		  if( designFile.fail() ) return(false);  //patch 0002: stop endless reading
+ 		  if(intIn < 0)
+ 		    keepReading = false;
+ 		  else
+@@ -608,6 +641,7 @@
+ 	      while(keepReading)
+ 		{
+ 		  designFile >> intIn; 
++		  if( designFile.fail() ) return(false);  //patch 0002: stop endless reading
+ 		  if(intIn < 0)
+ 		    keepReading = false;
+ 		  else
+@@ -621,6 +655,7 @@
+ 	      while(keepReading)
+ 		{
+ 		  designFile >> intIn; 
++		  if( designFile.fail() ) return(false);  //patch 0002: stop endless reading
+ 		  if(intIn < 0)
+ 		    keepReading = false;
+ 		  else
+@@ -638,6 +673,7 @@
+ 	      while(keepReading)
+ 		{
+ 		  designFile >> intIn; 
++		  if( designFile.fail() ) return(false);  //patch 0002: stop endless reading
+ 		  if(intIn < 0)
+ 		    keepReading = false;
+ 		  else
+@@ -651,6 +687,7 @@
+ 	      while(keepReading)
+ 		{
+ 		  designFile >> intIn; 
++		  if( designFile.fail() ) return(false);  //patch 0002: stop endless reading
+ 		  if(intIn < 0)
+ 		    keepReading = false;
+ 		  else
+@@ -664,6 +701,7 @@
+ 	  while(keepReading)
+ 	    {
+ 	      designFile >> intIn; 
++	      if( designFile.fail() ) return(false);  //patch 0002: stop endless reading
+ 	      if(99 == intIn)
+ 		keepReading = false;
+ 	      else
+@@ -727,6 +765,7 @@
+ 	  do
+ 	    {
+ 	      designFile >> d;
++	      if( designFile.fail() ) return(false);  //patch 0002: stop endless reading
+ 	      if(d != XX)
+ 		op.push_back(d);
+ 	      else

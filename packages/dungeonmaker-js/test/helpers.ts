@@ -34,6 +34,14 @@ export function withDimensions(text: string, dimX: number, dimY: number): string
   return text.replace(/^([Dd])\s+\S+\s+\S+/m, `$1   ${dimX}   ${dimY}`);
 }
 
+/** Removes every line whose first token is `tag`, like native/test/design_util.h. */
+export function dropRecord(text: string, tag: string): string {
+  return text
+    .split('\n')
+    .filter((line) => line.trim().split(/\s+/)[0] !== tag)
+    .join('\n');
+}
+
 export function fnv1a32(bytes: Uint8Array): string {
   let h = 0x811c9dc5;
   for (const b of bytes) {
