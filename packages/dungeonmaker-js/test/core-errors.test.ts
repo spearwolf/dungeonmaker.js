@@ -5,7 +5,7 @@ import {
   GenerationError,
   loadCore,
 } from '../src/core.js';
-import { caught, fnv1a32, golden, readDesign, withDimensions } from './helpers.js';
+import { caught, dropRecord, fnv1a32, golden, readDesign, withDimensions } from './helpers.js';
 
 function validationError(core: DungeonMakerCore, text: string): DesignValidationError {
   const e = caught(() => core.generate(text, 1));
@@ -46,6 +46,30 @@ test('missing BC record', () => {
 test('oversized map', () => {
   const text = withDimensions(readDesign('design'), 5000, 5000);
   expect(validationError(core, text).issues[0]?.message).toMatch(/3\.\.4096/);
+});
+
+// A builder below the active generation would make generate() loop forever; the bridge
+// rejects such raw design text before generating. Without that check these tests hang.
+test.each([
+  [
+    'WS',
+    `${readDesign('design5')}\nWS 50 50 NO NO 0 20 -1 3 1 1 0 30 0 60 40\n`,
+    /WS crawler generation/,
+  ],
+  [
+    'WP',
+    `${readDesign('design5')}\nWP1 50 50 NO NO 0 20 0 3 2 7 0 30 0 50 40\nWP2 50 50 SO SO 0 20 -1 3 2 7 0 30 0 50 40\n`,
+    /WP crawler generation/,
+  ],
+  [
+    'U',
+    `${readDesign('design')}\nU 40 2 EA EA 0 16 -1 5 1 25 50 30 100 100 100\n`,
+    /U tunneler generation/,
+  ],
+  ['M', `${dropRecord(readDesign('design'), 'M')}\nM 20 40 90 -1 0 0 0.6 2\n`, /sizeUpGenDelay/],
+])('negative generation in %s is rejected instead of hanging', (_tag, text, message) => {
+  expect(validationError(core, text).issues[0]?.message).toMatch(message);
+  expect(core.aborted).toBe(false);
 });
 
 test('non-ASCII text is marshalled as UTF-8', () => {

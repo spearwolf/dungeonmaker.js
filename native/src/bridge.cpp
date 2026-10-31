@@ -72,7 +72,10 @@ bool check_d_record(const char* text, std::string& message) {
   return false;
 }
 
-/** Preconditions of DungeonMaker::Init_fromConfig/generate that would otherwise assert or read out of bounds. */
+/**
+ * Preconditions of DungeonMaker::Init_fromConfig/generate that would otherwise assert,
+ * read out of bounds or never return.
+ */
 bool check_config(const alifegames::Config& c, std::string& message) {
   if (c.dX < kMinDim || c.dX > kMaxDim || c.dY < kMinDim || c.dY > kMaxDim) {
     message = "map dimensions must be within 3..4096";
@@ -98,6 +101,32 @@ bool check_config(const alifegames::Config& c, std::string& message) {
       message = std::string("missing ") + e.record + " record";
       return false;
     }
+  }
+  // A builder whose generation lies below the active one is skipped by StepAhead() and
+  // never removed, so AdvanceGeneration() keeps finding builders and generate() never
+  // returns. Generations start at 0; only design seeds and the sizeUpGenDelay offset of
+  // wider tunneler offspring can go below that.
+  for (const auto& crawler : c.Crawlers) {
+    if (crawler.gen < 0) {
+      message = "WS crawler generation must be >= 0";
+      return false;
+    }
+  }
+  for (const auto& pair : c.CrawlerPairs) {
+    if (pair.first.gen < 0 || pair.second.gen < 0) {
+      message = "WP crawler generation must be >= 0";
+      return false;
+    }
+  }
+  for (const auto& tunneler : c.Tunnelers) {
+    if (tunneler.gen < 0) {
+      message = "U tunneler generation must be >= 0";
+      return false;
+    }
+  }
+  if (c.sUGD < 0) {
+    message = "sizeUpGenDelay (M record) must be >= 0";
+    return false;
   }
   return true;
 }

@@ -59,6 +59,25 @@ int main() {
     CHECK(dm_generate(text.c_str(), 1, 0) == 1);
   }
 
+  // A builder below the active generation never runs and is never removed, so the
+  // generator would advance generations forever. The bridge must reject these designs.
+  const std::string design5 = read_design("design5");
+  const struct {
+    std::string text;
+    const char* message;
+  } endless[] = {
+      {design5 + "\nWS 50 50 NO NO 0 20 -1 3 1 1 0 30 0 60 40\n", "WS crawler generation"},
+      {design5 + "\nWP1 50 50 NO NO 0 20 0 3 2 7 0 30 0 50 40\n"
+                 "WP2 50 50 SO SO 0 20 -1 3 2 7 0 30 0 50 40\n",
+       "WP crawler generation"},
+      {design + "\nU 40 2 EA EA 0 16 -1 5 1 25 50 30 100 100 100\n", "U tunneler generation"},
+      {drop_record(design, "M") + "\nM 20 40 90 -1 0 0 0.6 2\n", "sizeUpGenDelay"},
+  };
+  for (const auto& e : endless) {
+    CHECK(dm_generate(e.text.c_str(), 1, 0) == 1);
+    CHECK(error_contains(e.message));
+  }
+
   CHECK(dm_generate(design.c_str(), 42, 0) == 0);
   dm_reset();
   CHECK(dm_width() == 0);
