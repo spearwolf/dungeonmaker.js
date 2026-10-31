@@ -321,6 +321,7 @@ function emit(e: Emitter, config: DesignConfig): string[] {
     // change, so MakeIteration() returns false after one iteration and every generation
     // runs a single iteration, which moves the point where SeedCrawlersInTunnels() fires.
     // All vendor designs set one of the flags; showMovie avoids storeMovie's frame buffer.
+    // parseDesignText rejects texts with both flags 0, so the round trip stays exact.
     line('N', [
       e.int('/crawlers/inTunnels/seedCount', inTunnels.seedCount),
       e.int('/crawlers/inTunnels/generation', inTunnels.generation),

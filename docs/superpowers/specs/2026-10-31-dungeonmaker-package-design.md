@@ -272,7 +272,7 @@ Regeln, die das JSON vom Textformat abheben:
 - **Arrays statt Terminatoren.** Das Textformat beendet Listen je nach Record mit `-1`, `0`, `100`, `99` oder einer negativen Zahl. Im JSON gilt einheitlich: Der letzte Wert wiederholt sich. Der Serializer hängt den richtigen Terminator an.
 - **Koordinaten in Bildschirmkonvention** (`x` = Spalte nach rechts, `y` = Zeile nach unten, Norden oben). Der Serializer tauscht genau an *einer* Stelle in die Library-Konvention. Die Himmelsrichtungen (`N`, `NE`, …) bleiben dabei unverändert, weil Library-Norden (`x--`) bereits »Zeile nach oben« bedeutet.
 - **Enums als lesbare Strings** (`"guaranteedClosed"`, `"insideRoomOpen"` …) mit Mapping auf die Library-Tokens.
-- **Nicht-Wirkendes wird nicht angeboten:** `showMovie` steuert nur das native SDL-Frontend und fällt weg. `storeMovie` wird über `output.steps` gesetzt. `randSeed` kommt aus dem Request-Seed.
+- **Nicht-Wirkendes wird nicht angeboten:** `showMovie` und `storeMovie` stehen nicht im Modell; `storeMovie` wird über `output.steps` gesetzt, `randSeed` kommt aus dem Request-Seed. Wirkungslos sind die Movie-Flags trotzdem nicht: Upstreams `MakeIteration()` erkennt Kartenänderungen nur, wenn eines davon gesetzt ist, sonst läuft jede Generation genau eine Iteration. Der Serializer setzt deshalb immer `showMovie = 1`; Designtext mit beiden Flags auf `0` lehnt der Import ab.
 
 ### 6.3 Typen, Schema, Validierung — eine Quelle
 

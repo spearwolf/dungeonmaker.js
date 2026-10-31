@@ -17,7 +17,7 @@
 - **Parser-Invariante:** Was `parseDesignText` akzeptiert, ergibt nach `toDesignText` dieselben Zellen wie der Originaltext für jeden Seed. Was es nicht verlustfrei abbilden kann, lehnt es mit `DesignValidationError` ab. Es darf strenger sein als `AcceptDesign`, nie anders.
 - Koordinaten im JSON in Bildschirmkonvention (`x` = Spalte nach rechts, `y` = Zeile nach unten, Norden oben); getauscht wird ausschließlich in `src/config/axes.ts`. Himmelsrichtungen bleiben unverändert (§6.2).
 - Arrays im JSON enthalten nie den Listen-Terminator des Textformats; der Serializer hängt ihn an (§6.2). Was jenseits des Array-Endes gilt, steht pro Feld im Abschnitt »Das JSON-Modell«.
-- Nicht-Wirkendes fehlt im Modell: `showMovie`, `storeMovie`, `randSeed` und das `op`-Feld von Crawler-Paaren (§6.2). Der Serializer schreibt dafür `0 0 0` bzw. `1`.
+- Nicht im Modell: `showMovie`, `storeMovie`, `randSeed` und das `op`-Feld von Crawler-Paaren (§6.2). Der Serializer schreibt dafür `1 0 0` bzw. `1`. `showMovie = 1` ist Pflicht, weil Upstreams `MakeIteration()` Kartenänderungen nur mit gesetztem Movie-Flag erkennt; ohne läuft jede Generation genau eine Iteration. `parseDesignText` lehnt deshalb ein `N` mit beiden Flags auf `0` ab.
 - TypeBox ist die einzige Quelle für Typen und Schema (`Static<typeof DesignConfigSchema>`); keine handgeschriebenen Parallel-Interfaces (§2 Anti-Ziele, §6.3).
 - Die TypeBox-Runtime wird nur von `src/schema/**` importiert. `src/config/**` und `src/index.ts` nutzen `import type` aus `src/schema/model.ts`. Kein `typebox/compile` (erzeugt Code per `new Function`, bricht unter strikter CSP).
 - Fehler aus `parseDesignText`, `toDesignText` und `validateDesign` sind ausschließlich `DesignValidationError` bzw. `DesignIssue`-Listen; nie `TypeError`, nie ein Wasm-Abort (§4, §10 P2.6).
@@ -123,7 +123,7 @@ T <10 Werte>
 GS <s m l>… 0 0 100 · GB <s m l>… 0 0 100
 S … 0 · C … 0 · AC … 0 · AT … 0
 M <mutator> <noHeading> <patience> <sizeUpGenDelay> <columns 0|1> <inTunnels 0|1> <aspectRatio> <speedUp>
-N <seedCount> <generation> 0 0 0 <inAnterooms 0|1>
+N <seedCount> <generation> 1 0 0 <inAnterooms 0|1>
 K … 99
 PR <5 Gene> · PT <maxAge> <stepLength> <5 Gene> <closedProbability> · PU <6 Werte>
 WS … · WP1 … / WP2 … (direkt aufeinander) · U …
@@ -282,7 +282,7 @@ Parse-Regeln (Wahrheit: `Config::AcceptDesign` mit Patch 0002; der Parser ist to
 - Tokens sind maximale Folgen von Nicht-Whitespace im Sinn von JS `\s` (umfasst `\r`, Tab, BOM), jeweils mit 1-basierter Zeilennummer.
 - An Record-Position: ein Token, das mit `XX` beginnt, verwirft den Rest seiner Zeile; ein anderes Token, das mit `X` beginnt, ist ein Fehler (upstream `assert`). Sonst muss das Token exakt einer der Tags `D R BC BR BT ZU ZD F J T GS GB S C AC AT M N K PR PT PU WS WP1 U E1 E2 H1 H2 I1 I2` sein (nur Großbuchstaben); `WP2` ist nur direkt nach den Werten von `WP1` gültig, sonst Fehler.
 - Werte folgen als nächste Tokens, auch über Zeilenumbrüche. `XX` an Wert-Position ist ein Fehler, außer in der Richtungsliste von `D`: Dort beendet `XX` die Liste und verwirft den Rest seiner Zeile.
-- Ganzzahl: `/^[+-]?\d+$/` im `int32`-Bereich. `aspectRatio`: `/^[+-]?(\d+\.?\d*|\.\d+)([eE][+-]?\d+)?$/`, Wert per `Number()`. `M` columns/inTunnels: Ganzzahl, `≠ 0` → `true`. `N` showMovie/storeMovie/inAnterooms: Ganzzahl `0` oder `1`. `N` randSeed: Ganzzahl mit Betrag ≤ 4294967295, Wert verworfen.
+- Ganzzahl: `/^[+-]?\d+$/` im `int32`-Bereich. `aspectRatio`: `/^[+-]?(\d+\.?\d*|\.\d+)([eE][+-]?\d+)?$/`, Wert per `Number()`. `M` columns/inTunnels: Ganzzahl, `≠ 0` → `true`. `N` showMovie/storeMovie/inAnterooms: Ganzzahl `0` oder `1`; showMovie und storeMovie zugleich `0` wird abgelehnt (Upstream liefe dann eine Iteration pro Generation). `N` randSeed: Ganzzahl mit Betrag ≤ 4294967295, Wert verworfen.
 - Listen lesen bis zum Terminator der Modelltabelle; der Terminator landet nicht im Array. `GS`/`GB`: Tripel bis `large == 100`; jedes Tripel nicht negativ mit Summe 100, sonst Fehler (wie upstream). `BC`/`BR`/`BT`: genau 11 Werte, Summe wird nicht geprüft.
 - Richtungen: Startrichtung (`WS`, `WP`, `U`) muss kardinal sein, sonst Fehler; `XX` als Zielrichtung → `'any'` bei Crawlern, Fehler bei `U`. `WS`-`op` muss `0` oder `1` sein. `WS` mit widersprüchlichen Richtungen (Tabelle `Config::ValidateDirections`) wird verworfen, ebenso das ganze Paar bei widersprüchlichem `WP2`; widersprüchliches `WP1` ist ein Fehler.
 - `R` mit `sX > eX` oder `sY > eY` wird verworfen; `D`-Hintergrund nur `OPEN`/`CLOSED`.
@@ -470,7 +470,7 @@ test('canonical layout', () => {
   expect(text).toMatch(/^S 3 3 3 3 3 3 0$/m);
   expect(text).toMatch(/^F 20 20 50 0 0 100$/m);
   expect(text).toMatch(/^GB 100 0 0 50 50 0 0 30 70 0 0 100$/m);
-  expect(text).toMatch(/^N 0 -1 0 0 0 0$/m);
+  expect(text).toMatch(/^N 0 -1 1 0 0 0$/m);
   expect(text).toMatch(/^K 0 99$/m);
   expect(text.endsWith('\n')).toBe(true);
 });

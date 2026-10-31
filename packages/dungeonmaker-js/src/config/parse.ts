@@ -8,7 +8,8 @@
  * Where upstream silently normalises or drops data, so does this parser, so the config
  * means exactly what the text meant. Where upstream would fail, assert or keep garbage,
  * it throws a `DesignValidationError`. It is stricter than `AcceptDesign` in places
- * (exact upper-case tags, no duplicate records, `WS` op only 0 or 1), never different.
+ * (exact upper-case tags, no duplicate records, `WS` op only 0 or 1, at least one movie
+ * flag in `N`), never different.
  */
 
 import { DesignValidationError } from '../errors.js';
@@ -305,8 +306,16 @@ const SINGLE_READERS = {
   N: (r) => {
     const seedCount = r.int();
     const generation = r.int();
-    r.flag(); // showMovie
-    r.flag(); // storeMovie
+    const showMovie = r.flag();
+    const storeMovie = r.flag();
+    // Not cosmetic: SetMap records changes only with a movie flag set, and MakeIteration()
+    // stops a generation after the first iteration without recorded changes. The model
+    // has no field for it; toDesignText always writes showMovie = 1.
+    if (!showMovie && !storeMovie) {
+      r.fail(
+        'N record with showMovie and storeMovie both 0 is not supported (upstream then runs only one iteration per generation)',
+      );
+    }
     r.uint32(); // randSeed
     return { seedCount, generation, inAnterooms: r.flag() };
   },

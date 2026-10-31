@@ -225,6 +225,17 @@ test('upstream normalisations', () => {
   ]).toEqual([0.6, 1, 1]);
 });
 
+test('an N record without any movie flag is rejected; one flag suffices', () => {
+  const withFlags = (show: number, store: number) =>
+    readDesign('design').replace(/^N .*$/m, `N 0 -1 ${show} ${store} 1 0`);
+  expect(rejected(withFlags(0, 0))).toEqual([
+    'line 85: N record with showMovie and storeMovie both 0 is not supported (upstream then runs only one iteration per generation)',
+  ]);
+  expect(parseDesignText(withFlags(1, 0))).toEqual(vendorConfig('design'));
+  expect(parseDesignText(withFlags(0, 1))).toEqual(vendorConfig('design'));
+  expect(parseDesignText(withFlags(1, 1))).toEqual(vendorConfig('design'));
+});
+
 test('dropped like AcceptDesign: inconsistent WS, inconsistent WP2 pair, inverted R', () => {
   const base = vendorConfig('design5');
   const text = `${readDesign('design5')}
