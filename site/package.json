@@ -3,8 +3,9 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "vitepress dev",
-    "build": "vitepress build",
+    "generate": "node scripts/generate-reference.mjs",
+    "dev": "pnpm generate && vitepress dev",
+    "build": "pnpm generate && vitepress build",
     "typecheck": "tsc -p tsconfig.json",
     "test": "vitest run",
     "e2e": "node scripts/e2e.mjs"

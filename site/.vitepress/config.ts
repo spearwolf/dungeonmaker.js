@@ -9,6 +9,15 @@ const apiSidebarFile = fileURLToPath(new URL('../api/typedoc-sidebar.json', impo
 const sidebar: DefaultTheme.SidebarMulti = existsSync(apiSidebarFile)
   ? { '/api/': JSON.parse(readFileSync(apiSidebarFile, 'utf8')) }
   : {};
+sidebar['/reference/'] = [
+  {
+    text: 'Reference',
+    items: [
+      { text: 'Design config', link: '/reference/config' },
+      { text: 'Dungeon file format', link: '/reference/dungeon-format' },
+    ],
+  },
+];
 
 export default defineConfig({
   title: 'dungeonmaker-js',
@@ -37,6 +46,7 @@ export default defineConfig({
     nav: [
       { text: 'Playground', link: '/' },
       { text: 'Editor', link: '/editor' },
+      { text: 'Reference', link: '/reference/config' },
     ],
     sidebar,
     socialLinks: [{ icon: 'github', link: 'https://github.com/spearwolf/dungeonmaker.js' }],
