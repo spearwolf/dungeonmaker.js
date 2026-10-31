@@ -20,6 +20,7 @@ import { tmpdir } from 'node:os';
 import { extname, join, normalize } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { chromium } from 'playwright';
+import { webpackBuildAccepted } from './webpack-output.mjs';
 
 const repo = fileURLToPath(new URL('../', import.meta.url));
 const expected = '99cc67de'; // golden FNV-1a of design3A, seed 42
@@ -251,8 +252,10 @@ async function main() {
 
     const webpack = prepare('webpack');
     const webpackOut = run('pnpm', ['exec', 'webpack', '--mode', 'production'], webpack);
-    if (!/compiled successfully/.test(webpackOut)) {
-      failures.push(`webpack:\n  output lacks "compiled successfully":\n${webpackOut}`);
+    if (!webpackBuildAccepted(webpackOut)) {
+      failures.push(
+        `webpack:\n  output is neither "compiled successfully" nor only the wasm size hint:\n${webpackOut}`,
+      );
     } else {
       cpSync(join(webpack, 'index.html'), join(webpack, 'dist/index.html'));
       const site = await serveStatic(join(webpack, 'dist'), CSP);
