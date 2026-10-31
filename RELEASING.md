@@ -26,8 +26,10 @@ version is published by hand.
    the 2FA code; pnpm checks that the branch is `master` and the tree is clean. (`prepack`
    builds the package and copies `LICENSE`/`NOTICE` into it.)
 4. Check: `pnpm view dungeonmaker-js version` prints `0.0.1`.
-5. Push `master`. The `release` workflow runs, its `check` job sees `0.0.1` on npm and the
-   `publish` job is skipped.
+5. Tag the published commit — its tag is the corresponding source the package README points
+   to (GPLv3 §6(d)), and a hand-published version carries no `gitHead` the workflow could
+   verify: `git tag v0.0.1 && git push origin master v0.0.1`. The `release` workflow then
+   finds `0.0.1` on npm with its tag and does nothing.
 
 ### C — npmjs.com: register the trusted publisher (right after B)
 
@@ -83,5 +85,11 @@ Prerelease versions (`1.2.0-beta.1`) are published with the dist-tag `next`. If 
 - Self-hosted runners do not work with Trusted Publishing.
 - A version that is lower than or equal to an already published one stops the release with a
   clear error. npm never allows reusing a version, not even after `unpublish`.
-- If `npm publish` fails, no tag and no GitHub release are created; fix the cause and re-run
-  the workflow via _Run workflow_ (`workflow_dispatch`).
+- `publish` only runs after the full `ci` workflow (tests, native golden cross-check, wasm
+  drift check) has passed for the same commit.
+- If `npm publish` fails, no tag and no GitHub release exist; fix the cause and re-run the
+  workflow via _Run workflow_ (`workflow_dispatch`).
+- If tagging or the GitHub release fails _after_ a successful publish, re-run the workflow on
+  the same commit: `release-check` sees the version on npm with this commit as `gitHead` but
+  without tag, skips `publish` and runs only the `tag` job (which fetches the published tarball
+  from npm). A version published from a different commit is never tagged automatically.

@@ -15,6 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       publish: ${{ steps.decide.outputs.publish }}
+      tag: ${{ steps.decide.outputs.tag }}
       version: ${{ steps.decide.outputs.version }}
       dist-tag: ${{ steps.decide.outputs.dist-tag }}
     steps:
@@ -24,13 +25,20 @@ jobs:
       - id: decide
         run: node scripts/release-check.mjs
 
-  publish:
+  # The full ci workflow (tests, native golden cross-check, wasm drift): never publish a
+  # wasm that does not come from native/ in this commit (corresponding source, spec §9.3).
+  ci:
     needs: check
+    if: needs.check.outputs.publish == 'true'
+    uses: ./.github/workflows/ci.yml
+
+  publish:
+    needs: [check, ci]
     if: needs.check.outputs.publish == 'true'
     runs-on: ubuntu-latest # GitHub-hosted runners are required for Trusted Publishing
     environment: npm
     permissions:
-      contents: write
+      contents: read
       id-token: write
     env:
       VERSION: ${{ needs.check.outputs.version }}
@@ -39,17 +47,42 @@ jobs:
       - uses: actions/checkout@v7
       - uses: jdx/mise-action@v5
       - run: pnpm install --frozen-lockfile
-      - run: pnpm lint && pnpm typecheck && pnpm test && pnpm build && pnpm size && pnpm check:package && pnpm pack:smoke
       - run: npm pkg set gitHead="$GITHUB_SHA"
         working-directory: packages/dungeonmaker-js
       - run: pnpm --filter dungeonmaker-js pack --pack-destination "$GITHUB_WORKSPACE/out"
       - name: npm >= 11.5.1 (Trusted Publishing)
         run: |
           node -e "process.exit(require('semver').gte(process.argv[1], '11.5.1') ? 0 : 1)" "$(npm --version)"
-      # Publish first: if it fails, no orphaned tag or release exists. Retry via workflow_dispatch.
       - run: npm publish "out/dungeonmaker-js-$VERSION.tgz" --access public --tag "$DIST_TAG"
+
+  # Tag and GitHub release, separate from publishing so a failure here can be retried via
+  # workflow_dispatch: release-check then sees the version on npm with this gitHead but no tag.
+  tag:
+    needs: [check, publish]
+    if: >-
+      always() && needs.check.outputs.tag == 'true' &&
+      (needs.publish.result == 'success' ||
+       (needs.publish.result == 'skipped' && needs.check.outputs.publish != 'true'))
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      VERSION: ${{ needs.check.outputs.version }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: jdx/mise-action@v5
+      - name: Fetch the published tarball
+        run: |
+          mkdir -p out
+          for _ in 1 2 3 4 5 6; do
+            npm pack "dungeonmaker-js@$VERSION" --pack-destination out && break
+            sleep 10
+          done
+          test -f "out/dungeonmaker-js-$VERSION.tgz"
       - run: git archive --format=tar.gz --prefix="dungeonmaker.js-v$VERSION/" -o out/source.tar.gz HEAD
-      - run: git tag "v$VERSION" && git push origin "v$VERSION"
-      - run: gh release create "v$VERSION" --generate-notes "out/dungeonmaker-js-$VERSION.tgz" out/source.tar.gz
+      - run: git tag "v$VERSION" "$GITHUB_SHA" && git push origin "v$VERSION"
+      - run: |
+          gh release view "v$VERSION" >/dev/null 2>&1 ||
+            gh release create "v$VERSION" --generate-notes "out/dungeonmaker-js-$VERSION.tgz" out/source.tar.gz
         env:
           GH_TOKEN: ${{ github.token }}
