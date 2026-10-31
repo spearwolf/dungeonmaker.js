@@ -47,6 +47,7 @@
   "scripts": {
     "typecheck": "tsc -p tsconfig.json",
     "build": "tsc -p tsconfig.build.json",
+    "generate": "pnpm run build && node ../../scripts/generate-design-artifacts.mjs",
     "test": "vitest run",
     "prepack": "node ../../scripts/copy-legal.mjs && pnpm run build"
   },

@@ -1,0 +1,1468 @@
+{
+  "type": "object",
+  "required": ["map", "spawnDelay", "crawlers", "tunnelers", "rooms", "behaviour"],
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "JSON Schema URL for editor support; ignored by the parser."
+    },
+    "map": {
+      "type": "object",
+      "required": [
+        "width",
+        "height",
+        "background",
+        "joinDistance",
+        "tunnelJoinDistance",
+        "openings"
+      ],
+      "properties": {
+        "width": {
+          "type": "integer",
+          "minimum": 3,
+          "maximum": 4096,
+          "description": "Map width in cells (columns). Upstream: D dimY."
+        },
+        "height": {
+          "type": "integer",
+          "minimum": 3,
+          "maximum": 4096,
+          "description": "Map height in cells (rows). Upstream: D dimX."
+        },
+        "background": {
+          "enum": ["open", "closed"],
+          "description": "Initial fill of the map before any builder digs. Upstream: D background."
+        },
+        "joinDistance": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 2147483647,
+          "description": "Maximum distance in cells over which open areas are joined. Upstream: D joinDist."
+        },
+        "tunnelJoinDistance": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 2147483647,
+          "description": "Maximum distance in cells over which tunnels are joined. Upstream: D tunnelJoinDist."
+        },
+        "openings": {
+          "type": "array",
+          "items": {
+            "enum": ["N", "NE", "E", "SE", "S", "SW", "W", "NW"],
+            "description": "A map edge or corner that is kept open."
+          },
+          "description": "Directions in which the map border is opened; may be empty. Upstream: D openings (ends with XX)."
+        }
+      },
+      "additionalProperties": false,
+      "description": "Map dimensions and basic joining behaviour. Upstream: D."
+    },
+    "rectangles": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["from", "to", "cell"],
+        "properties": {
+          "from": {
+            "type": "object",
+            "required": ["x", "y"],
+            "properties": {
+              "x": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 2147483647,
+                "description": "Column, counted from the left edge (0 = leftmost)."
+              },
+              "y": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 2147483647,
+                "description": "Row, counted from the top edge (0 = topmost, north is up)."
+              }
+            },
+            "additionalProperties": false,
+            "description": "Top-left corner (inclusive). Upstream: R sX sY."
+          },
+          "to": {
+            "type": "object",
+            "required": ["x", "y"],
+            "properties": {
+              "x": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 2147483647,
+                "description": "Column, counted from the left edge (0 = leftmost)."
+              },
+              "y": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 2147483647,
+                "description": "Row, counted from the top edge (0 = topmost, north is up)."
+              }
+            },
+            "additionalProperties": false,
+            "description": "Bottom-right corner (inclusive). Upstream: R eX eY."
+          },
+          "cell": {
+            "enum": [
+              "open",
+              "closed",
+              "guaranteedOpen",
+              "guaranteedClosed",
+              "nonJoinOpen",
+              "nonJoinClosed",
+              "nonJoinGuaranteedOpen",
+              "nonJoinGuaranteedClosed",
+              "insideRoomOpen",
+              "insideTunnelOpen",
+              "insideAnteroomOpen",
+              "horizontalDoor",
+              "verticalDoor",
+              "mob1",
+              "mob2",
+              "mob3",
+              "treasure1",
+              "treasure2",
+              "treasure3",
+              "column"
+            ],
+            "description": "Cell type the rectangle is filled with. Upstream: R type."
+          }
+        },
+        "additionalProperties": false
+      },
+      "description": "Rectangles drawn onto the map before generation, in order; later ones overwrite earlier ones. Upstream: R."
+    },
+    "spawnDelay": {
+      "type": "object",
+      "required": ["crawler", "roomie", "tunneler"],
+      "properties": {
+        "crawler": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 100,
+            "description": "Percent value."
+          },
+          "description": "Eleven percent values, summing to 100: distribution of the delay before crawlers spawn; the index is the delay. Upstream: BC.",
+          "minItems": 11,
+          "maxItems": 11
+        },
+        "roomie": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 100,
+            "description": "Percent value."
+          },
+          "description": "Eleven percent values, summing to 100: distribution of the delay before room builders spawn. Upstream: BR.",
+          "minItems": 11,
+          "maxItems": 11
+        },
+        "tunneler": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 100,
+            "description": "Percent value."
+          },
+          "description": "Eleven percent values, summing to 100: distribution of the delay before tunnelers spawn. Upstream: BT.",
+          "minItems": 11,
+          "maxItems": 11
+        }
+      },
+      "additionalProperties": false,
+      "description": "Spawn delay distributions. Upstream: BC, BR, BT."
+    },
+    "crawlers": {
+      "type": "object",
+      "required": ["stepLength", "corridorWidth", "maxAge", "random", "inTunnels"],
+      "properties": {
+        "stepLength": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2147483647,
+            "description": "Step length in cells."
+          },
+          "minItems": 1,
+          "description": "Step length per generation; the index is the generation, beyond the end the last value applies. Upstream: S (terminator 0)."
+        },
+        "corridorWidth": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2147483647,
+            "description": "Corridor width in cells."
+          },
+          "minItems": 1,
+          "description": "Corridor width per generation; beyond the end the last value applies. Upstream: C (terminator 0)."
+        },
+        "maxAge": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2147483647,
+            "description": "Maximum age in steps."
+          },
+          "minItems": 1,
+          "description": "Maximum age per generation; beyond the end the last value applies. Upstream: AC (terminator 0)."
+        },
+        "random": {
+          "type": "object",
+          "required": ["perThousandWallSquares", "genes"],
+          "properties": {
+            "perThousandWallSquares": {
+              "type": "array",
+              "items": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 98,
+                "description": "Crawlers per thousand wall cells."
+              },
+              "description": "Randomly seeded crawlers per thousand wall cells, per generation; beyond the end no crawlers are seeded. Upstream: K (terminator 99)."
+            },
+            "genes": {
+              "type": "object",
+              "required": [
+                "straightSingleSpawn",
+                "straightDoubleSpawn",
+                "turnSingleSpawn",
+                "turnDoubleSpawn",
+                "changeDirection"
+              ],
+              "properties": {
+                "straightSingleSpawn": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 100,
+                  "description": "Percent chance per step that a straight step spawns one new builder. Upstream: sSSP."
+                },
+                "straightDoubleSpawn": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 100,
+                  "description": "Percent chance per step that a straight step spawns two new builders. Upstream: sDSP."
+                },
+                "turnSingleSpawn": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 100,
+                  "description": "Percent chance that a turn spawns one new builder. Upstream: tSSP."
+                },
+                "turnDoubleSpawn": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 100,
+                  "description": "Percent chance that a turn spawns two new builders. Upstream: tDSP."
+                },
+                "changeDirection": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 100,
+                  "description": "Percent chance per step that the builder changes direction. Upstream: cDP."
+                }
+              },
+              "additionalProperties": false,
+              "description": "Gene set of the randomly seeded crawlers. Upstream: PR."
+            }
+          },
+          "additionalProperties": false,
+          "description": "Randomly seeded crawlers. Upstream: K, PR."
+        },
+        "inTunnels": {
+          "type": "object",
+          "required": [
+            "enabled",
+            "inAnterooms",
+            "seedCount",
+            "generation",
+            "maxAge",
+            "stepLength",
+            "genes",
+            "closedProbability"
+          ],
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "description": "Whether tunnelers may spawn crawlers. Upstream: M crawlersInTunnels (non-zero = true)."
+            },
+            "inAnterooms": {
+              "type": "boolean",
+              "description": "Whether crawlers are also seeded in anterooms. Upstream: N crawlersInAnterooms."
+            },
+            "seedCount": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 2147483647,
+              "description": "Number of crawlers seeded in tunnels. Upstream: N seedCrawlersInTunnels."
+            },
+            "generation": {
+              "type": "integer",
+              "minimum": -1,
+              "maximum": 2147483647,
+              "description": "Generation of the tunnel crawlers; -1 means after all other builders. Upstream: N tunnelCrawlerGeneration."
+            },
+            "maxAge": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 2147483647,
+              "description": "Maximum age of tunnel crawlers in steps. Upstream: PT maxAge."
+            },
+            "stepLength": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 2147483647,
+              "description": "Step length of tunnel crawlers in cells. Upstream: PT sL."
+            },
+            "genes": {
+              "type": "object",
+              "required": [
+                "straightSingleSpawn",
+                "straightDoubleSpawn",
+                "turnSingleSpawn",
+                "turnDoubleSpawn",
+                "changeDirection"
+              ],
+              "properties": {
+                "straightSingleSpawn": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 100,
+                  "description": "Percent chance per step that a straight step spawns one new builder. Upstream: sSSP."
+                },
+                "straightDoubleSpawn": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 100,
+                  "description": "Percent chance per step that a straight step spawns two new builders. Upstream: sDSP."
+                },
+                "turnSingleSpawn": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 100,
+                  "description": "Percent chance that a turn spawns one new builder. Upstream: tSSP."
+                },
+                "turnDoubleSpawn": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 100,
+                  "description": "Percent chance that a turn spawns two new builders. Upstream: tDSP."
+                },
+                "changeDirection": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 100,
+                  "description": "Percent chance per step that the builder changes direction. Upstream: cDP."
+                }
+              },
+              "additionalProperties": false,
+              "description": "Gene set of tunnel crawlers. Upstream: PT genes."
+            },
+            "closedProbability": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100,
+              "description": "Percent chance that a tunnel crawler digs closed cells. Upstream: PT closedProb."
+            }
+          },
+          "additionalProperties": false,
+          "description": "Crawlers spawned from tunnels. Upstream: M, N, PT."
+        },
+        "seeds": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "location",
+              "direction",
+              "intendedDirection",
+              "dormancy",
+              "maxAge",
+              "generation",
+              "stepLength",
+              "corridorWidth",
+              "genes",
+              "open"
+            ],
+            "properties": {
+              "location": {
+                "type": "object",
+                "required": ["x", "y"],
+                "properties": {
+                  "x": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 2147483647,
+                    "description": "Column, counted from the left edge (0 = leftmost)."
+                  },
+                  "y": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 2147483647,
+                    "description": "Row, counted from the top edge (0 = topmost, north is up)."
+                  }
+                },
+                "additionalProperties": false,
+                "description": "Start cell of the crawler. Upstream: WS locX locY."
+              },
+              "direction": {
+                "enum": ["N", "E", "S", "W"],
+                "description": "Initial heading of the crawler. Upstream: WS dir."
+              },
+              "intendedDirection": {
+                "anyOf": [
+                  {
+                    "enum": ["N", "NE", "E", "SE", "S", "SW", "W", "NW"],
+                    "description": "A compass direction the crawler tries to head to."
+                  },
+                  {
+                    "type": "string",
+                    "const": "any",
+                    "description": "No preferred direction."
+                  }
+                ],
+                "description": "Direction the crawler prefers to travel to, or \"any\" for none. Upstream: WS intDir (XX = any)."
+              },
+              "dormancy": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 2147483647,
+                "description": "Number of steps the crawler waits before it starts to dig. Upstream: WS dorm."
+              },
+              "maxAge": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 2147483647,
+                "description": "Number of steps after which the crawler dies. Upstream: WS maxAge."
+              },
+              "generation": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 2147483647,
+                "description": "Generation of the crawler; indexes the per-generation lists (stepLength, corridorWidth, maxAge, random). Upstream: WS gen."
+              },
+              "stepLength": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 2147483647,
+                "description": "Length of one straight run in cells. Upstream: WS sL."
+              },
+              "corridorWidth": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 2147483647,
+                "description": "Width of the dug corridor in cells. Upstream: WS cW."
+              },
+              "genes": {
+                "type": "object",
+                "required": [
+                  "straightSingleSpawn",
+                  "straightDoubleSpawn",
+                  "turnSingleSpawn",
+                  "turnDoubleSpawn",
+                  "changeDirection"
+                ],
+                "properties": {
+                  "straightSingleSpawn": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 100,
+                    "description": "Percent chance per step that a straight step spawns one new builder. Upstream: sSSP."
+                  },
+                  "straightDoubleSpawn": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 100,
+                    "description": "Percent chance per step that a straight step spawns two new builders. Upstream: sDSP."
+                  },
+                  "turnSingleSpawn": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 100,
+                    "description": "Percent chance that a turn spawns one new builder. Upstream: tSSP."
+                  },
+                  "turnDoubleSpawn": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 100,
+                    "description": "Percent chance that a turn spawns two new builders. Upstream: tDSP."
+                  },
+                  "changeDirection": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 100,
+                    "description": "Percent chance per step that the builder changes direction. Upstream: cDP."
+                  }
+                },
+                "additionalProperties": false,
+                "description": "Gene set the crawler hands down to its offspring. Upstream: WS genes."
+              },
+              "open": {
+                "type": "boolean",
+                "description": "Whether the crawler digs open cells (true) or closed cells (false). Upstream: WS op."
+              }
+            },
+            "additionalProperties": false
+          },
+          "description": "Explicitly placed crawlers. Upstream: WS."
+        },
+        "pairs": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["first", "second"],
+            "properties": {
+              "first": {
+                "type": "object",
+                "required": [
+                  "location",
+                  "direction",
+                  "intendedDirection",
+                  "dormancy",
+                  "maxAge",
+                  "generation",
+                  "stepLength",
+                  "corridorWidth",
+                  "genes"
+                ],
+                "properties": {
+                  "location": {
+                    "type": "object",
+                    "required": ["x", "y"],
+                    "properties": {
+                      "x": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 2147483647,
+                        "description": "Column, counted from the left edge (0 = leftmost)."
+                      },
+                      "y": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 2147483647,
+                        "description": "Row, counted from the top edge (0 = topmost, north is up)."
+                      }
+                    },
+                    "additionalProperties": false,
+                    "description": "Start cell of the crawler. Upstream: WS locX locY."
+                  },
+                  "direction": {
+                    "enum": ["N", "E", "S", "W"],
+                    "description": "Initial heading of the crawler. Upstream: WS dir."
+                  },
+                  "intendedDirection": {
+                    "anyOf": [
+                      {
+                        "enum": ["N", "NE", "E", "SE", "S", "SW", "W", "NW"],
+                        "description": "A compass direction the crawler tries to head to."
+                      },
+                      {
+                        "type": "string",
+                        "const": "any",
+                        "description": "No preferred direction."
+                      }
+                    ],
+                    "description": "Direction the crawler prefers to travel to, or \"any\" for none. Upstream: WS intDir (XX = any)."
+                  },
+                  "dormancy": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 2147483647,
+                    "description": "Number of steps the crawler waits before it starts to dig. Upstream: WS dorm."
+                  },
+                  "maxAge": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 2147483647,
+                    "description": "Number of steps after which the crawler dies. Upstream: WS maxAge."
+                  },
+                  "generation": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 2147483647,
+                    "description": "Generation of the crawler; indexes the per-generation lists (stepLength, corridorWidth, maxAge, random). Upstream: WS gen."
+                  },
+                  "stepLength": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 2147483647,
+                    "description": "Length of one straight run in cells. Upstream: WS sL."
+                  },
+                  "corridorWidth": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 2147483647,
+                    "description": "Width of the dug corridor in cells. Upstream: WS cW."
+                  },
+                  "genes": {
+                    "type": "object",
+                    "required": [
+                      "straightSingleSpawn",
+                      "straightDoubleSpawn",
+                      "turnSingleSpawn",
+                      "turnDoubleSpawn",
+                      "changeDirection"
+                    ],
+                    "properties": {
+                      "straightSingleSpawn": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 100,
+                        "description": "Percent chance per step that a straight step spawns one new builder. Upstream: sSSP."
+                      },
+                      "straightDoubleSpawn": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 100,
+                        "description": "Percent chance per step that a straight step spawns two new builders. Upstream: sDSP."
+                      },
+                      "turnSingleSpawn": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 100,
+                        "description": "Percent chance that a turn spawns one new builder. Upstream: tSSP."
+                      },
+                      "turnDoubleSpawn": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 100,
+                        "description": "Percent chance that a turn spawns two new builders. Upstream: tDSP."
+                      },
+                      "changeDirection": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 100,
+                        "description": "Percent chance per step that the builder changes direction. Upstream: cDP."
+                      }
+                    },
+                    "additionalProperties": false,
+                    "description": "Gene set the crawler hands down to its offspring. Upstream: WS genes."
+                  }
+                },
+                "additionalProperties": false,
+                "description": "First crawler of the pair. Upstream: WP1."
+              },
+              "second": {
+                "type": "object",
+                "required": [
+                  "location",
+                  "direction",
+                  "intendedDirection",
+                  "dormancy",
+                  "maxAge",
+                  "generation",
+                  "stepLength",
+                  "corridorWidth",
+                  "genes"
+                ],
+                "properties": {
+                  "location": {
+                    "type": "object",
+                    "required": ["x", "y"],
+                    "properties": {
+                      "x": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 2147483647,
+                        "description": "Column, counted from the left edge (0 = leftmost)."
+                      },
+                      "y": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 2147483647,
+                        "description": "Row, counted from the top edge (0 = topmost, north is up)."
+                      }
+                    },
+                    "additionalProperties": false,
+                    "description": "Start cell of the crawler. Upstream: WS locX locY."
+                  },
+                  "direction": {
+                    "enum": ["N", "E", "S", "W"],
+                    "description": "Initial heading of the crawler. Upstream: WS dir."
+                  },
+                  "intendedDirection": {
+                    "anyOf": [
+                      {
+                        "enum": ["N", "NE", "E", "SE", "S", "SW", "W", "NW"],
+                        "description": "A compass direction the crawler tries to head to."
+                      },
+                      {
+                        "type": "string",
+                        "const": "any",
+                        "description": "No preferred direction."
+                      }
+                    ],
+                    "description": "Direction the crawler prefers to travel to, or \"any\" for none. Upstream: WS intDir (XX = any)."
+                  },
+                  "dormancy": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 2147483647,
+                    "description": "Number of steps the crawler waits before it starts to dig. Upstream: WS dorm."
+                  },
+                  "maxAge": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 2147483647,
+                    "description": "Number of steps after which the crawler dies. Upstream: WS maxAge."
+                  },
+                  "generation": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 2147483647,
+                    "description": "Generation of the crawler; indexes the per-generation lists (stepLength, corridorWidth, maxAge, random). Upstream: WS gen."
+                  },
+                  "stepLength": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 2147483647,
+                    "description": "Length of one straight run in cells. Upstream: WS sL."
+                  },
+                  "corridorWidth": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 2147483647,
+                    "description": "Width of the dug corridor in cells. Upstream: WS cW."
+                  },
+                  "genes": {
+                    "type": "object",
+                    "required": [
+                      "straightSingleSpawn",
+                      "straightDoubleSpawn",
+                      "turnSingleSpawn",
+                      "turnDoubleSpawn",
+                      "changeDirection"
+                    ],
+                    "properties": {
+                      "straightSingleSpawn": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 100,
+                        "description": "Percent chance per step that a straight step spawns one new builder. Upstream: sSSP."
+                      },
+                      "straightDoubleSpawn": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 100,
+                        "description": "Percent chance per step that a straight step spawns two new builders. Upstream: sDSP."
+                      },
+                      "turnSingleSpawn": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 100,
+                        "description": "Percent chance that a turn spawns one new builder. Upstream: tSSP."
+                      },
+                      "turnDoubleSpawn": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 100,
+                        "description": "Percent chance that a turn spawns two new builders. Upstream: tDSP."
+                      },
+                      "changeDirection": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 100,
+                        "description": "Percent chance per step that the builder changes direction. Upstream: cDP."
+                      }
+                    },
+                    "additionalProperties": false,
+                    "description": "Gene set the crawler hands down to its offspring. Upstream: WS genes."
+                  }
+                },
+                "additionalProperties": false,
+                "description": "Second crawler of the pair. Upstream: WP2."
+              }
+            },
+            "additionalProperties": false
+          },
+          "description": "Explicitly placed pairs of crawlers that start together. Upstream: WP1, WP2."
+        }
+      },
+      "additionalProperties": false,
+      "description": "Crawler behaviour. Upstream: S, C, AC, K, PR, M, N, PT, WS, WP1, WP2."
+    },
+    "tunnelers": {
+      "type": "object",
+      "required": [
+        "sizeUpProbability",
+        "sizeDownProbability",
+        "anteroomProbability",
+        "joinPreference",
+        "maxAge",
+        "sizeUpGenerationDelay",
+        "columns",
+        "anteroomGenerationSpeedUp",
+        "lastChance"
+      ],
+      "properties": {
+        "sizeUpProbability": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 100,
+            "description": "Percent value."
+          },
+          "description": "Percent chance that a tunnel widens, per tunnel width; beyond the end the last value applies. Upstream: ZU (terminator -1).",
+          "minItems": 1
+        },
+        "sizeDownProbability": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 100,
+            "description": "Percent value."
+          },
+          "description": "Percent chance that a tunnel narrows, per tunnel width; beyond the end the last value applies. Upstream: ZD (terminator -1).",
+          "minItems": 1
+        },
+        "anteroomProbability": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 99,
+            "description": "Percent chance of an anteroom."
+          },
+          "description": "Percent chance of an anteroom per tunnel width; beyond the end the value is 100. Upstream: F (terminator 100)."
+        },
+        "joinPreference": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 100,
+            "description": "Percent value."
+          },
+          "description": "Preference to join existing areas, per tunnel width; beyond the end the last value applies. Upstream: J (terminator -1).",
+          "minItems": 1
+        },
+        "maxAge": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2147483647,
+            "description": "Maximum age in steps."
+          },
+          "minItems": 1,
+          "description": "Maximum age per generation; beyond the end the last value applies. Upstream: AT (terminator 0)."
+        },
+        "sizeUpGenerationDelay": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 2147483647,
+          "description": "Generations a tunneler waits before it may widen. Upstream: M sizeUpGenDelay."
+        },
+        "columns": {
+          "type": "boolean",
+          "description": "Whether tunnels get columns. Upstream: M columnsInTunnels (non-zero = true)."
+        },
+        "anteroomGenerationSpeedUp": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 2147483647,
+          "description": "Generation speed-up when a tunneler makes an anteroom. Upstream: M genSpeedUpOnAnteRoom."
+        },
+        "lastChance": {
+          "type": "object",
+          "required": [
+            "makeRoomsLeft",
+            "makeRoomsRight",
+            "changeDirection",
+            "straightDoubleSpawn",
+            "turnDoubleSpawn",
+            "generationDelay"
+          ],
+          "properties": {
+            "makeRoomsLeft": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100,
+              "description": "Percent chance to make a room on the left. Upstream: PU, 1st value."
+            },
+            "makeRoomsRight": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100,
+              "description": "Percent chance to make a room on the right. Upstream: PU, 2nd value."
+            },
+            "changeDirection": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100,
+              "description": "Percent chance to change direction. Upstream: PU, 3rd value."
+            },
+            "straightDoubleSpawn": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100,
+              "description": "Percent chance of a double spawn on a straight step. Upstream: PU, 4th value."
+            },
+            "turnDoubleSpawn": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100,
+              "description": "Percent chance of a double spawn on a turn. Upstream: PU, 5th value."
+            },
+            "generationDelay": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 2147483647,
+              "description": "Generation delay of the last-chance tunnelers. Upstream: PU, 6th value."
+            }
+          },
+          "additionalProperties": false,
+          "description": "Last-chance tunnelers that clean up unreached areas. Upstream: PU."
+        },
+        "seeds": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "location",
+              "direction",
+              "intendedDirection",
+              "dormancy",
+              "maxAge",
+              "generation",
+              "stepLength",
+              "tunnelWidth",
+              "genes"
+            ],
+            "properties": {
+              "location": {
+                "type": "object",
+                "required": ["x", "y"],
+                "properties": {
+                  "x": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 2147483647,
+                    "description": "Column, counted from the left edge (0 = leftmost)."
+                  },
+                  "y": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 2147483647,
+                    "description": "Row, counted from the top edge (0 = topmost, north is up)."
+                  }
+                },
+                "additionalProperties": false,
+                "description": "Start cell of the tunneler. Upstream: U locX locY."
+              },
+              "direction": {
+                "enum": ["N", "E", "S", "W"],
+                "description": "Initial heading of the tunneler. Upstream: U dir."
+              },
+              "intendedDirection": {
+                "enum": ["N", "NE", "E", "SE", "S", "SW", "W", "NW"],
+                "description": "Direction the tunneler prefers to travel to. Upstream: U intDir."
+              },
+              "dormancy": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 2147483647,
+                "description": "Number of steps the tunneler waits before it starts to dig. Upstream: U dorm."
+              },
+              "maxAge": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 2147483647,
+                "description": "Number of steps after which the tunneler dies. Upstream: U maxAge."
+              },
+              "generation": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 2147483647,
+                "description": "Generation of the tunneler. Upstream: U gen."
+              },
+              "stepLength": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 2147483647,
+                "description": "Length of one straight run in cells. Upstream: U sL."
+              },
+              "tunnelWidth": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 2147483647,
+                "description": "Width of the tunnel in cells; indexes the per-width lists. Upstream: U tW."
+              },
+              "genes": {
+                "type": "object",
+                "required": [
+                  "straightDoubleSpawn",
+                  "turnDoubleSpawn",
+                  "changeDirection",
+                  "makeRoomsRight",
+                  "makeRoomsLeft",
+                  "joinPreference"
+                ],
+                "properties": {
+                  "straightDoubleSpawn": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 100,
+                    "description": "Percent chance per step that a straight step spawns two tunnelers. Upstream: sDSP."
+                  },
+                  "turnDoubleSpawn": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 100,
+                    "description": "Percent chance that a turn spawns two tunnelers. Upstream: tDSP."
+                  },
+                  "changeDirection": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 100,
+                    "description": "Percent chance per step that the tunneler changes direction. Upstream: cDP."
+                  },
+                  "makeRoomsRight": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 100,
+                    "description": "Percent chance per step that a room is made on the right side. Upstream: mRRP."
+                  },
+                  "makeRoomsLeft": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 100,
+                    "description": "Percent chance per step that a room is made on the left side. Upstream: mRLP."
+                  },
+                  "joinPreference": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 100,
+                    "description": "Percent preference to join existing open areas. Upstream: jP."
+                  }
+                },
+                "additionalProperties": false,
+                "description": "Inheritable behaviour of a tunneler."
+              }
+            },
+            "additionalProperties": false
+          },
+          "description": "Explicitly placed tunnelers. Upstream: U."
+        }
+      },
+      "additionalProperties": false,
+      "description": "Tunneler behaviour. Upstream: ZU, ZD, F, J, AT, M, PU, U."
+    },
+    "rooms": {
+      "type": "object",
+      "required": ["size", "count", "sizeProbability", "aspectRatio"],
+      "properties": {
+        "size": {
+          "type": "object",
+          "required": ["min", "medium", "large", "max"],
+          "properties": {
+            "min": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 2147483647,
+              "description": "Smallest room edge length in cells. Upstream: T 1st value."
+            },
+            "medium": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 2147483647,
+              "description": "Medium room edge length in cells. Upstream: T 2nd value."
+            },
+            "large": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 2147483647,
+              "description": "Large room edge length in cells. Upstream: T 3rd value."
+            },
+            "max": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 2147483647,
+              "description": "Largest room edge length in cells. Upstream: T 4th value."
+            }
+          },
+          "additionalProperties": false,
+          "description": "Room edge lengths. Upstream: T 1-4."
+        },
+        "count": {
+          "type": "object",
+          "required": ["labyrinth", "dungeon"],
+          "properties": {
+            "labyrinth": {
+              "type": "object",
+              "required": ["small", "medium", "large"],
+              "properties": {
+                "small": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 2147483647,
+                  "description": "Number of small rooms."
+                },
+                "medium": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 2147483647,
+                  "description": "Number of medium rooms."
+                },
+                "large": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 2147483647,
+                  "description": "Number of large rooms."
+                }
+              },
+              "additionalProperties": false,
+              "description": "Rooms of the labyrinth. Upstream: T 5-7."
+            },
+            "dungeon": {
+              "type": "object",
+              "required": ["small", "medium", "large"],
+              "properties": {
+                "small": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 2147483647,
+                  "description": "Number of small rooms."
+                },
+                "medium": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 2147483647,
+                  "description": "Number of medium rooms."
+                },
+                "large": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 2147483647,
+                  "description": "Number of large rooms."
+                }
+              },
+              "additionalProperties": false,
+              "description": "Rooms of the dungeon. Upstream: T 8-10."
+            }
+          },
+          "additionalProperties": false,
+          "description": "Number of rooms per size. Upstream: T 5-10."
+        },
+        "sizeProbability": {
+          "type": "object",
+          "required": ["sideways", "branching"],
+          "properties": {
+            "sideways": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["small", "medium", "large"],
+                "properties": {
+                  "small": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 100,
+                    "description": "Percent chance of a small room."
+                  },
+                  "medium": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 100,
+                    "description": "Percent chance of a medium room."
+                  },
+                  "large": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 99,
+                    "description": "Percent chance of a large room; at most 99, because the list terminator (0 0 100) must stay unambiguous."
+                  }
+                },
+                "additionalProperties": false,
+                "description": "Room size distribution; the three values sum to 100."
+              },
+              "description": "Room size distribution for rooms beside a tunnel, per tunnel width; beyond the end every room is large (0/0/100). Upstream: GS (terminator 0 0 100)."
+            },
+            "branching": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["small", "medium", "large"],
+                "properties": {
+                  "small": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 100,
+                    "description": "Percent chance of a small room."
+                  },
+                  "medium": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 100,
+                    "description": "Percent chance of a medium room."
+                  },
+                  "large": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 99,
+                    "description": "Percent chance of a large room; at most 99, because the list terminator (0 0 100) must stay unambiguous."
+                  }
+                },
+                "additionalProperties": false,
+                "description": "Room size distribution; the three values sum to 100."
+              },
+              "description": "Room size distribution for rooms at a tunnel branch, per tunnel width; beyond the end every room is large (0/0/100). Upstream: GB (terminator 0 0 100)."
+            }
+          },
+          "additionalProperties": false,
+          "description": "Room size distributions. Upstream: GS, GB."
+        },
+        "aspectRatio": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "exclusiveMaximum": 1,
+          "description": "Ratio of the short to the long room edge, between 0 and 1 exclusive. Upstream: M roomAspectRatio."
+        }
+      },
+      "additionalProperties": false,
+      "description": "Room generation. Upstream: T, GS, GB, M."
+    },
+    "behaviour": {
+      "type": "object",
+      "required": ["mutator", "patience", "noHeadingProbability"],
+      "properties": {
+        "mutator": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 2147483647,
+          "description": "Mutation strength applied to inherited genes. Upstream: M mutator."
+        },
+        "patience": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 2147483647,
+          "description": "Steps a builder tolerates without progress before it gives up. Upstream: M patience."
+        },
+        "noHeadingProbability": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100,
+          "description": "Percent chance that a builder ignores its intended direction. Upstream: M noHeadingProb."
+        }
+      },
+      "additionalProperties": false,
+      "description": "General builder behaviour. Upstream: M."
+    },
+    "population": {
+      "type": "object",
+      "required": ["mobs", "treasure"],
+      "properties": {
+        "mobs": {
+          "type": "object",
+          "required": ["labyrinth", "dungeon"],
+          "properties": {
+            "labyrinth": {
+              "type": "object",
+              "required": ["rooms", "open"],
+              "properties": {
+                "rooms": {
+                  "type": "object",
+                  "required": ["groupSize", "groupSizeVariance", "byLevel"],
+                  "properties": {
+                    "groupSize": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 2147483647,
+                      "description": "Base number of entities per group. Upstream: groupSize."
+                    },
+                    "groupSizeVariance": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 2147483647,
+                      "description": "Random variance added to the group size. Upstream: groupSizeVariance."
+                    },
+                    "byLevel": {
+                      "type": "array",
+                      "items": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 2147483647,
+                        "description": "Count for one dungeon level."
+                      },
+                      "description": "Group count per dungeon level; the index is the level. The serializer appends the terminator -1. Upstream: trailing list."
+                    }
+                  },
+                  "additionalProperties": false,
+                  "description": "Mob groups placed in rooms of the labyrinth. Upstream: E1."
+                },
+                "open": {
+                  "type": "object",
+                  "required": ["byLevel"],
+                  "properties": {
+                    "byLevel": {
+                      "type": "array",
+                      "items": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 2147483647,
+                        "description": "Count for one dungeon level."
+                      },
+                      "description": "Mobs in open labyrinth areas per dungeon level; the index is the level. Upstream: E2 list."
+                    }
+                  },
+                  "additionalProperties": false,
+                  "description": "Mobs in open areas of the labyrinth. Upstream: E2."
+                }
+              },
+              "additionalProperties": false,
+              "description": "Mobs of the labyrinth."
+            },
+            "dungeon": {
+              "type": "object",
+              "required": ["rooms", "open"],
+              "properties": {
+                "rooms": {
+                  "type": "object",
+                  "required": ["groupSize", "groupSizeVariance", "byLevel"],
+                  "properties": {
+                    "groupSize": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 2147483647,
+                      "description": "Base number of entities per group. Upstream: groupSize."
+                    },
+                    "groupSizeVariance": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 2147483647,
+                      "description": "Random variance added to the group size. Upstream: groupSizeVariance."
+                    },
+                    "byLevel": {
+                      "type": "array",
+                      "items": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 2147483647,
+                        "description": "Count for one dungeon level."
+                      },
+                      "description": "Group count per dungeon level; the index is the level. The serializer appends the terminator -1. Upstream: trailing list."
+                    }
+                  },
+                  "additionalProperties": false,
+                  "description": "Mob groups placed in rooms of the dungeon. Upstream: H1."
+                },
+                "open": {
+                  "type": "object",
+                  "required": ["anteroomProbability", "byLevel"],
+                  "properties": {
+                    "anteroomProbability": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 100,
+                      "description": "Percent chance that a mob is placed in an anteroom. Upstream: H2 first value."
+                    },
+                    "byLevel": {
+                      "type": "array",
+                      "items": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 2147483647,
+                        "description": "Count for one dungeon level."
+                      },
+                      "description": "Mobs in open dungeon areas per dungeon level; the index is the level. Upstream: H2 list."
+                    }
+                  },
+                  "additionalProperties": false,
+                  "description": "Mobs in open areas of the dungeon. Upstream: H2."
+                }
+              },
+              "additionalProperties": false,
+              "description": "Mobs of the dungeon."
+            }
+          },
+          "additionalProperties": false,
+          "description": "Mob placement."
+        },
+        "treasure": {
+          "type": "object",
+          "required": ["labyrinth", "dungeon"],
+          "properties": {
+            "labyrinth": {
+              "type": "object",
+              "required": ["groupSize", "groupSizeVariance", "byLevel"],
+              "properties": {
+                "groupSize": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 2147483647,
+                  "description": "Base number of entities per group. Upstream: groupSize."
+                },
+                "groupSizeVariance": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 2147483647,
+                  "description": "Random variance added to the group size. Upstream: groupSizeVariance."
+                },
+                "byLevel": {
+                  "type": "array",
+                  "items": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 2147483647,
+                    "description": "Count for one dungeon level."
+                  },
+                  "description": "Group count per dungeon level; the index is the level. The serializer appends the terminator -1. Upstream: trailing list."
+                }
+              },
+              "additionalProperties": false,
+              "description": "Treasure groups of the labyrinth. Upstream: I1."
+            },
+            "dungeon": {
+              "type": "object",
+              "required": ["groupSize", "groupSizeVariance", "byLevel"],
+              "properties": {
+                "groupSize": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 2147483647,
+                  "description": "Base number of entities per group. Upstream: groupSize."
+                },
+                "groupSizeVariance": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 2147483647,
+                  "description": "Random variance added to the group size. Upstream: groupSizeVariance."
+                },
+                "byLevel": {
+                  "type": "array",
+                  "items": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 2147483647,
+                    "description": "Count for one dungeon level."
+                  },
+                  "description": "Group count per dungeon level; the index is the level. The serializer appends the terminator -1. Upstream: trailing list."
+                }
+              },
+              "additionalProperties": false,
+              "description": "Treasure groups of the dungeon. Upstream: I2."
+            }
+          },
+          "additionalProperties": false,
+          "description": "Treasure placement."
+        }
+      },
+      "additionalProperties": false,
+      "description": "Entity placement; parsed and serialized, effective only with entity output."
+    }
+  },
+  "additionalProperties": false,
+  "$id": "https://unpkg.com/dungeonmaker-js/design.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "DungeonMaker design",
+  "description": "A DungeonMaker 2.05 design as JSON. Coordinates: x = column, y = row, north is up."
+}
