@@ -1,0 +1,19 @@
+{
+  "name": "dungeonmaker-js-workspace",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@12.17.0",
+  "scripts": {
+    "lint": "biome ci .",
+    "format": "biome format --write .",
+    "typecheck": "pnpm -r typecheck",
+    "test": "vitest run",
+    "build": "pnpm -r build"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.6.4",
+    "@types/node": "^26.6.6",
+    "typescript": "7.0.2",
+    "vitest": "5.0.5"
+  }
+}
