@@ -8,6 +8,15 @@ export interface DungeonMakerWasmModule {
   _dm_height(): number;
   _dm_cells(): number;
   _dm_last_error(): number;
+  _dm_room_count(): number;
+  _dm_room_ids(): number;
+  _dm_rooms(): number;
+  _dm_entity_count(): number;
+  _dm_entities(): number;
+  _dm_step_count(): number;
+  _dm_step_offsets(): number;
+  _dm_step_indices(): number;
+  _dm_step_cells(): number;
   _dm_reset(): void;
   _malloc(size: number): number;
   _free(ptr: number): void;

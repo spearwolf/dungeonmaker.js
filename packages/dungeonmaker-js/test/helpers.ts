@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 import { readFileSync } from 'node:fs';
 import { parseDesignText } from '../src/config/parse.js';
-import type { CoreResult } from '../src/core.js';
+import type { CoreResult, StepLayer } from '../src/core.js';
 import type { DesignConfig } from '../src/schema/model.js';
 import { fnv1a32 } from './fnv.js';
 
@@ -79,4 +79,15 @@ export function cellAt(r: CoreResult, x: number, y: number): number {
   const v = r.cells[y * r.width + x];
   if (v === undefined) throw new RangeError(`(${x}, ${y}) is outside ${r.width}x${r.height}`);
   return v;
+}
+
+/** Plays all frames of a step layer onto an empty map; the result must equal the final cells. */
+export function replaySteps(steps: StepLayer, cellCount: number): Uint8Array {
+  const map = new Uint8Array(cellCount);
+  for (let k = 0; k + 1 < steps.offsets.length; k++) {
+    for (let i = steps.offsets[k] ?? 0; i < (steps.offsets[k + 1] ?? 0); i++) {
+      map[steps.index[i] ?? 0] = steps.cell[i] ?? 0;
+    }
+  }
+  return map;
 }
