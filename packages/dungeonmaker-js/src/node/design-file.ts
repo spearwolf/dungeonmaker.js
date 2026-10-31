@@ -16,7 +16,11 @@ export async function readDesignFile(
   const base = basename(path);
   const name = base.split('.')[0] || base;
   if (base.toLowerCase().endsWith('.json')) {
-    return { design: JSON.parse(raw.replace(/^﻿/, '')) as DesignConfig, name };
+    try {
+      return { design: JSON.parse(raw.replace(/^﻿/, '')) as DesignConfig, name };
+    } catch (error) {
+      throw new Error(`${path}: ${(error as Error).message}`);
+    }
   }
   return { design: raw.replace(/^﻿/, '').replace(/\r\n/g, '\n'), name };
 }

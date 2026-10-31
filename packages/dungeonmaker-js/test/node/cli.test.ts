@@ -251,3 +251,32 @@ test('generate --design with a broken design is exit 1', async () => {
   expect((await run('generate', '--design', 'broken')).code).toBe(1);
   expect((await run('generate', '--design', 'missing.txt')).code).toBe(1);
 });
+
+test('generate --design with an unknown key or an empty object fails with exit 1 and paths, writing nothing', async () => {
+  await writeFile(join(dir, 'extra.json'), JSON.stringify({ ...presets.design3A, extra: 1 }));
+  await writeFile(join(dir, 'empty.json'), '{}');
+  for (const file of ['extra.json', 'empty.json']) {
+    const r = await run('generate', '--design', file, '--format', 'txt', '--out', 'out');
+    expect(r.code).toBe(1);
+    expect(r.stderr).toMatch(/\//);
+  }
+  await expect(readdir(join(dir, 'out'))).rejects.toThrow();
+});
+
+test('generate: a PNG over the pixel limit writes nothing, not even the json before it', async () => {
+  const big = { ...presets.design3A, map: { ...presets.design3A.map, width: 300, height: 300 } };
+  await writeFile(join(dir, 'big.json'), JSON.stringify(big));
+  const r = await run(
+    'generate',
+    '--design',
+    'big.json',
+    '--format',
+    'json,png',
+    '--scale',
+    '30',
+    '--out',
+    'out',
+  );
+  expect(r.stderr).toMatch(/pixels/);
+  await expect(readdir(join(dir, 'out'))).rejects.toThrow();
+});

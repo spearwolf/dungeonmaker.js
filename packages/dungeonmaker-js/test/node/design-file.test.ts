@@ -35,3 +35,9 @@ test('.json is parsed as an object; the name drops all extensions', async () => 
 test('a missing file rejects', async () => {
   await expect(readDesignFile(join(dir, 'nope.design'))).rejects.toThrow();
 });
+
+test('a JSON syntax error names the file', async () => {
+  const file = join(dir, 'broken.json');
+  await writeFile(file, '{ nope');
+  await expect(readDesignFile(file)).rejects.toThrow(file);
+});

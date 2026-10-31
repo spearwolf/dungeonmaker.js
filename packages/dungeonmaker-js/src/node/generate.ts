@@ -18,8 +18,10 @@ import {
 } from '../export.js';
 import { type OutputOptions, parseOutput } from '../layers.js';
 import * as presets from '../presets.js';
-import { checkScale } from '../render/raster.js';
+import { checkScale, MAX_PIXELS } from '../render/raster.js';
+import { DesignValidationError } from '../errors.js';
 import type { DesignConfig } from '../schema/model.js';
+import { validateDesign } from '../schema/validate.js';
 import { VERSION } from '../version.js';
 import { renderName } from './name.js';
 import { MAX_SEEDS_PER_RUN } from './seeds.js';
@@ -128,23 +130,43 @@ export async function generateToFiles(
   checkScale(options.scale);
 
   let designText: string;
+  let mapSize: { width: number; height: number };
   let name: string;
   let source: DungeonSource;
   if (options.preset !== undefined) {
     designText = toDesignText(PRESETS[options.preset]);
+    mapSize = PRESETS[options.preset].map;
     name = options.preset;
     source = { preset: options.preset };
   } else {
     const design = options.design as DesignConfig | string;
-    // Both throw a DesignValidationError for a malformed design, before any side effect.
-    if (typeof design === 'string') parseDesignText(design);
+    // A malformed design throws a DesignValidationError before any side effect: text goes
+    // through the parser, objects through the same validation as `validate`.
+    let config: DesignConfig;
+    if (typeof design === 'string') {
+      config = parseDesignText(design);
+    } else {
+      const issues = validateDesign(design);
+      if (issues.length > 0) throw new DesignValidationError(issues);
+      config = design;
+    }
     designText = typeof design === 'string' ? design : toDesignText(design);
+    mapSize = config.map;
     name = options.designName ?? 'dungeon';
     const known = presetOf(designText);
     source =
       known !== undefined
         ? { preset: known }
         : await designSource(design, { embed: options.embedDesign });
+  }
+  if (formats.includes('png')) {
+    const scale = checkScale(options.scale);
+    const pixels = mapSize.width * scale * (mapSize.height * scale);
+    if (pixels > MAX_PIXELS) {
+      throw new RangeError(
+        `PNG of ${mapSize.width * scale}x${mapSize.height * scale} pixels exceeds the limit of ${MAX_PIXELS} pixels: lower --scale`,
+      );
+    }
   }
   const fileNames = options.seeds.map((seed) => renderName(template, { name, seed }));
   if (new Set(fileNames).size !== fileNames.length) {

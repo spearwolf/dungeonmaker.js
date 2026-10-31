@@ -2,6 +2,7 @@
 import { mkdtemp, readdir, readFile, rm, stat } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { DesignValidationError } from '../../src/errors.js';
 import { generateToFiles } from '../../src/node/generate.js';
 import * as presets from '../../src/presets.js';
 import { checkGolden, sha256Hex } from '../golden-export.js';
@@ -185,6 +186,34 @@ describe('rejects before any side effect', () => {
         outDir: outDir(),
       }),
     ).rejects.toThrow(RangeError);
+    await gone();
+  });
+
+  test('a PNG beyond the pixel limit, although json comes first', async () => {
+    const big = {
+      ...presets.design3A,
+      map: { ...presets.design3A.map, width: 300, height: 300 },
+    } as typeof presets.design3A;
+    await expect(
+      generateToFiles({
+        design: big,
+        seeds: [1],
+        formats: ['json', 'png'],
+        scale: 30,
+        outDir: outDir(),
+      }),
+    ).rejects.toThrow(/pixels/);
+    await gone();
+  });
+
+  test('a design object with an unknown key or without any key', async () => {
+    const base = { seeds: [1], formats: ['txt'], outDir: outDir() } as const;
+    await expect(
+      generateToFiles({ ...base, design: { ...presets.design3A, extra: 1 } as never }),
+    ).rejects.toThrow(DesignValidationError);
+    const empty = await generateToFiles({ ...base, design: {} as never }).catch((e) => e);
+    expect(empty).toBeInstanceOf(DesignValidationError);
+    expect(empty.issues[0].path).toMatch(/^\//);
     await gone();
   });
 

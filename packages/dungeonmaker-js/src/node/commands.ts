@@ -191,8 +191,9 @@ async function generate(args: readonly string[], io: CliIo): Promise<number> {
       generator: io.generator,
     });
   } catch (error) {
-    // Bad options reach generateToFiles as RangeError/TypeError before any side effect;
-    // design, generation and file errors are other classes and stay failures (exit 1).
+    // generateToFiles checks all options (including the PNG pixel limit for the design's map
+    // size) before the first side effect and reports them as RangeError/TypeError; design,
+    // generation and file errors are other classes and stay failures (exit 1).
     if (error instanceof RangeError || error instanceof TypeError) {
       throw new UsageError(error.message);
     }
