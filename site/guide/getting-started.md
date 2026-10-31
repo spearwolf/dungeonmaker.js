@@ -2,7 +2,8 @@
 
 `dungeonmaker-js` generates procedural dungeons in JavaScript. It is an **unofficial**
 WebAssembly port of [DungeonMaker 2.05](http://dungeonmaker.sourceforge.net/) by Peter Henningsen
-(with contributions by Aaron Dalton), the C++ generator published by alifegames in 2014. The
+(with contributions by Aaron Dalton), the C++ generator written in 2001 (copyright 2001 Dr. Peter Henningsen) and released as 2.05 in
+2005. The
 package compiles the original generator to WebAssembly, runs it in a Web Worker and wraps it in a
 typed API, a set of renderers and exporters, and a command line tool. The same design and seed
 always produce the same dungeon, on every platform.

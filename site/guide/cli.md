@@ -30,14 +30,39 @@ bunx dungeonmaker-js generate --design ./old-design.txt --count 10 --rooms --ent
 
 :::
 
-The other commands, here with `npx`; use the runner of your choice:
+The other commands:
 
-```sh
+::: code-group
+
+```sh [pnpm]
+pnpm dlx dungeonmaker-js presets                      # list the eleven presets
+pnpm dlx dungeonmaker-js validate ./my-cave.json      # exit code 1 on errors
+pnpm dlx dungeonmaker-js convert ./old-design.txt     # legacy text -> design JSON
+pnpm dlx dungeonmaker-js schema dungeon > dungeon.schema.json
+```
+
+```sh [npm]
 npx dungeonmaker-js presets                      # list the eleven presets
 npx dungeonmaker-js validate ./my-cave.json      # exit code 1 on errors
 npx dungeonmaker-js convert ./old-design.txt     # legacy text -> design JSON
 npx dungeonmaker-js schema dungeon > dungeon.schema.json
 ```
+
+```sh [yarn]
+yarn dlx dungeonmaker-js presets                      # list the eleven presets
+yarn dlx dungeonmaker-js validate ./my-cave.json      # exit code 1 on errors
+yarn dlx dungeonmaker-js convert ./old-design.txt     # legacy text -> design JSON
+yarn dlx dungeonmaker-js schema dungeon > dungeon.schema.json
+```
+
+```sh [bun]
+bunx dungeonmaker-js presets                      # list the eleven presets
+bunx dungeonmaker-js validate ./my-cave.json      # exit code 1 on errors
+bunx dungeonmaker-js convert ./old-design.txt     # legacy text -> design JSON
+bunx dungeonmaker-js schema dungeon > dungeon.schema.json
+```
+
+:::
 
 `dungeonmaker-js --help` lists every option of `generate`: `--seed`, `--seeds`
 (`1..50,99`, at most 10 000), `--count`, `--format`, `--out`, `--name` (`{name}` and `{seed}`;

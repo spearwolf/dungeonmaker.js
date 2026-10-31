@@ -43,7 +43,7 @@ be closed on purpose, to block a passage and force a path through a certain room
 
 Tunnelers are the more complex builders. A tunnel can have any odd width, so tunnelers carry a
 width that their children may grow or shrink by probability. They can also carve **anterooms**,
-small meeting places at bends and junctions, and they spawn **roomies**: builders that make at
+small meeting places, most often in front of rooms or where tunnels intersect, and they spawn **roomies**: builders that make at
 most one step. A roomie looks for enough closed ground for the room size it wants and excavates
 the whole room at once, or it removes itself.
 
