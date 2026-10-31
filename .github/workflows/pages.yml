@@ -16,6 +16,9 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: read # configure-pages queries the Pages API
     steps:
       - uses: actions/checkout@v7
       - uses: jdx/mise-action@v5

@@ -83,6 +83,7 @@ test('pages.yml deploys only from master with minimal permissions', () => {
   expect(wf.on).toHaveProperty('workflow_dispatch');
   expect(wf.permissions).toEqual({ contents: 'read' });
   expect(wf.concurrency).toEqual({ group: 'pages', 'cancel-in-progress': false });
+  expect(wf.jobs.build.permissions).toEqual({ contents: 'read', pages: 'read' });
   const { deploy } = wf.jobs;
   expect(deploy.needs).toBe('build');
   expect(deploy.if).toBe("github.ref == 'refs/heads/master'");
