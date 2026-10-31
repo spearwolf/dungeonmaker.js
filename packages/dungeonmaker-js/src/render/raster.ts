@@ -16,14 +16,20 @@ export interface Raster {
   readonly data: Uint8ClampedArray;
 }
 
-const MAX_PIXELS = 67_108_864;
+export const MAX_PIXELS = 67_108_864;
+
+/** Throws `RangeError` unless `scale` is an integer from 1 to 64; returns it (default 1). */
+export function checkScale(scale: number | undefined): number {
+  const value = scale ?? 1;
+  if (!Number.isInteger(value) || value < 1 || value > 64) {
+    throw new RangeError(`scale must be an integer from 1 to 64, got ${value}`);
+  }
+  return value;
+}
 
 /** Renders the map to RGBA pixels. Throws `RangeError` for a bad scale or more than 2^26 pixels. */
 export function toRgba(dungeon: DungeonLike, options: RasterOptions = {}): Raster {
-  const scale = options.scale ?? 1;
-  if (!Number.isInteger(scale) || scale < 1 || scale > 64) {
-    throw new RangeError(`scale must be an integer from 1 to 64, got ${scale}`);
-  }
+  const scale = checkScale(options.scale);
   const rgb = paletteRgb(options.palette);
   const { cells } = dungeon;
   const width = dungeon.width * scale;
