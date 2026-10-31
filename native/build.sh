@@ -26,7 +26,7 @@ FLAGS="-std=c++17 -O3 -flto -fno-exceptions -fno-rtti
 -sMODULARIZE -sEXPORT_ES6 -sEXPORT_NAME=loadDungeonMakerWasm
 -sENVIRONMENT=worker,node -sFILESYSTEM=0
 -sALLOW_MEMORY_GROWTH -sINITIAL_MEMORY=4MB
--sEXPORTED_FUNCTIONS=_dm_generate,_dm_width,_dm_height,_dm_cells,_dm_last_error,_dm_reset,_malloc,_free
+-sEXPORTED_FUNCTIONS=_dm_generate,_dm_width,_dm_height,_dm_cells,_dm_last_error,_dm_reset,_dm_room_count,_dm_room_ids,_dm_rooms,_dm_entity_count,_dm_entities,_dm_step_count,_dm_step_offsets,_dm_step_indices,_dm_step_cells,_malloc,_free
 -sEXPORTED_RUNTIME_METHODS=HEAPU8,stringToUTF8,lengthBytesUTF8,UTF8ToString
 -sINCOMING_MODULE_JS_API=locateFile,instantiateWasm,print,printErr
 -sSTRICT

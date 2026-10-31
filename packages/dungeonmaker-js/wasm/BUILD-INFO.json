@@ -17,7 +17,7 @@
     "-sFILESYSTEM=0",
     "-sALLOW_MEMORY_GROWTH",
     "-sINITIAL_MEMORY=4MB",
-    "-sEXPORTED_FUNCTIONS=_dm_generate,_dm_width,_dm_height,_dm_cells,_dm_last_error,_dm_reset,_malloc,_free",
+    "-sEXPORTED_FUNCTIONS=_dm_generate,_dm_width,_dm_height,_dm_cells,_dm_last_error,_dm_reset,_dm_room_count,_dm_room_ids,_dm_rooms,_dm_entity_count,_dm_entities,_dm_step_count,_dm_step_offsets,_dm_step_indices,_dm_step_cells,_malloc,_free",
     "-sEXPORTED_RUNTIME_METHODS=HEAPU8,stringToUTF8,lengthBytesUTF8,UTF8ToString",
     "-sINCOMING_MODULE_JS_API=locateFile,instantiateWasm,print,printErr",
     "-sSTRICT",
@@ -26,5 +26,5 @@
     "--extern-pre-js",
     "native/src/license-banner.js"
   ],
-  "nativeSourceHash": "sha256:54ab4c3cf4920d654ceaa7646588310c428272e9049c2109290c716d8f5b26cb"
+  "nativeSourceHash": "sha256:f2292979a1a7140d890e2d4b0ea80ef252b8e15da44dea87298d28a775676048"
 }

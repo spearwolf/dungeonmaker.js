@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// Native reference build: FNV-1a hashes of the cells for every vendored design and seed.
+// Native reference build: FNV-1a hashes of the cells for every vendored design and seed,
+// plus the output layers of every design at seed 42.
 // Its output is the golden file the WebAssembly build must match byte for byte (spec §5.3).
 #include <cinttypes>
 #include <initializer_list>
@@ -11,13 +12,22 @@
 #include "bridge.h"
 #include "design_util.h"
 
-static uint32_t fnv1a32(const uint8_t* bytes, size_t len) {
-  uint32_t h = 2166136261u;
+static constexpr uint32_t kFnvOffset = 2166136261u;
+
+/** FNV-1a over `len` bytes, continuing from `h`; multi-byte values in host order (LE). */
+static uint32_t fnv1a32(const void* data, size_t len, uint32_t h = kFnvOffset) {
+  const uint8_t* bytes = static_cast<const uint8_t*>(data);
   for (size_t i = 0; i < len; ++i) {
     h ^= bytes[i];
     h *= 16777619u;
   }
   return h;
+}
+
+static std::string hex32(uint32_t h) {
+  char hex[9];
+  std::snprintf(hex, sizeof hex, "%08" PRIx32, h);
+  return hex;
 }
 
 static bool hash_into(std::map<std::string, std::string>& out, const std::string& key,
@@ -26,10 +36,46 @@ static bool hash_into(std::map<std::string, std::string>& out, const std::string
     std::fprintf(stderr, "%s: %s\n", key.c_str(), dm_last_error());
     return false;
   }
-  char hex[9];
-  std::snprintf(hex, sizeof hex, "%08" PRIx32,
-                fnv1a32(dm_cells(), static_cast<size_t>(dm_width()) * dm_height()));
-  out[key] = hex;
+  out[key] = hex32(fnv1a32(dm_cells(), static_cast<size_t>(dm_width()) * dm_height()));
+  return true;
+}
+
+/** The four layer keys of one design: "<d>:<seed>+rooms|+entities|+baked|+steps". */
+static bool hash_layers_into(std::map<std::string, std::string>& out, const std::string& prefix,
+                             const std::string& text, uint32_t seed) {
+  const uint32_t layer_flags[] = {DM_OUTPUT_ROOMS, DM_OUTPUT_ENTITIES_LIST, DM_OUTPUT_ENTITIES_BAKED,
+                                  DM_OUTPUT_STEPS};
+  const char* names[] = {"rooms", "entities", "baked", "steps"};
+  for (int i = 0; i < 4; ++i) {
+    const std::string key = prefix + "+" + names[i];
+    if (dm_generate(text.c_str(), seed, layer_flags[i]) != 0) {
+      std::fprintf(stderr, "%s: %s\n", key.c_str(), dm_last_error());
+      return false;
+    }
+    const size_t cells = static_cast<size_t>(dm_width()) * dm_height();
+    uint32_t h = kFnvOffset;
+    switch (layer_flags[i]) {
+      case DM_OUTPUT_ROOMS:
+        h = fnv1a32(dm_room_ids(), cells * sizeof(uint16_t), h);
+        h = fnv1a32(dm_rooms(), dm_room_count() * 6 * sizeof(int32_t), h);
+        break;
+      case DM_OUTPUT_ENTITIES_LIST:
+        h = fnv1a32(dm_entities(), dm_entity_count() * 4 * sizeof(int32_t), h);
+        break;
+      case DM_OUTPUT_ENTITIES_BAKED:
+        h = fnv1a32(dm_cells(), cells, h);
+        break;
+      case DM_OUTPUT_STEPS: {
+        const uint32_t frames = dm_step_count();
+        const uint32_t total = dm_step_offsets()[frames];
+        h = fnv1a32(dm_step_offsets(), (frames + 1) * sizeof(uint32_t), h);
+        h = fnv1a32(dm_step_indices(), total * sizeof(uint32_t), h);
+        h = fnv1a32(dm_step_cells(), total, h);
+        break;
+      }
+    }
+    out[key] = hex32(h);
+  }
   return true;
 }
 
@@ -45,6 +91,8 @@ int main() {
   for (const char* d : designs) {
     const std::string text = read_design(d);
     for (uint32_t s : seeds) ok &= hash_into(hashes, std::string(d) + ":" + std::to_string(s), text, s);
+    // Output layers (spec §7.2); requesting them must leave the cell hashes above untouched.
+    ok &= hash_layers_into(hashes, std::string(d) + ":42", text, 42u);
   }
   // Designs with one record missing must still be deterministic: every Config field needs a
   // defined value (patch 0002), otherwise results depend on stack garbage and the compiler.

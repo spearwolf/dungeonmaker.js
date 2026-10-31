@@ -53,3 +53,27 @@ static std::string with_dimensions(const std::string& text, int dimX, int dimY) 
   }
   return out;
 }
+
+/**
+ * Replaces showMovie and storeMovie (third and fourth value) of every N record. Field order:
+ * seedCrawlersInTunnels tunnelCrawlerGeneration showMovie storeMovie randSeed crawlersInAnterooms.
+ */
+static std::string with_movie_flags(const std::string& text, int show, int store) {
+  std::istringstream in(text);
+  std::string line, out;
+  while (std::getline(in, line)) {
+    std::istringstream rec(line);
+    std::string tag;
+    rec >> tag;
+    if (tag == "N") {
+      std::string tokens[6];
+      for (std::string& t : tokens) rec >> t;
+      tokens[2] = std::to_string(show);
+      tokens[3] = std::to_string(store);
+      line = tag;
+      for (const std::string& t : tokens) line += " " + t;
+    }
+    out += line + "\n";
+  }
+  return out;
+}

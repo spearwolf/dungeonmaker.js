@@ -1,0 +1,41 @@
+Patch: 0003-deterministic-plonk.patch
+Applies to: native/vendor/dungeonmaker-2.05/DungeonMaker.cpp (after 0001 and 0002)
+What: PlonkDownStuff initializes startX/startY before their first read in both sections
+  for MOBs in the open (labyrinth and dungeon), so the branch the code means is taken,
+  and SortRooms sorts with std::stable_sort, so rooms of equal size keep their creation order.
+Why: Reading the uninitialized startX is undefined behaviour that differs per compiler, and
+  std::sort orders rooms of equal size differently in libc++ and libstdc++; both would make
+  the placed MOBs and treasure platform-dependent (spec sections 5.3 and 7.2). Neither
+  function runs unless entities are requested, so existing cells do not change.
+Date: 2026-10-31
+SPDX-License-Identifier: GPL-3.0-or-later
+
+--- a/DungeonMaker.cpp	2026-10-31 19:59:37.754620160 +0100
++++ b/DungeonMaker.cpp	2026-10-31 19:59:37.757221554 +0100
+@@ -3682,7 +3682,7 @@
+ 
+ void alifegames::DungeonMaker::SortRooms()
+ {
+-  sort(Rooms.begin() , Rooms.end() , RoomComp() );
++  stable_sort(Rooms.begin() , Rooms.end() , RoomComp() );  //patch 0003: equal sizes keep creation order, see native/patches/
+ }
+ 
+ void alifegames::DungeonMaker::PlonkDownStuff()
+@@ -4067,7 +4067,7 @@
+       int plonkY = 1 + ( rand()%(dimY-3) );
+       IntCoordinate Test( plonkX , plonkY );
+       //now make a starting direction
+-      int startX , startY;
++      int startX = 1 , startY = 0;  //patch 0003: defined start direction, see native/patches/
+       if( (rand()%100) < 50 )
+ 	startX = 0;
+       else
+@@ -4140,7 +4140,7 @@
+       int plonkY = 1 + ( rand()%(dimY-3) );
+       IntCoordinate Test( plonkX , plonkY );
+       //now make a starting direction
+-      int startX , startY;
++      int startX = 1 , startY = 0;  //patch 0003: defined start direction, see native/patches/
+       if( (rand()%100) < 50 )
+ 	startX = 0;
+       else

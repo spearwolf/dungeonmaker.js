@@ -23,3 +23,6 @@ release (see `native/vendor/README.md`), so every modification is visible as a f
   as several arguments of one call are drawn (spec §5.3, platform-independent output).
 - `0002-defined-config-and-strict-parsing.patch` — every `Config` field gets a defined value,
   and `AcceptDesign` rejects malformed input instead of looping forever (spec §5.3, §5.4).
+- `0003-deterministic-plonk.patch` — `PlonkDownStuff` initializes its start direction before
+  reading it, and `SortRooms` uses `std::stable_sort`, so placed entities are the same on
+  every platform (spec §5.3, §7.2).
