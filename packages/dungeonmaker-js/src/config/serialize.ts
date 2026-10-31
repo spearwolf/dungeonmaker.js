@@ -20,6 +20,7 @@ import type {
   TunnelerSeed,
 } from '../schema/model.js';
 import { pointToLibrary, sizeToLibrary } from './axes.js';
+import { checkDesign } from './check.js';
 import {
   ANY_DIRECTION,
   ANY_DIRECTION_TOKEN,
@@ -396,5 +397,8 @@ export function toDesignText(config: DesignConfig): string {
     ]);
   }
   if (e.issues.length > 0) throw new DesignValidationError(e.issues);
+  // only well-typed values reach the cross-field rules
+  const semantic = checkDesign(config);
+  if (semantic.length > 0) throw new DesignValidationError(semantic);
   return `${lines.join('\n')}\n`;
 }

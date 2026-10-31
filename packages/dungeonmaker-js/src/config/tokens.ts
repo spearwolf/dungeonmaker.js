@@ -31,6 +31,32 @@ export const ANY_DIRECTION = 'any';
 /** Design text token for {@link ANY_DIRECTION}. */
 export const ANY_DIRECTION_TOKEN = 'XX';
 
+/** Start directions an intended direction is consistent with (`Config::ValidateDirections`). */
+const CONSISTENT_STARTS: Readonly<Record<Direction, readonly Direction[]>> = {
+  N: ['W', 'NW', 'N', 'NE', 'E'],
+  E: ['N', 'NE', 'E', 'SE', 'S'],
+  S: ['W', 'SW', 'S', 'SE', 'E'],
+  W: ['N', 'NW', 'W', 'SW', 'S'],
+  NW: ['N', 'W'],
+  SW: ['S', 'W'],
+  NE: ['N', 'E'],
+  SE: ['S', 'E'],
+};
+
+/**
+ * Whether upstream accepts a start direction together with an intended direction:
+ * `'any'` always, otherwise only the combinations of `Config::ValidateDirections`.
+ * The parser drops inconsistent legacy crawlers; the semantic check rejects them.
+ */
+export function areDirectionsConsistent(
+  direction: Direction,
+  intendedDirection: Direction | typeof ANY_DIRECTION,
+): boolean {
+  return (
+    intendedDirection === ANY_DIRECTION || CONSISTENT_STARTS[intendedDirection].includes(direction)
+  );
+}
+
 /** Background fill of the map. */
 export const BACKGROUNDS = ['open', 'closed'] as const;
 export type Background = (typeof BACKGROUNDS)[number];

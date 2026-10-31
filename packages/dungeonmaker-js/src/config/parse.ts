@@ -27,6 +27,7 @@ import { pointFromLibrary, sizeFromLibrary } from './axes.js';
 import {
   ANY_DIRECTION,
   ANY_DIRECTION_TOKEN,
+  areDirectionsConsistent,
   type Background,
   CARDINAL_DIRECTIONS,
   type CardinalDirection,
@@ -57,18 +58,6 @@ const BACKGROUND_BY_TOKEN = new Map<string, Background>([
   [CELL_TOKENS.open, 'open'],
   [CELL_TOKENS.closed, 'closed'],
 ]);
-
-/** Start directions an intended direction is consistent with (`Config::ValidateDirections`). */
-const CONSISTENT_STARTS: Readonly<Record<Direction, readonly Direction[]>> = {
-  N: ['W', 'NW', 'N', 'NE', 'E'],
-  E: ['N', 'NE', 'E', 'SE', 'S'],
-  S: ['W', 'SW', 'S', 'SE', 'E'],
-  W: ['N', 'NW', 'W', 'SW', 'S'],
-  NW: ['N', 'W'],
-  SW: ['S', 'W'],
-  NE: ['N', 'E'],
-  SE: ['S', 'E'],
-};
 
 interface Token {
   readonly text: string;
@@ -401,8 +390,7 @@ function readCrawler<Op>(r: RecordReader, readOp: (r: RecordReader) => Op) {
     corridorWidth: r.int(),
     genes: readGenes(r),
   };
-  const consistent =
-    intendedDirection === ANY_DIRECTION || CONSISTENT_STARTS[intendedDirection].includes(direction);
+  const consistent = areDirectionsConsistent(direction, intendedDirection);
   return { member, op, consistent };
 }
 

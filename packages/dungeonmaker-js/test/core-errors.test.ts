@@ -5,16 +5,7 @@ import {
   GenerationError,
   loadCore,
 } from '../src/core.js';
-import { fnv1a32, golden, readDesign, withDimensions } from './helpers.js';
-
-function caught(fn: () => unknown): unknown {
-  try {
-    fn();
-  } catch (e) {
-    return e;
-  }
-  throw new Error('expected the call to throw');
-}
+import { caught, fnv1a32, golden, readDesign, withDimensions } from './helpers.js';
 
 function validationError(core: DungeonMakerCore, text: string): DesignValidationError {
   const e = caught(() => core.generate(text, 1));

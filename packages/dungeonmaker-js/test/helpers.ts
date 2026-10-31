@@ -71,6 +71,16 @@ export function fnv1a32(bytes: Uint8Array): string {
   return h.toString(16).padStart(8, '0');
 }
 
+/** The error `fn` throws; fails the test if it does not throw. */
+export function caught(fn: () => unknown): unknown {
+  try {
+    fn();
+  } catch (e) {
+    return e;
+  }
+  throw new Error('expected the call to throw');
+}
+
 export function cellAt(r: CoreResult, x: number, y: number): number {
   const v = r.cells[y * r.width + x];
   if (v === undefined) throw new RangeError(`(${x}, ${y}) is outside ${r.width}x${r.height}`);
