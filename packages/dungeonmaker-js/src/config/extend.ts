@@ -17,12 +17,18 @@ function isPlainObject(value: unknown): value is Record<string, unknown> {
   return proto === Object.prototype || proto === null;
 }
 
+const FORBIDDEN_KEYS = new Set(['__proto__', 'constructor', 'prototype']);
+
 function merge(target: Record<string, unknown>, patch: Record<string, unknown>): void {
   for (const [key, value] of Object.entries(patch)) {
-    if (value === undefined) continue;
-    const current = target[key];
-    if (isPlainObject(value) && isPlainObject(current)) {
-      merge(current, value);
+    if (value === undefined || FORBIDDEN_KEYS.has(key)) continue;
+    const current = Object.hasOwn(target, key) ? target[key] : undefined;
+    if (isPlainObject(value)) {
+      // Merge into the base object or into a fresh one: nothing is shared with the patch,
+      // and nested `undefined` values are skipped there as well.
+      const into = isPlainObject(current) ? current : {};
+      merge(into, value);
+      target[key] = into;
     } else {
       target[key] = structuredClone(value);
     }

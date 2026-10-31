@@ -5,7 +5,7 @@
 // (builds first); the drift test in packages/dungeonmaker-js/test/validate.test.ts fails
 // if the committed schema is stale, the preset tests if a preset differs from its vendor file.
 import { execFileSync } from 'node:child_process';
-import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const pkgUrl = new URL('../packages/dungeonmaker-js/', import.meta.url);
@@ -27,18 +27,14 @@ const DESIGNS = [
 ];
 
 async function importBuilt(relative) {
-  const url = new URL(relative, pkgUrl);
-  try {
-    return await import(pathToFileURL(fileURLToPath(url)).href);
-  } catch (error) {
-    if (error?.code === 'ERR_MODULE_NOT_FOUND' || error?.code === 'ENOENT') {
-      console.error(
-        `Missing build output ${fileURLToPath(url)}.\nRun \`pnpm --filter dungeonmaker-js generate\` (it builds first).`,
-      );
-      process.exit(1);
-    }
-    throw error;
+  const file = fileURLToPath(new URL(relative, pkgUrl));
+  if (!existsSync(file)) {
+    console.error(
+      `Missing build output ${file}.\nRun \`pnpm --filter dungeonmaker-js generate\` (it builds first).`,
+    );
+    process.exit(1);
   }
+  return import(pathToFileURL(file).href);
 }
 
 const { DesignConfigSchema } = await importBuilt('dist/schema.js');
