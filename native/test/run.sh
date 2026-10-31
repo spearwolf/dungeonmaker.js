@@ -44,6 +44,9 @@ if command -v "$CXX_ALT" >/dev/null 2>&1; then
   $CXX_ALT $CXXFLAGS -w native/src/dungeonmaker_unity.cpp native/src/bridge.cpp native/test/native_hashes.cpp -o "$OUT/native_hashes_alt"
   "$OUT/native_hashes_alt" 2>/dev/null >"$OUT/hashes_alt.json"
   diff -u "$OUT/hashes.json" "$OUT/hashes_alt.json"
+elif [ -n "${DM_REQUIRE_CXX_ALT:-}" ]; then
+  echo "evaluation-order check required, but $CXX_ALT was not found" >&2
+  exit 1
 else
   echo "skipping evaluation-order check: $CXX_ALT not found"
 fi
