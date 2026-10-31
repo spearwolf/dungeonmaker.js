@@ -103,7 +103,9 @@ promise that hangs.
 ## Bundlers
 
 Vite (build and dev) and webpack 5 (`--mode production`) build the client without configuration;
-`pnpm bundler:smoke` in the repository verifies this against the packed tarball.
+`pnpm bundler:smoke` in the repository verifies this against the packed tarball. webpack 5
+production builds print a size hint for the ~264 KiB wasm file (~90 KiB gzip); it is harmless,
+and `performance.assetFilter` silences it.
 
 If your bundler cannot resolve the worker or the wasm file, pass them explicitly:
 
@@ -273,7 +275,7 @@ await generateToFiles({
 ### Generate offline, ship data
 
 Generated files are program output and are not covered by the GPL; this CLI and the package are
-GPL-3.0-or-later. A game that only ships the generated maps does not link the package. Export
+GPL-3.0-or-later. A game that only ships the generated maps ships only data files, not the package's code. Export
 files contain data only (map, layers, metadata, legend, no code); upstream presets appear only
 by name, and your own designs only as a hash unless you pass `--embed-design`. This is a
 description of how the files are built, not legal advice.
