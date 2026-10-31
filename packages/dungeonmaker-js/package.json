@@ -39,6 +39,10 @@
       "types": "./dist/presets.d.ts",
       "default": "./dist/presets.js"
     },
+    "./render": {
+      "types": "./dist/render.d.ts",
+      "default": "./dist/render.js"
+    },
     "./design.schema.json": "./design.schema.json",
     "./core": {
       "types": "./dist/core.d.ts",
