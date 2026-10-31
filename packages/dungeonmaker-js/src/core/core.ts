@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
+import { DesignValidationError, GenerationError } from '../errors.js';
 import { createDiagnostics } from './diagnostics.js';
 import { type DungeonMakerWasmModule, loadDungeonMakerWasm } from './glue.js';
 
@@ -77,15 +78,32 @@ export async function loadCore(options: LoadCoreOptions = {}): Promise<DungeonMa
       return aborted;
     },
     generate(designText, seed) {
+      if (aborted) {
+        throw new GenerationError(
+          'the WebAssembly core aborted earlier; create a new one with loadCore({ wasmModule })',
+        );
+      }
       assertSeed(seed);
       diagnostics.take();
       const size = mod.lengthBytesUTF8(designText) + 1;
       const ptr = mod._malloc(size);
-      mod.stringToUTF8(designText, ptr, size);
-      const status = mod._dm_generate(ptr, seed >>> 0, 0);
+      let status: number;
+      try {
+        mod.stringToUTF8(designText, ptr, size);
+        status = mod._dm_generate(ptr, seed >>> 0, 0);
+      } catch (cause) {
+        // After an abort the instance is unusable; do not touch its heap again.
+        aborted = true;
+        const message = cause instanceof Error ? cause.message : String(cause);
+        throw new GenerationError(message, diagnostics.take(), { cause });
+      }
       mod._free(ptr);
+      if (status === 1) {
+        const message = mod.UTF8ToString(mod._dm_last_error());
+        throw new DesignValidationError([{ path: '', message }], diagnostics.take());
+      }
       if (status !== 0) {
-        throw new Error(`dm_generate failed with status ${status}`);
+        throw new RangeError(mod.UTF8ToString(mod._dm_last_error()));
       }
       const width = mod._dm_width();
       const height = mod._dm_height();
