@@ -18,6 +18,7 @@ import {
 } from '../export.js';
 import { type OutputOptions, parseOutput } from '../layers.js';
 import * as presets from '../presets.js';
+import { checkScale } from '../render/raster.js';
 import type { DesignConfig } from '../schema/model.js';
 import { VERSION } from '../version.js';
 import { renderName } from './name.js';
@@ -116,6 +117,15 @@ export async function generateToFiles(
   const output = parseOutput(options.output);
   const generator = options.generator ?? `dungeonmaker-js@${VERSION}`;
   const formats = [...new Set(options.formats)];
+  if (formats.length === 0) throw new RangeError('No formats given');
+  for (const format of formats) {
+    if (!Object.hasOwn(EXPORT_EXTENSIONS, format)) {
+      throw new RangeError(
+        `Unknown format "${format}": expected one of ${Object.keys(EXPORT_EXTENSIONS).join(', ')}`,
+      );
+    }
+  }
+  checkScale(options.scale);
 
   let designText: string;
   let name: string;
@@ -126,6 +136,8 @@ export async function generateToFiles(
     source = { preset: options.preset };
   } else {
     const design = options.design as DesignConfig | string;
+    // Both throw a DesignValidationError for a malformed design, before any side effect.
+    if (typeof design === 'string') parseDesignText(design);
     designText = typeof design === 'string' ? design : toDesignText(design);
     name = options.designName ?? 'dungeon';
     const known = presetOf(designText);
@@ -137,6 +149,11 @@ export async function generateToFiles(
   const fileNames = options.seeds.map((seed) => renderName(template, { name, seed }));
   if (new Set(fileNames).size !== fileNames.length) {
     throw new RangeError(`Name template "${template}" yields duplicate file names`);
+  }
+  if (formats.includes('tmj') && fileNames.some((n) => `${n}.png` === TILESET_IMAGE)) {
+    throw new RangeError(
+      `Name template "${template}" would make a .png collide with the tileset ${TILESET_IMAGE}`,
+    );
   }
 
   const outDir = resolve(options.outDir);

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-import { mkdtemp, readdir, readFile, rm } from 'node:fs/promises';
+import { mkdtemp, readdir, readFile, rm, stat } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { generateToFiles } from '../../src/node/generate.js';
@@ -137,4 +137,79 @@ test('manifest lists both seeds', async () => {
     { seed: 1, files: ['design3A-1.txt'] },
     { seed: 2, files: ['design3A-2.txt'] },
   ]);
+});
+
+test('all five formats in one call', async () => {
+  const r = await generateToFiles({
+    preset: 'design3A',
+    seeds: [42],
+    formats: ['json', 'png', 'tmj', 'txt', 'bin'],
+    outDir: dir,
+    generator,
+  });
+  expect((await readdir(dir)).sort()).toEqual(
+    [
+      'design3A-42.bin',
+      'design3A-42.dungeon.json',
+      'design3A-42.png',
+      'design3A-42.tmj',
+      'design3A-42.txt',
+      'dungeonmaker-tiles.png',
+    ].sort(),
+  );
+  expect(r.files).toHaveLength(6);
+});
+
+describe('rejects before any side effect', () => {
+  const outDir = () => join(dir, 'out');
+  const gone = () => expect(stat(outDir())).rejects.toThrow();
+
+  test('unknown or empty formats', async () => {
+    const base = { preset: 'design3A', seeds: [1] } as const;
+    await expect(
+      generateToFiles({ ...base, formats: ['svg'] as never, outDir: outDir() }),
+    ).rejects.toThrow(/svg/);
+    await expect(generateToFiles({ ...base, formats: [], outDir: outDir() })).rejects.toThrow(
+      RangeError,
+    );
+    await gone();
+  });
+
+  test('bad scale', async () => {
+    await expect(
+      generateToFiles({
+        preset: 'design3A',
+        seeds: [1],
+        formats: ['txt', 'png'],
+        scale: 0,
+        outDir: outDir(),
+      }),
+    ).rejects.toThrow(RangeError);
+    await gone();
+  });
+
+  test('malformed design text and object', async () => {
+    const base = { seeds: [1], formats: ['txt'], outDir: outDir() } as const;
+    await expect(generateToFiles({ ...base, design: 'D 1 2 3\nbogus' })).rejects.toThrow();
+    await expect(
+      generateToFiles({
+        ...base,
+        design: { ...presets.design3A, map: { ...presets.design3A.map, width: 1 } },
+      }),
+    ).rejects.toThrow();
+    await gone();
+  });
+
+  test('a name that makes a png collide with the tileset', async () => {
+    await expect(
+      generateToFiles({
+        preset: 'design3A',
+        seeds: [1],
+        formats: ['png', 'tmj'],
+        name: 'dungeonmaker-tiles',
+        outDir: outDir(),
+      }),
+    ).rejects.toThrow(RangeError);
+    await gone();
+  });
 });
