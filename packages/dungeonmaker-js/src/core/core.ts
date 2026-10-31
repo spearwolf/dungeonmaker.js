@@ -21,7 +21,7 @@ export type CompiledWasm = object;
 
 export interface LoadCoreOptions {
   /** Where to load dungeonmaker.wasm from (default: next to the glue in wasm/). */
-  wasmUrl?: string | URL;
+  wasmUrl?: string | { readonly href: string };
   /** An already compiled module, e.g. from a previous core; skips loading and compiling. */
   wasmModule?: CompiledWasm;
 }
@@ -50,7 +50,8 @@ const MAX_SEED = 0xffff_ffff;
 /** Hoisted so that `new URL(url, moduleUrl)` is not a pattern bundlers try to resolve. */
 const moduleUrl = import.meta.url;
 
-async function readWasmBytes(url: string | URL): Promise<BufferSource> {
+async function readWasmBytes(location: string | { readonly href: string }): Promise<BufferSource> {
+  const url = typeof location === 'string' ? location : location.href;
   const isNode =
     typeof (globalThis as { process?: { versions?: { node?: string } } }).process?.versions
       ?.node === 'string';
@@ -59,7 +60,7 @@ async function readWasmBytes(url: string | URL): Promise<BufferSource> {
       import(/* webpackIgnore: true */ /* @vite-ignore */ 'node:fs/promises'),
       import(/* webpackIgnore: true */ /* @vite-ignore */ 'node:url'),
     ]);
-    const href = url instanceof URL ? url : new URL(url, moduleUrl);
+    const href = new URL(url, moduleUrl);
     if (href.protocol === 'file:') return readFile(fileURLToPath(href));
   }
   const response = await fetch(url);

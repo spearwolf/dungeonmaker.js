@@ -115,11 +115,11 @@ test('the main entry exports the client API', () => {
   expect(entry.WorkerError).toBeTypeOf('function');
 });
 
-test('package.json: ./worker export and worker as the only side effect', () => {
+test('package.json: ./worker export and worker and the cli as the only side effects', () => {
   const pkg = JSON.parse(readFileSync(new URL('../../package.json', import.meta.url), 'utf8')) as {
     exports: Record<string, { default: string }>;
     sideEffects: string[];
   };
   expect(pkg.exports['./worker']?.default).toBe('./dist/worker.js');
-  expect(pkg.sideEffects).toEqual(['./dist/worker.js']);
+  expect(pkg.sideEffects).toEqual(['./dist/worker.js', './dist/node/cli.js']);
 });

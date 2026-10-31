@@ -20,8 +20,12 @@
     "directory": "packages/dungeonmaker-js"
   },
   "type": "module",
+  "bin": {
+    "dungeonmaker-js": "./dist/node/cli.js"
+  },
   "sideEffects": [
-    "./dist/worker.js"
+    "./dist/worker.js",
+    "./dist/node/cli.js"
   ],
   "engines": {
     "node": ">=22"

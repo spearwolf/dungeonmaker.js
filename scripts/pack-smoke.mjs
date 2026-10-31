@@ -77,9 +77,67 @@ console.log('README example ok: ' + width + 'x' + height);
   );
   run('node', ['readme-example.mjs'], projectDir);
 
+  // The CLI from the tarball, in a fresh empty directory (no project, nothing installed there).
+  const cliDir = mkdtempSync(join(tmpdir(), 'dm-cli-'));
+  try {
+    const tarballPath = join(packDir, tarball);
+    run(
+      'pnpm',
+      [
+        '--package',
+        tarballPath,
+        'dlx',
+        'dungeonmaker-js',
+        'generate',
+        '--preset',
+        'design3A',
+        '--seed',
+        '42',
+        '--format',
+        'json,png,tmj',
+      ],
+      cliDir,
+    );
+    const written = readdirSync(cliDir).sort();
+    const wanted = [
+      'design3A-42.dungeon.json',
+      'design3A-42.png',
+      'design3A-42.tmj',
+      'dungeonmaker-tiles.png',
+    ];
+    if (JSON.stringify(written) !== JSON.stringify(wanted)) {
+      throw new Error(`CLI wrote ${JSON.stringify(written)}, expected ${JSON.stringify(wanted)}`);
+    }
+    const file = JSON.parse(readFileSync(join(cliDir, 'design3A-42.dungeon.json'), 'utf8'));
+    const version = JSON.parse(
+      readFileSync(join(repo, 'packages/dungeonmaker-js/package.json'), 'utf8'),
+    ).version;
+    if (
+      file.seed !== 42 ||
+      file.source?.preset !== 'design3A' ||
+      file.generator !== `dungeonmaker-js@${version}`
+    ) {
+      throw new Error(
+        'CLI json has wrong seed, source or generator: ' +
+          JSON.stringify({ seed: file.seed, source: file.source, generator: file.generator }),
+      );
+    }
+    const listing = execFileSync(
+      'npx',
+      ['--yes', `--package=${tarballPath}`, 'dungeonmaker-js', 'presets'],
+      {
+        cwd: cliDir,
+        encoding: 'utf8',
+      },
+    );
+    if (listing.trim().split('\n').length !== 11) throw new Error(`presets printed: ${listing}`);
+    console.log('cli ok: pnpm dlx and npx run the packed tarball');
+  } finally {
+    rmSync(cliDir, { recursive: true, force: true });
+  }
+
   // A Node-only TypeScript consumer: no DOM lib, no @types at all, full lib check. Every name
-  // the declarations use must come from ES2022 or the package itself. (`dungeonmaker-js/core`
-  // is left out: it exposes `WebAssembly.Module`, which only the DOM and WebWorker libs declare.)
+  // the declarations use must come from ES2022 or the package itself.
   writeFileSync(
     join(projectDir, 'tsconfig.json'),
     JSON.stringify({
@@ -108,6 +166,9 @@ console.log('README example ok: ' + width + 'x' + height);
   toDesignText,
   type WorkerLike,
 } from 'dungeonmaker-js';
+import { type CompiledWasm, loadCore } from 'dungeonmaker-js/core';
+import { toDungeonJson, toPng } from 'dungeonmaker-js/export';
+import { generateToFiles } from 'dungeonmaker-js/node';
 import { design3A } from 'dungeonmaker-js/presets';
 import { validateDesign } from 'dungeonmaker-js/schema';
 
@@ -117,6 +178,10 @@ const call: CallOptions = { timeout: 500 };
 export const pending: Promise<Dungeon> = createDungeonMaker(options).create({ design: design3A }, call);
 export const shared: Promise<Dungeon> = createDungeon({ design: toDesignText(design3A), seed: 1 });
 export const issues = validateDesign(parseDesignText(toDesignText(design3A)));
+declare const compiled: CompiledWasm;
+export const core = loadCore({ wasmModule: compiled });
+export const exporters = [toDungeonJson, toPng];
+export const written = generateToFiles({ preset: 'design3A', seeds: [42], formats: ['json'], outDir: '.' });
 `,
   );
   run(process.execPath, [tsc, '-p', 'tsconfig.json'], projectDir);
