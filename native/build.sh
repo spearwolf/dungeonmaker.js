@@ -46,6 +46,17 @@ run() {
 # shellcheck disable=SC2086
 run em++ $FLAGS native/src/dungeonmaker_unity.cpp native/src/bridge.cpp -o "$OUT_DIR/dungeonmaker.js"
 
+# webpack aborts on node: URIs (UnhandledSchemeError) and Vite warns about them. The glue
+# only runs this import under Node, so hide it from browser bundlers.
+NODE_IMPORTS=$(grep -o 'import("node:module")' "$OUT_DIR/dungeonmaker.js" | wc -l | tr -d ' ')
+if [ "$NODE_IMPORTS" != 1 ]; then
+  echo 'expected one import("node:module") in the glue, found '"$NODE_IMPORTS" >&2
+  exit 1
+fi
+sed 's|import("node:module")|import(/* webpackIgnore: true */ /* @vite-ignore */ "node:module")|' \
+  "$OUT_DIR/dungeonmaker.js" > "$OUT_DIR/dungeonmaker.js.tmp"
+mv "$OUT_DIR/dungeonmaker.js.tmp" "$OUT_DIR/dungeonmaker.js"
+
 EMSCRIPTEN_VERSION=$(run em++ --version | head -n 1)
 # native/test is excluded on purpose: tests do not change the wasm.
 NATIVE_HASH=$(find native/src native/vendor native/patches native/build.sh native/prepare-sources.sh -type f |

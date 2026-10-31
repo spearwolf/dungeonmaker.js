@@ -30,16 +30,19 @@ export interface DungeonMakerCore {
 
 const MAX_SEED = 0xffff_ffff;
 
+/** Hoisted so that `new URL(url, moduleUrl)` is not a pattern bundlers try to resolve. */
+const moduleUrl = import.meta.url;
+
 async function readWasmBytes(url: string | URL): Promise<BufferSource> {
   const isNode =
     typeof (globalThis as { process?: { versions?: { node?: string } } }).process?.versions
       ?.node === 'string';
   if (isNode) {
     const [{ readFile }, { fileURLToPath }] = await Promise.all([
-      import('node:fs/promises'),
-      import('node:url'),
+      import(/* webpackIgnore: true */ /* @vite-ignore */ 'node:fs/promises'),
+      import(/* webpackIgnore: true */ /* @vite-ignore */ 'node:url'),
     ]);
-    const href = url instanceof URL ? url : new URL(url, import.meta.url);
+    const href = url instanceof URL ? url : new URL(url, moduleUrl);
     if (href.protocol === 'file:') return readFile(fileURLToPath(href));
   }
   const response = await fetch(url);
