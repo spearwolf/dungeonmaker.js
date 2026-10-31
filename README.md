@@ -6,6 +6,7 @@ by Peter Henningsen, a procedural dungeon generator. It ships as the npm package
 export helpers, and a Node CLI. The same design and seed give the same dungeon on every platform.
 
 - **Demo, guides and API reference:** <https://spearwolf.github.io/dungeonmaker.js/>
+- **npm:** <https://www.npmjs.com/package/dungeonmaker-js>
 - **Package README** (install and quick start): [`packages/dungeonmaker-js`](packages/dungeonmaker-js/README.md)
 - **Changelog:** [`packages/dungeonmaker-js/CHANGELOG.md`](packages/dungeonmaker-js/CHANGELOG.md)
 - **Design of the package:** [`docs/superpowers/specs/2026-10-31-dungeonmaker-package-design.md`](docs/superpowers/specs/2026-10-31-dungeonmaker-package-design.md)

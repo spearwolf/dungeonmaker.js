@@ -25,6 +25,7 @@ test('the root README points to the site and the package', () => {
   const md = read('README.md');
   expect(md.split('\n').length).toBeLessThanOrEqual(80);
   expect(md).toContain(SITE);
+  expect(md).toContain('https://www.npmjs.com/package/dungeonmaker-js');
   expect(md).toContain('packages/dungeonmaker-js');
 });
 
