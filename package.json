@@ -8,11 +8,16 @@
     "format": "biome format --write .",
     "typecheck": "pnpm -r typecheck",
     "test": "vitest run",
-    "build": "pnpm -r build"
+    "build": "pnpm -r build",
+    "check:package": "publint --strict packages/dungeonmaker-js && pnpm --filter dungeonmaker-js exec attw --pack . --profile esm-only --exclude-entrypoints ./dungeonmaker.wasm",
+    "size": "node scripts/check-size.mjs",
+    "pack:smoke": "node scripts/pack-smoke.mjs"
   },
   "devDependencies": {
+    "@arethetypeswrong/cli": "0.18.5",
     "@biomejs/biome": "2.6.4",
     "@types/node": "^26.6.6",
+    "publint": "0.3.25",
     "typescript": "7.0.2",
     "vitest": "5.0.5"
   }

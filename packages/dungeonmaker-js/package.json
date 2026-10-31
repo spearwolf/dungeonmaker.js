@@ -1,11 +1,53 @@
 {
   "name": "dungeonmaker-js",
-  "version": "0.0.0",
-  "type": "module",
+  "version": "0.0.1",
+  "description": "Procedural dungeon generator: an unofficial WebAssembly port of DungeonMaker 2.05",
+  "keywords": [
+    "dungeon",
+    "procedural-generation",
+    "roguelike",
+    "wasm",
+    "webassembly",
+    "map"
+  ],
   "license": "GPL-3.0-or-later",
+  "author": "Wolfger Schramm <wolfger@spearwolf.de>",
+  "homepage": "https://github.com/spearwolf/dungeonmaker.js",
+  "bugs": "https://github.com/spearwolf/dungeonmaker.js/issues",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/spearwolf/dungeonmaker.js.git",
+    "directory": "packages/dungeonmaker-js"
+  },
+  "type": "module",
+  "sideEffects": false,
+  "engines": {
+    "node": ">=22"
+  },
+  "exports": {
+    "./core": {
+      "types": "./dist/core.d.ts",
+      "default": "./dist/core.js"
+    },
+    "./dungeonmaker.wasm": "./wasm/dungeonmaker.wasm",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "wasm/dungeonmaker.js",
+    "wasm/dungeonmaker.wasm",
+    "wasm/BUILD-INFO.json",
+    "README.md",
+    "LICENSE",
+    "NOTICE"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "typecheck": "tsc -p tsconfig.json",
     "build": "tsc -p tsconfig.build.json",
-    "test": "vitest run"
+    "test": "vitest run",
+    "prepack": "node ../../scripts/copy-legal.mjs && pnpm run build"
   }
 }
