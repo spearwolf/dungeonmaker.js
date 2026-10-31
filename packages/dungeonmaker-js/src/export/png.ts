@@ -4,6 +4,7 @@ import { type Palette, paletteRgb } from '../render/palette.js';
 import { checkScale, MAX_PIXELS, type RasterOptions } from '../render/raster.js';
 import { VERSION } from '../version.js';
 import { crc32 } from './crc32.js';
+import { zlibDeflate } from './deflate.js';
 import type { ExportableDungeon } from './dungeon-json.js';
 
 export interface PngOptions extends RasterOptions {
@@ -35,19 +36,14 @@ function chunk(type: string, data: Uint8Array): Uint8Array {
   return out;
 }
 
-async function deflate(raw: Uint8Array): Promise<Uint8Array> {
-  const stream = new Blob([raw as BlobPart]).stream().pipeThrough(new CompressionStream('deflate'));
-  return new Uint8Array(await new Response(stream).arrayBuffer());
-}
-
 /** An 8-bit indexed PNG; `rows` yields the palette indices of row `y`. */
-async function encodeIndexed(
+function encodeIndexed(
   width: number,
   height: number,
   plte: Uint8Array,
   texts: readonly (readonly [string, string])[],
   fillRow: (y: number, row: Uint8Array) => void,
-): Promise<Uint8Array> {
+): Uint8Array {
   const stride = width + 1;
   const raw = new Uint8Array(stride * height);
   for (let y = 0; y < height; y++) fillRow(y, raw.subarray(y * stride + 1, (y + 1) * stride));
@@ -62,7 +58,7 @@ async function encodeIndexed(
     chunk('IHDR', ihdr),
     chunk('PLTE', plte),
     ...texts.map(([key, value]) => chunk('tEXt', latin1(`${key}\0${value}`))),
-    chunk('IDAT', await deflate(raw)),
+    chunk('IDAT', zlibDeflate(raw)),
     chunk('IEND', new Uint8Array(0)),
   ];
   const out = new Uint8Array(parts.reduce((n, p) => n + p.length, 0));
@@ -117,7 +113,7 @@ function tileSize(value: number | undefined, name: string): number {
 }
 
 /** A strip of one solid tile per cell value (index = `Cell`), in one row. */
-export function toTilesetPng(options: TilesetOptions = {}): Promise<Uint8Array> {
+export async function toTilesetPng(options: TilesetOptions = {}): Promise<Uint8Array> {
   const tw = tileSize(options.tileWidth, 'tileWidth');
   const th = tileSize(options.tileHeight, 'tileHeight');
   return encodeIndexed(CELL_NAMES.length * tw, th, paletteRgb(options.palette), [], (_y, row) => {

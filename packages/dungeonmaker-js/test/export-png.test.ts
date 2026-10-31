@@ -4,6 +4,7 @@ import { Cell } from '../src/cell.js';
 import { toDesignText } from '../src/config/serialize.js';
 import { loadCore } from '../src/core.js';
 import { crc32 } from '../src/export/crc32.js';
+import { adler32, zlibDeflate } from '../src/export/deflate.js';
 import { TILESET_IMAGE, toPng, toTilesetPng } from '../src/export/png.js';
 import { design3A } from '../src/presets.js';
 import { checkGolden, sha256Hex } from './golden-export.js';
@@ -108,4 +109,59 @@ test('golden hashes for design3A at seed 42', async () => {
   const tileset = await sha256Hex(await toTilesetPng());
   expect(png).toBe(checkGolden('png', png));
   expect(tileset).toBe(checkGolden('tileset', tileset));
+});
+
+describe('zlibDeflate', () => {
+  const roundTrip = (data: Uint8Array) => {
+    const z = zlibDeflate(data);
+    expect(new Uint8Array(inflateSync(z))).toEqual(data);
+    return z;
+  };
+
+  test('adler32 of "Wikipedia"', () => {
+    expect(adler32(new TextEncoder().encode('Wikipedia'))).toBe(0x11e60398);
+  });
+
+  test('header checksum holds', () => {
+    const z = zlibDeflate(new Uint8Array(0));
+    expect(((z[0] ?? 0) * 256 + (z[1] ?? 0)) % 31).toBe(0);
+  });
+
+  test('empty and one-byte input', () => {
+    roundTrip(new Uint8Array(0));
+    roundTrip(Uint8Array.of(7));
+  });
+
+  test('long runs compress and round-trip', () => {
+    const z = roundTrip(new Uint8Array(100_000).fill(9));
+    expect(z.length).toBeLessThan(2000);
+  });
+
+  test('random bytes (literals, window limit) round-trip', () => {
+    let s = 0x12345678;
+    const data = new Uint8Array(65_536);
+    for (let i = 0; i < data.length; i++) {
+      s = (Math.imul(s, 1664525) + 1013904223) >>> 0;
+      data[i] = s >>> 24;
+    }
+    roundTrip(data);
+    // repeated block beyond the 32 KiB window and within it
+    const rep = new Uint8Array(100_000);
+    for (let i = 0; i < rep.length; i++) rep[i] = data[i % 40_000] ?? 0;
+    roundTrip(rep);
+  });
+
+  test('design3A/42 scanlines round-trip and the PNG shrinks below a quarter', async () => {
+    const core = await loadCore();
+    const dungeon = core.generate(toDesignText(design3A), 42);
+    const stride = dungeon.width + 1;
+    const raw = new Uint8Array(stride * dungeon.height);
+    for (let y = 0; y < dungeon.height; y++) {
+      raw.set(dungeon.cells.subarray(y * dungeon.width, (y + 1) * dungeon.width), y * stride + 1);
+    }
+    const z = roundTrip(raw);
+    expect(z.length).toBeLessThan(raw.length / 4);
+    const cs = chunks(await toPng(dungeon, OPTS));
+    expect(cs[4]?.data.length).toBeLessThan(raw.length / 4);
+  });
 });
