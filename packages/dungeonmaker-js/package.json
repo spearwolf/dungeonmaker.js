@@ -68,6 +68,7 @@
     "build": "tsc -p tsconfig.build.json",
     "generate": "pnpm run build && node ../../scripts/generate-design-artifacts.mjs",
     "test": "vitest run",
+    "test:browser": "pnpm run build && tsc -p test/browser/tsconfig.json && vitest run -c vitest.browser.config.ts",
     "prepack": "node ../../scripts/copy-legal.mjs && pnpm run build"
   },
   "dependencies": {

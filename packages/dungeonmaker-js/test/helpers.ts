@@ -3,8 +3,11 @@ import { readFileSync } from 'node:fs';
 import { parseDesignText } from '../src/config/parse.js';
 import type { CoreResult } from '../src/core.js';
 import type { DesignConfig } from '../src/schema/model.js';
+import { fnv1a32 } from './fnv.js';
 
 const VENDOR = new URL('../../../native/vendor/dungeonmaker-2.05/', import.meta.url);
+
+export { fnv1a32 };
 
 export const DESIGNS = [
   'design',
@@ -60,15 +63,6 @@ export function dropRecord(text: string, tag: string): string {
     .split('\n')
     .filter((line) => line.trim().split(/\s+/)[0] !== tag)
     .join('\n');
-}
-
-export function fnv1a32(bytes: Uint8Array): string {
-  let h = 0x811c9dc5;
-  for (const b of bytes) {
-    h ^= b;
-    h = Math.imul(h, 0x01000193) >>> 0;
-  }
-  return h.toString(16).padStart(8, '0');
 }
 
 /** The error `fn` throws; fails the test if it does not throw. */

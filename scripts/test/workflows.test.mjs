@@ -47,3 +47,11 @@ test('the tag job waits long enough for a fresh version to appear on the registr
   const sleep = Number(step?.run.match(/sleep (\d+)/)?.[1] ?? 0);
   expect(tries * sleep).toBeGreaterThanOrEqual(300);
 });
+
+test('browser tests are part of the required ci gate and run all three engines', () => {
+  const { jobs } = load('ci.yml');
+  expect(jobs.ci.needs).toContain('browser');
+  const install = jobs.browser.steps.find((s) => s.run?.includes('playwright install'));
+  expect(install?.run).toMatch(/chromium firefox webkit/);
+  expect(JSON.stringify(jobs.browser)).not.toMatch(/DM_BROWSERS/);
+});
