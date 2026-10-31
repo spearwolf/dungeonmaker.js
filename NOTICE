@@ -1,0 +1,23 @@
+dungeonmaker.js — unofficial WebAssembly port of DungeonMaker 2.05
+Copyright (C) 2015–2026 Wolfger Schramm <wolfger@spearwolf.de>
+
+This work as a whole is distributed under the GNU General Public License,
+version 3 or (at your option) any later version. See LICENSE.
+
+This product includes a modified version of DungeonMaker 2.05
+<http://dungeonmaker.sourceforge.net>:
+
+  Copyright (C) 2001 Dr. Peter Henningsen
+
+with contributions by Aaron Dalton (see native/vendor/dungeonmaker-2.05/AUTHORS).
+
+Upstream releases DungeonMaker under the "General Public License" without naming a
+version. Per GPLv2 section 9 and GPLv3 section 14, any version ever published by the
+Free Software Foundation may then be chosen; this project distributes it under
+GPL-3.0-or-later.
+
+The upstream sources in native/vendor/dungeonmaker-2.05/ are unmodified. Modifications
+are made only in:
+  - native/src/dungeonmaker_unity.cpp  (redirects rand()/srand() to a portable PRNG)
+  - native/src/bridge.cpp              (C ABI used by the WebAssembly build)
+  - native/patches/                    (minimal patches, each with its own header)

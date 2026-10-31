@@ -4,7 +4,7 @@
   "type": "module",
   "packageManager": "pnpm@12.17.0",
   "scripts": {
-    "lint": "biome ci .",
+    "lint": "biome ci . && node scripts/check-spdx.mjs",
     "format": "biome format --write .",
     "typecheck": "pnpm -r typecheck",
     "test": "vitest run",
