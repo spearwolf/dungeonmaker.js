@@ -13,13 +13,13 @@ language under any license.
 
 ## Example
 
-A shortened file for the preset `design3A` with seed 42 (the `cells` data is cut):
+A shortened file for the preset `design3A` with seed 42 (the `cells` data is cut; `<version>` stands for the package version that wrote the file):
 
 ```jsonc
 {
   "format": "dungeonmaker-js/dungeon",
   "formatVersion": 1,
-  "generator": "dungeonmaker-js@0.0.2",
+  "generator": "dungeonmaker-js@<version>",
   "width": 160,
   "height": 81,
   "seed": 42,

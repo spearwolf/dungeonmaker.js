@@ -33,9 +33,17 @@ bun add dungeonmaker-js
 
 :::
 
-The package is ESM only. Its entries are `dungeonmaker-js` (client and design helpers),
-`dungeonmaker-js/presets`, `dungeonmaker-js/schema`, `dungeonmaker-js/core`,
-`dungeonmaker-js/render`, `dungeonmaker-js/export` and `dungeonmaker-js/node`.
+The package is ESM only. Its entries are:
+
+- `dungeonmaker-js`: client and design helpers
+- `dungeonmaker-js/presets`: the eleven upstream designs as JSON
+- `dungeonmaker-js/schema`: `validateDesign` and the TypeBox schema
+- `dungeonmaker-js/core`: the bare WebAssembly core (`loadCore()`), takes legacy design text
+- `dungeonmaker-js/worker`: the worker module, for the `worker` escape hatch
+- `dungeonmaker-js/render`: ASCII, tiles, RGBA, canvas
+- `dungeonmaker-js/export`: dungeon JSON, PNG, Tiled `.tmj`, ASCII, raw
+- `dungeonmaker-js/node`: `generateToFiles`, Node only
+- `dungeonmaker-js/design.schema.json` and `dungeonmaker-js/dungeon.schema.json`: the JSON Schemas of the design and the dungeon file
 
 ## Quick start (browser)
 

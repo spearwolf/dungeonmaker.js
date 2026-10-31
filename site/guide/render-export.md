@@ -42,12 +42,12 @@ const json = toDungeonJson(dungeon, { source: { preset: 'design3A' } });
 const png = await toPng(dungeon, { scale: 4 });
 ```
 
-The dungeon JSON describes itself:
+The dungeon JSON describes itself (`<version>` stands for the package version that wrote the file):
 
 ```jsonc
 {
   "format": "dungeonmaker-js/dungeon", "formatVersion": 1,
-  "generator": "dungeonmaker-js@0.0.2",
+  "generator": "dungeonmaker-js@<version>",
   "width": 160, "height": 81, "seed": 42,
   "source": { "preset": "design3A" },            // or { "designHash": "sha256:…" }, design optional
   "legend": { "0": "open", "1": "closed", … },   // cell value -> name, 0 … 19

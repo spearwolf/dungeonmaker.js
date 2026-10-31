@@ -3,6 +3,13 @@ import { existsSync, readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { type DefaultTheme, defineConfig } from 'vitepress';
 
+const { version } = JSON.parse(
+  readFileSync(
+    fileURLToPath(new URL('../../packages/dungeonmaker-js/package.json', import.meta.url)),
+    'utf8',
+  ),
+) as { version: string };
+
 const apiSidebarFile = fileURLToPath(new URL('../api/typedoc-sidebar.json', import.meta.url));
 
 // The TypeDoc sidebar is generated; without it (fresh checkout) the /api/ entry stays out.
@@ -68,6 +75,16 @@ export default defineConfig({
           { text: 'Design config', link: '/reference/config' },
           { text: 'Dungeon file format', link: '/reference/dungeon-format' },
           { text: 'API', link: '/api/' },
+        ],
+      },
+      {
+        text: version,
+        items: [
+          {
+            text: 'Changelog',
+            link: 'https://github.com/spearwolf/dungeonmaker.js/blob/master/packages/dungeonmaker-js/CHANGELOG.md',
+          },
+          { text: 'npm', link: 'https://www.npmjs.com/package/dungeonmaker-js' },
         ],
       },
     ],

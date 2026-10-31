@@ -2,7 +2,9 @@
 import { type DesignConfig, parseDesignText, toDesignText } from 'dungeonmaker-js';
 import { type DungeonSource, designSource } from 'dungeonmaker-js/export';
 import * as presets from 'dungeonmaker-js/presets';
-import { DESIGN_SCHEMA_ID } from 'dungeonmaker-js/schema';
+
+/** The `$schema` of design files; the site tests pin it to `DESIGN_SCHEMA_ID` of the schema entry. */
+export const DESIGN_SCHEMA_ID = 'https://unpkg.com/dungeonmaker-js/design.schema.json';
 
 export type PresetName = keyof typeof presets;
 

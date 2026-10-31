@@ -1,8 +1,18 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 import { extendDesign } from 'dungeonmaker-js';
 import * as presets from 'dungeonmaker-js/presets';
-import { DESIGN_SCHEMA_ID } from 'dungeonmaker-js/schema';
-import { DESIGN_FILE, designFileText, PRESET_NAMES, resolveSource } from '../src/source';
+import { DESIGN_SCHEMA_ID as SCHEMA_ENTRY_ID } from 'dungeonmaker-js/schema';
+import {
+  DESIGN_FILE,
+  DESIGN_SCHEMA_ID,
+  designFileText,
+  PRESET_NAMES,
+  resolveSource,
+} from '../src/source';
+
+test('the local schema id equals the one of the schema entry', () => {
+  expect(DESIGN_SCHEMA_ID).toBe(SCHEMA_ENTRY_ID);
+});
 
 test('a preset resolves like `generate --preset`', async () => {
   const r = await resolveSource({ kind: 'preset', preset: 'design3A' });

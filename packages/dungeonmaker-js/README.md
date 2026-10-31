@@ -6,8 +6,6 @@ seed, same dungeon on every platform; the generator runs in a Web Worker or on t
 
 Demo, guides and API reference: <https://spearwolf.github.io/dungeonmaker.js/>
 
-> **Status 0.x:** the API is not stable yet.
-
 ## Install
 
 ```sh
@@ -27,7 +25,7 @@ const dungeon = await createDungeon({ design: design3A, seed: 42 });
 ```
 
 `createDungeon` runs the generator in a Web Worker. Vite and webpack 5 need no configuration; see
-the [client guide](https://spearwolf.github.io/dungeonmaker.js/guide/client) for options, errors and bundlers, and [getting started](https://spearwolf.github.io/dungeonmaker.js/guide/getting-started) for the CSP.
+the [client guide](https://spearwolf.github.io/dungeonmaker.js/guide/client) for options and errors, [bundlers](https://spearwolf.github.io/dungeonmaker.js/guide/getting-started#bundlers) and the [CSP](https://spearwolf.github.io/dungeonmaker.js/guide/getting-started#content-security-policy).
 
 ## Quick start (CLI)
 
@@ -55,7 +53,8 @@ The presets are shared objects: derive variants with `extendDesign`, never mutat
 ## Documentation
 
 - [Getting started](https://spearwolf.github.io/dungeonmaker.js/guide/getting-started)
-- [Worker client, errors, bundlers and CSP](https://spearwolf.github.io/dungeonmaker.js/guide/client)
+- [Worker client and errors](https://spearwolf.github.io/dungeonmaker.js/guide/client)
+- [Bundlers](https://spearwolf.github.io/dungeonmaker.js/guide/getting-started#bundlers) and [Content Security Policy](https://spearwolf.github.io/dungeonmaker.js/guide/getting-started#content-security-policy)
 - [Output layers](https://spearwolf.github.io/dungeonmaker.js/guide/layers): rooms, entities, steps
 - [Rendering and export formats](https://spearwolf.github.io/dungeonmaker.js/guide/render-export)
 - [Command line](https://spearwolf.github.io/dungeonmaker.js/guide/cli)
