@@ -718,6 +718,7 @@ Größen: S ≈ eine fokussierte Session, M ≈ zwei bis drei, L ≈ mehr. Die R
 - Streaming von `steps` während der Generierung
 - Weitere Exportformate (LDtk, Godot `TileMap`-Ressource), falls Bedarf entsteht
 - Anfrage beim Upstream-Autor wegen einer Zusatzlizenz (§9.5)
+- Source Map des Wasm als Release-Asset (§8.3/§8.6): der Build erzeugt keine; die Quellenpflicht erfüllen Tag und `source.tar.gz`
 
 ### Abhängigkeiten auf einen Blick
 
