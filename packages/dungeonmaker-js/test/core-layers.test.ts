@@ -11,6 +11,7 @@ import {
   golden,
   readDesign,
   replaySteps,
+  roomLayerBytes,
   withDimensions,
 } from './helpers.js';
 
@@ -28,20 +29,7 @@ function gen(d: string, output: Parameters<DungeonMakerCore['generate']>[2], see
 describe.each(DESIGNS)('golden layer hashes: %s', (d) => {
   test('rooms', () => {
     const { rooms } = gen(d, { rooms: true });
-    const table = new Int32Array(
-      (rooms?.rooms ?? []).flatMap((r) => [
-        r.area === 'dungeon' ? 1 : 0,
-        r.size,
-        r.bounds.x,
-        r.bounds.y,
-        r.bounds.x + r.bounds.width - 1,
-        r.bounds.y + r.bounds.height - 1,
-      ]),
-    );
-    const bytes = new Uint8Array([
-      ...new Uint8Array(rooms?.roomIds.buffer as ArrayBuffer),
-      ...asBytes(table),
-    ]);
+    const bytes = roomLayerBytes(rooms as NonNullable<typeof rooms>);
     expect(fnv1a32(bytes)).toBe(golden[`${d}:42+rooms`]);
   });
 

@@ -38,3 +38,28 @@ test('TimeoutError and WorkerError have their names', () => {
   expect(w).toBeInstanceOf(Error);
   expect(w.cause).toBe(cause);
 });
+
+test('toDungeon carries the layers and stays frozen', () => {
+  const rooms = { roomIds: new Uint16Array(6), rooms: [] };
+  const entities = [{ kind: 'mob' as const, x: 1, y: 1, level: 0 }];
+  const steps = {
+    offsets: Uint32Array.of(0, 6),
+    index: new Uint32Array(6),
+    cell: new Uint8Array(6),
+  };
+  const full = toDungeon({
+    width: 3,
+    height: 2,
+    seed: 7,
+    cells,
+    diagnostics: [],
+    rooms,
+    entities,
+    steps,
+  });
+  expect(full.rooms).toBe(rooms);
+  expect(full.entities).toBe(entities);
+  expect(full.steps).toBe(steps);
+  expect(Object.isFrozen(full)).toBe(true);
+  expect('rooms' in d).toBe(false);
+});

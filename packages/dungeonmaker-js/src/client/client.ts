@@ -2,6 +2,7 @@
 
 import { type Dungeon, toDungeon } from '../dungeon.js';
 import { TimeoutError, WorkerError } from '../errors.js';
+import { type OutputOptions, parseOutput } from '../layers.js';
 import {
   decodeError,
   type FromWorker,
@@ -22,6 +23,8 @@ const MAX_TIMEOUT = 2_147_483_647;
 export interface DungeonRequest {
   design: DesignConfig | string;
   seed?: number;
+  /** Optional layers next to the cells; they arrive by transfer. */
+  output?: OutputOptions;
 }
 
 // The public types below are structural on purpose: the declarations of the main entry must
@@ -124,6 +127,7 @@ interface Job {
   id: number;
   design: DesignConfig | string;
   seed: number;
+  output: OutputOptions | undefined;
   timeout: number;
   signal: AbortSignalLike | undefined;
   resolve(dungeon: Dungeon): void;
@@ -264,6 +268,9 @@ export function createDungeonMaker(options: DungeonMakerOptions = {}): DungeonMa
                 seed: message.seed,
                 cells: message.cells,
                 diagnostics: message.diagnostics,
+                rooms: message.rooms,
+                entities: message.entities,
+                steps: message.steps,
               }),
             },
           };
@@ -338,6 +345,7 @@ export function createDungeonMaker(options: DungeonMakerOptions = {}): DungeonMa
       design: job.design,
       seed: job.seed,
     };
+    if (job.output) message.output = job.output;
     try {
       state.worker.postMessage(message);
     } catch (e) {
@@ -367,6 +375,7 @@ export function createDungeonMaker(options: DungeonMakerOptions = {}): DungeonMa
     if (disposed) throw disposedError();
     const timeout = checkTimeout(callOptions.timeout ?? defaultTimeout);
     const seed = resolveSeed(request.seed);
+    const output = parseOutput(request.output);
     const { signal } = callOptions;
     if (signal?.aborted) throw abortReason(signal);
     // Snapshot now: a caller mutating a shared design while the job waits must not change it.
@@ -383,6 +392,7 @@ export function createDungeonMaker(options: DungeonMakerOptions = {}): DungeonMa
         id: nextId++,
         design,
         seed,
+        output,
         timeout,
         signal,
         resolve,

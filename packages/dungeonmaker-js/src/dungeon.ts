@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 import type { Cell } from './cell.js';
+import type { DungeonLayers } from './layers.js';
 
-export interface DungeonData {
+export interface DungeonData extends DungeonLayers {
   width: number;
   height: number;
   seed: number;
@@ -16,13 +17,16 @@ export interface Dungeon extends Readonly<DungeonData> {
 }
 
 export function toDungeon(data: DungeonData): Dungeon {
-  const { width, height, seed, cells, diagnostics } = data;
+  const { width, height, seed, cells, diagnostics, rooms, entities, steps } = data;
   return Object.freeze({
     width,
     height,
     seed,
     cells,
     diagnostics,
+    ...(rooms && { rooms }),
+    ...(entities && { entities }),
+    ...(steps && { steps }),
     get(x: number, y: number): Cell {
       if (
         !Number.isInteger(x) ||

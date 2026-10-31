@@ -180,3 +180,43 @@ test('wasmUrl from init reaches loadCore', async () => {
   await h({ type: 'init', v: 1, wasmUrl });
   expect(spy).toHaveBeenCalledWith({ wasmUrl });
 });
+
+test('create with all layers posts them and transfers exactly five buffers', async () => {
+  await handle({ type: 'init', v: 1 });
+  await handle({
+    type: 'create',
+    v: 1,
+    id: 1,
+    design: design3A,
+    seed: 42,
+    output: { rooms: true, entities: 'list', steps: true },
+  });
+  const r = messages.at(-1) as Result;
+  expect(r.type).toBe('result');
+  expect(r.rooms?.roomIds).toBeInstanceOf(Uint16Array);
+  expect(Array.isArray(r.entities)).toBe(true);
+  expect(r.steps?.offsets).toBeInstanceOf(Uint32Array);
+  expect(transfers.at(-1)).toEqual([
+    r.cells.buffer,
+    r.rooms?.roomIds.buffer,
+    r.steps?.offsets.buffer,
+    r.steps?.index.buffer,
+    r.steps?.cell.buffer,
+  ]);
+});
+
+test('without output only the cells are transferred and no layer is posted', async () => {
+  await handle({ type: 'init', v: 1 });
+  await handle({ type: 'create', v: 1, id: 1, design: design3A, seed: 42 });
+  const r = messages.at(-1) as Result;
+  expect(r).not.toHaveProperty('rooms');
+  expect(r).not.toHaveProperty('entities');
+  expect(r).not.toHaveProperty('steps');
+});
+
+test('an invalid output is a TypeError answered with the request id', async () => {
+  await handle({ type: 'init', v: 1 });
+  await handle({ type: 'create', v: 1, id: 3, design: design3A, seed: 42, output: { rooms: 1 } });
+  const e = messages.at(-1) as ErrorMessage;
+  expect(e).toMatchObject({ type: 'error', id: 3 });
+});

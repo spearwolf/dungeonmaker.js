@@ -25,6 +25,14 @@ export {
   WorkerError,
 } from './errors.js';
 export type {
+  Entity,
+  EntityLayer,
+  OutputOptions,
+  Room,
+  RoomLayer,
+  StepLayer,
+} from './layers.js';
+export type {
   CrawlerPairMember,
   CrawlerSeed,
   DesignConfig,

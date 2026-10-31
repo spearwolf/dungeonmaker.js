@@ -67,7 +67,7 @@ export function createWorkerHandler(deps: WorkerHandlerDeps): (data: unknown) =>
     try {
       const text =
         typeof message.design === 'string' ? message.design : toDesignText(message.design);
-      const r = current.generate(text, message.seed);
+      const r = current.generate(text, message.seed, message.output);
       deps.post(
         {
           type: 'result',
@@ -78,8 +78,21 @@ export function createWorkerHandler(deps: WorkerHandlerDeps): (data: unknown) =>
           seed: r.seed,
           cells: r.cells,
           diagnostics: [...r.diagnostics],
+          ...(r.rooms && { rooms: r.rooms }),
+          ...(r.entities && { entities: r.entities }),
+          ...(r.steps && { steps: r.steps }),
         },
-        [r.cells.buffer as ArrayBuffer],
+        [
+          r.cells.buffer as ArrayBuffer,
+          ...(r.rooms ? [r.rooms.roomIds.buffer as ArrayBuffer] : []),
+          ...(r.steps
+            ? [
+                r.steps.offsets.buffer as ArrayBuffer,
+                r.steps.index.buffer as ArrayBuffer,
+                r.steps.cell.buffer as ArrayBuffer,
+              ]
+            : []),
+        ],
       );
     } catch (e) {
       fail(message.id, e);

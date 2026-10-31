@@ -8,7 +8,7 @@ import {
   WorkerError,
 } from 'dungeonmaker-js';
 import { design, design3A } from 'dungeonmaker-js/presets';
-import { fnv1a32 } from '../fnv.js';
+import { fnv1a32, roomLayerBytes } from '../fnv.js';
 import golden from '../golden/native-fnv.json' with { type: 'json' };
 
 const silentWorker = () =>
@@ -66,4 +66,17 @@ test('dispose rejects a pending request with AbortError', async () => {
   const pending = dm.create({ design: design3A, seed: 1 });
   dm.dispose();
   await expect(pending).rejects.toMatchObject({ name: 'AbortError' });
+});
+
+test('rooms and steps arrive by transfer with the right sizes', async () => {
+  const d = await createDungeon({
+    design: design3A,
+    seed: 42,
+    output: { rooms: true, steps: true },
+  });
+  expect(d.rooms?.roomIds.buffer.byteLength).toBe(d.width * d.height * 2);
+  expect(d.steps?.offsets[1]).toBe(d.width * d.height);
+  expect(fnv1a32(roomLayerBytes(d.rooms as NonNullable<typeof d.rooms>))).toBe(
+    golden['design3A:42+rooms'],
+  );
 });

@@ -2,8 +2,12 @@
 import { expect, test } from 'vitest';
 import { createDungeonMaker } from '../../src/client/client.js';
 import { DesignValidationError, GenerationError, WorkerError } from '../../src/errors.js';
+import { design3A } from '../../src/presets.js';
 import type { DesignConfig } from '../../src/schema/model.js';
+import { fnv1a32, roomLayerBytes } from '../fnv.js';
+import golden from '../golden/native-fnv.json' with { type: 'json' };
 import { autoWorker, type FakeWorker, fakeFactory, resultFor } from './fake-worker.js';
+import { inProcessWorker } from './in-process-worker.js';
 
 const flush = () => new Promise<void>((r) => setTimeout(r, 0));
 const createCount = (w: FakeWorker | undefined) =>
@@ -199,4 +203,45 @@ test('create() after dispose() rejects, dispose() twice is harmless', async () =
   await expect(dm.create({ design: 'D', seed: 1 })).rejects.toMatchObject({ name: 'AbortError' });
   await expect(dm.ready()).rejects.toMatchObject({ name: 'AbortError' });
   expect(workers).toHaveLength(0);
+});
+
+test('output: { rooms: true } delivers the golden room layer', async () => {
+  const dm = createDungeonMaker({ worker: inProcessWorker });
+  const d = await dm.create({ design: design3A, seed: 42, output: { rooms: true } });
+  expect(d.rooms).toBeDefined();
+  expect(fnv1a32(roomLayerBytes(d.rooms as NonNullable<typeof d.rooms>))).toBe(
+    golden['design3A:42+rooms'],
+  );
+  expect(d.entities).toBeUndefined();
+  expect(d.steps).toBeUndefined();
+  dm.dispose();
+});
+
+test("output: { entities: 'baked' } delivers no entities", async () => {
+  const dm = createDungeonMaker({ worker: inProcessWorker });
+  const d = await dm.create({ design: design3A, seed: 42, output: { entities: 'baked' } });
+  expect(d.entities).toBeUndefined();
+  expect(fnv1a32(d.cells)).toBe(golden['design3A:42+baked']);
+  dm.dispose();
+});
+
+test('an invalid output is a TypeError rejection, never a synchronous throw', async () => {
+  const { factory, workers } = fakeFactory(autoWorker);
+  const dm = createDungeonMaker({ worker: factory });
+  let pending: Promise<unknown> | undefined;
+  expect(() => {
+    pending = dm.create({ design: 'D', seed: 1, output: { steps: 'yes' } as never });
+  }).not.toThrow();
+  await expect(pending).rejects.toBeInstanceOf(TypeError);
+  expect(workers).toHaveLength(0);
+});
+
+test('output is snapshotted at create() and sent to the worker', async () => {
+  const { factory, workers } = fakeFactory(autoWorker);
+  const dm = createDungeonMaker({ worker: factory });
+  const output = { rooms: true };
+  const p = dm.create({ design: 'D', seed: 1, output });
+  output.rooms = false;
+  await p;
+  expect(workers[0]?.posted[1]).toMatchObject({ output: { rooms: true } });
 });

@@ -3,11 +3,11 @@ import { readFileSync } from 'node:fs';
 import { parseDesignText } from '../src/config/parse.js';
 import type { CoreResult, StepLayer } from '../src/core.js';
 import type { DesignConfig } from '../src/schema/model.js';
-import { fnv1a32 } from './fnv.js';
+import { fnv1a32, roomLayerBytes } from './fnv.js';
 
 const VENDOR = new URL('../../../native/vendor/dungeonmaker-2.05/', import.meta.url);
 
-export { fnv1a32 };
+export { fnv1a32, roomLayerBytes };
 
 export const DESIGNS = [
   'design',

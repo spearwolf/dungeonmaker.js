@@ -98,3 +98,82 @@ test('parseToWorker accepts well-formed messages', () => {
   const create = { type: 'create', v: 1, id: 2, design: 'D 1', seed: 9 };
   expect(parseToWorker(create)).toBe(create);
 });
+
+const layerResult = () => ({
+  type: 'result',
+  v: 1,
+  id: 1,
+  width: 2,
+  height: 2,
+  seed: 5,
+  cells: new Uint8Array(4),
+  diagnostics: [],
+  rooms: { roomIds: new Uint16Array(4), rooms: [] },
+  entities: [{ kind: 'mob', x: 0, y: 1, level: 0 }],
+  steps: {
+    offsets: Uint32Array.of(0, 4),
+    index: Uint32Array.of(0, 1, 2, 3),
+    cell: new Uint8Array(4),
+  },
+});
+
+test('parseToWorker validates output', () => {
+  const base = { type: 'create', v: 1, id: 2, design: 'D 1', seed: 9 };
+  const ok = { ...base, output: { rooms: true } };
+  expect(parseToWorker(ok)).toBe(ok);
+  expect(() => parseToWorker({ ...base, output: { rooms: 1 } })).toThrow(/rooms/);
+});
+
+test('parseFromWorker accepts a result with all three layers', () => {
+  const r = layerResult();
+  expect(parseFromWorker(r)).toBe(r);
+});
+
+test.each([
+  [
+    'roomIds as Uint8Array',
+    (r: ReturnType<typeof layerResult>) => {
+      (r.rooms as { roomIds: unknown }).roomIds = new Uint8Array(4);
+    },
+  ],
+  [
+    'roomIds of the wrong length',
+    (r: ReturnType<typeof layerResult>) => {
+      r.rooms.roomIds = new Uint16Array(3);
+    },
+  ],
+  [
+    'rooms that is no array',
+    (r: ReturnType<typeof layerResult>) => {
+      (r.rooms as { rooms: unknown }).rooms = 1;
+    },
+  ],
+  [
+    'entities that is no array',
+    (r: ReturnType<typeof layerResult>) => {
+      (r as { entities: unknown }).entities = {};
+    },
+  ],
+  [
+    'steps with offsets ending before index.length',
+    (r: ReturnType<typeof layerResult>) => {
+      r.steps.offsets = Uint32Array.of(0, 3);
+    },
+  ],
+  [
+    'steps with cell shorter than index',
+    (r: ReturnType<typeof layerResult>) => {
+      r.steps.cell = new Uint8Array(3);
+    },
+  ],
+  [
+    'steps with offsets of the wrong type',
+    (r: ReturnType<typeof layerResult>) => {
+      (r.steps as { offsets: unknown }).offsets = [0, 4];
+    },
+  ],
+])('parseFromWorker rejects %s', (_name, mutate) => {
+  const r = layerResult();
+  mutate(r);
+  expect(() => parseFromWorker(r)).toThrow(WorkerError);
+});
