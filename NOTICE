@@ -21,3 +21,7 @@ are made only in:
   - native/src/dungeonmaker_unity.cpp  (redirects rand()/srand() to a portable PRNG)
   - native/src/bridge.cpp              (C ABI used by the WebAssembly build)
   - native/patches/                    (minimal patches, each with its own header)
+
+The file format specification packages/dungeonmaker-js/dungeon.schema.json (the JSON Schema of
+*.dungeon.json) is released under CC0-1.0 (public domain dedication) so that importers in any
+language can use it under any license. All other own files are GPL-3.0-or-later.

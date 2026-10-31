@@ -71,6 +71,10 @@ pnpm --filter dungeonmaker-js exec npm version patch --no-git-tag-version
 git commit -am "release: dungeonmaker-js 0.0.3" && git push
 ```
 
+`npm version` updates `src/version.ts` through the package's `version` lifecycle script. When you
+bump the version by hand, run `node scripts/write-version.mjs` first, otherwise
+`test/version.test.ts` fails.
+
 CI does the rest: _Actions → release_, npmjs.com (with provenance badge), _Releases_ in the
 repository (with the package tarball and `source.tar.gz` as the corresponding source).
 Prerelease versions (`1.2.0-beta.1`) are published with the dist-tag `next`. If a push touches
