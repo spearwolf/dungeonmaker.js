@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 import type { Cell } from './cell.js';
-import type { DungeonLayers } from './layers.js';
+import { type DungeonLayers, freezeLayers } from './layers.js';
 
 export interface DungeonData extends DungeonLayers {
   width: number;
@@ -17,7 +17,7 @@ export interface Dungeon extends Readonly<DungeonData> {
 }
 
 export function toDungeon(data: DungeonData): Dungeon {
-  const { width, height, seed, cells, diagnostics, rooms, entities, steps } = data;
+  const { width, height, seed, cells, diagnostics, rooms, entities, steps } = freezeLayers(data);
   return Object.freeze({
     width,
     height,

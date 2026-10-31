@@ -5,6 +5,7 @@ import { join, resolve } from 'node:path';
 import { parseDesignText } from '../config/parse.js';
 import { toDesignText } from '../config/serialize.js';
 import { loadCore } from '../core/core.js';
+import { DesignValidationError } from '../errors.js';
 import {
   type DungeonSource,
   designSource,
@@ -19,7 +20,6 @@ import {
 import { type OutputOptions, parseOutput } from '../layers.js';
 import * as presets from '../presets.js';
 import { checkScale, MAX_PIXELS } from '../render/raster.js';
-import { DesignValidationError } from '../errors.js';
 import type { DesignConfig } from '../schema/model.js';
 import { validateDesign } from '../schema/validate.js';
 import { VERSION } from '../version.js';

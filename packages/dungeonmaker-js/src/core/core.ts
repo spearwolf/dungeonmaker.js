@@ -3,6 +3,7 @@ import { DesignValidationError, GenerationError } from '../errors.js';
 import {
   type DungeonLayers,
   type Entity,
+  freezeLayers,
   OUTPUT_ENTITIES_LIST,
   OUTPUT_ROOMS,
   OUTPUT_STEPS,
@@ -92,21 +93,14 @@ function readRooms(mod: DungeonMakerWasmModule, width: number, height: number): 
       6 * i,
       6 * i + 6,
     );
-    rooms.push(
-      Object.freeze({
-        id: i + 1,
-        area: inDungeon === 1 ? 'dungeon' : 'labyrinth',
-        size,
-        bounds: Object.freeze({
-          x: minX,
-          y: minY,
-          width: maxX - minX + 1,
-          height: maxY - minY + 1,
-        }),
-      } as const),
-    );
+    rooms.push({
+      id: i + 1,
+      area: inDungeon === 1 ? 'dungeon' : 'labyrinth',
+      size,
+      bounds: { x: minX, y: minY, width: maxX - minX + 1, height: maxY - minY + 1 },
+    });
   }
-  return Object.freeze({ roomIds, rooms: Object.freeze(rooms) });
+  return { roomIds, rooms };
 }
 
 function readEntities(mod: DungeonMakerWasmModule): readonly Entity[] {
@@ -115,9 +109,9 @@ function readEntities(mod: DungeonMakerWasmModule): readonly Entity[] {
   const entities: Entity[] = [];
   for (let i = 0; i < count; i++) {
     const [kind = 0, x = 0, y = 0, level = 0] = table.slice(4 * i, 4 * i + 4);
-    entities.push(Object.freeze({ kind: kind === 1 ? 'treasure' : 'mob', x, y, level } as const));
+    entities.push({ kind: kind === 1 ? 'treasure' : 'mob', x, y, level });
   }
-  return Object.freeze(entities);
+  return entities;
 }
 
 function readSteps(mod: DungeonMakerWasmModule): StepLayer {
@@ -198,6 +192,7 @@ export async function loadCore(options: LoadCoreOptions = {}): Promise<DungeonMa
       if (flags & OUTPUT_STEPS) result.steps = readSteps(mod);
       mod._dm_reset();
       result.diagnostics = diagnostics.take();
+      freezeLayers(result);
       return result;
     },
   };

@@ -1,7 +1,10 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 import { expect, test } from 'vitest';
+import { toDesignText } from '../src/config/serialize.js';
+import { loadCore } from '../src/core.js';
 import { toDungeon } from '../src/dungeon.js';
 import { TimeoutError, WorkerError } from '../src/errors.js';
+import { design3A } from '../src/presets.js';
 
 const cells = Uint8Array.of(0, 1, 2, 3, 4, 5);
 const d = toDungeon({ width: 3, height: 2, seed: 7, cells, diagnostics: [] });
@@ -62,4 +65,33 @@ test('toDungeon carries the layers and stays frozen', () => {
   expect(full.steps).toBe(steps);
   expect(Object.isFrozen(full)).toBe(true);
   expect('rooms' in d).toBe(false);
+});
+
+function expectLayersFrozen(l: ReturnType<typeof toDungeon>) {
+  expect(l.rooms && Object.isFrozen(l.rooms)).toBe(true);
+  expect(Object.isFrozen(l.rooms?.rooms)).toBe(true);
+  for (const room of l.rooms?.rooms ?? []) {
+    expect(Object.isFrozen(room)).toBe(true);
+    expect(Object.isFrozen(room.bounds)).toBe(true);
+  }
+  expect(Object.isFrozen(l.entities)).toBe(true);
+  for (const e of l.entities ?? []) expect(Object.isFrozen(e)).toBe(true);
+  expect(Object.isFrozen(l.steps)).toBe(true);
+}
+
+test('toDungeon freezes the layer containers, also after a structured clone', async () => {
+  const core = await loadCore();
+  const raw = core.generate(toDesignText(design3A), 42, {
+    rooms: true,
+    entities: 'list',
+    steps: true,
+  });
+  expect(raw.rooms?.rooms.length).toBeGreaterThan(0);
+  expect(raw.entities?.length).toBeGreaterThan(0);
+  // the core's own result is frozen as well
+  expectLayersFrozen(raw as ReturnType<typeof toDungeon>);
+  // the client path: structuredClone (as postMessage does) drops freezing
+  const cloned = structuredClone(raw);
+  expect(Object.isFrozen(cloned.rooms)).toBe(false);
+  expectLayersFrozen(toDungeon(cloned));
 });

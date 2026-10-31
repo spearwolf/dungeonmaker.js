@@ -57,6 +57,30 @@ export interface DungeonLayers {
   steps?: StepLayer;
 }
 
+/**
+ * Freezes the layer containers in place: the `RoomLayer` with its `rooms` array, each `Room`
+ * and its `bounds`, the entities array and each `Entity`, and the `StepLayer` object. The typed
+ * arrays inside (`roomIds`, `offsets`, `index`, `cell`) cannot be frozen, because
+ * `Object.freeze` throws for a non-empty typed array; treat them as read-only by convention.
+ * Idempotent, and used on both paths so that a structured clone (which drops freezing) ends
+ * up as immutable as a layer straight from the core.
+ */
+export function freezeLayers<T extends DungeonLayers>(layers: T): T {
+  const { rooms, entities, steps } = layers;
+  if (rooms) {
+    for (const room of rooms.rooms) Object.freeze(room.bounds);
+    for (const room of rooms.rooms) Object.freeze(room);
+    Object.freeze(rooms.rooms);
+    Object.freeze(rooms);
+  }
+  if (entities) {
+    for (const entity of entities) Object.freeze(entity);
+    Object.freeze(entities);
+  }
+  if (steps) Object.freeze(steps);
+  return layers;
+}
+
 export const OUTPUT_ROOMS = 1;
 export const OUTPUT_ENTITIES_LIST = 2;
 export const OUTPUT_ENTITIES_BAKED = 4;
