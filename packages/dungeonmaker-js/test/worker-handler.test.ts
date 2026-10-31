@@ -122,13 +122,55 @@ test('create before init is an error, not a hang', async () => {
   expect(e.error.message).toMatch(/init/);
 });
 
-test('messages are handled in arrival order', async () => {
-  await handle({ type: 'init', v: 1 });
-  const pending = [1, 2, 3].map((id) =>
-    handle({ type: 'create', v: 1, id, design: design3A, seed: id }),
-  );
+test('messages are handled in arrival order, each after the previous one finished', async () => {
+  // The core loads only after all messages arrived; the first create aborts the instance, so
+  // the later ones are only correct if each waits for the previous one, reload included.
+  let release!: () => void;
+  const gate = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+  const deferredLoad = vi.fn(async (options: Parameters<typeof loadCore>[0]) => {
+    if (deferredLoad.mock.calls.length === 1) await gate;
+    return loadCore(options);
+  });
+  const h = createWorkerHandler({ post, loadCore: deferredLoad });
+  const broken = `${readDesign('design')}\nWS   500    500    WE   SW     0     15      2    4   1    7   0     20    0     60    10\n`;
+  const pending = [
+    h({ type: 'init', v: 1 }),
+    h({ type: 'create', v: 1, id: 1, design: broken, seed: 1 }),
+    h({ type: 'create', v: 1, id: 2, design: design3A, seed: 42 }),
+    h({ type: 'create', v: 1, id: 3, design: design3A, seed: 1 }),
+  ];
+  release();
   await Promise.all(pending);
-  expect(messages.slice(1).map((m) => (m as Result).id)).toEqual([1, 2, 3]);
+  expect(messages.map((m) => [m.type, 'id' in m ? m.id : undefined])).toEqual([
+    ['ready', undefined],
+    ['error', 1],
+    ['result', 2],
+    ['result', 3],
+  ]);
+  expect(fnv1a32((messages[2] as Result).cells)).toBe(golden['design3A:42']);
+  expect(fnv1a32((messages[3] as Result).cells)).toBe(golden['design3A:1']);
+});
+
+test('a failed reload after an abort is a worker failure with id null', async () => {
+  const broken = `${readDesign('design')}\nWS   500    500    WE   SW     0     15      2    4   1    7   0     20    0     60    10\n`;
+  const flaky = vi.fn((options: Parameters<typeof loadCore>[0]) =>
+    options?.wasmModule ? Promise.reject(new RangeError('out of memory')) : loadCore(options),
+  );
+  const h = createWorkerHandler({ post, loadCore: flaky });
+  await h({ type: 'init', v: 1 });
+  await h({ type: 'create', v: 1, id: 1, design: broken, seed: 1 });
+  expect(messages.slice(1)).toMatchObject([
+    { type: 'error', id: 1, error: { name: 'GenerationError' } },
+    { type: 'error', id: null, error: { name: 'RangeError', message: 'out of memory' } },
+  ]);
+
+  // The core is gone after a successful init: a later create is a worker failure as well.
+  await h({ type: 'create', v: 1, id: 2, design: design3A, seed: 42 });
+  const e = messages.at(-1) as ErrorMessage;
+  expect(e).toMatchObject({ type: 'error', id: null });
+  expect(e.error.message).not.toMatch(/init/);
 });
 
 test('wasmUrl from init reaches loadCore', async () => {

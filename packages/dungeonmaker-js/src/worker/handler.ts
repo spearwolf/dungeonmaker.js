@@ -17,6 +17,8 @@ function readableId(data: unknown): number | null {
 /** Handles one incoming message; calls are processed strictly in arrival order. */
 export function createWorkerHandler(deps: WorkerHandlerDeps): (data: unknown) => Promise<void> {
   let core: Promise<DungeonMakerCore> | undefined;
+  /** Set once an init succeeded: from then on a missing core means this worker is broken. */
+  let initialized = false;
   let queue: Promise<void> = Promise.resolve();
 
   const fail = (id: number | null, error: unknown): void => {
@@ -39,6 +41,7 @@ export function createWorkerHandler(deps: WorkerHandlerDeps): (data: unknown) =>
       }
       try {
         await core;
+        initialized = true;
         deps.post({ type: 'ready', v: PROTOCOL_VERSION }, []);
       } catch (e) {
         core = undefined;
@@ -48,14 +51,17 @@ export function createWorkerHandler(deps: WorkerHandlerDeps): (data: unknown) =>
     }
 
     if (!core) {
-      fail(message.id, new Error('worker is not initialized: send init first'));
+      // After a successful init the core can only be gone because a reload failed: that is a
+      // failure of the whole worker (id null), so the client retires it and respawns.
+      if (initialized) fail(null, new Error('the WebAssembly core is gone after a failed reload'));
+      else fail(message.id, new Error('worker is not initialized: send init first'));
       return;
     }
     let current: DungeonMakerCore;
     try {
       current = await core;
     } catch (e) {
-      fail(message.id, e);
+      fail(initialized ? null : message.id, e);
       return;
     }
     try {
@@ -78,11 +84,16 @@ export function createWorkerHandler(deps: WorkerHandlerDeps): (data: unknown) =>
     } catch (e) {
       fail(message.id, e);
       if (current.aborted) {
-        // An abort poisons the instance; the compiled module is reused for a fresh one.
-        core = deps.loadCore({ wasmModule: current.wasmModule });
-        core.catch(() => {
-          core = undefined;
-        });
+        // An abort poisons the instance; the compiled module is reused for a fresh one. The
+        // reload is awaited here, so the next message sees either a working core or none.
+        const reload = deps.loadCore({ wasmModule: current.wasmModule });
+        core = reload;
+        try {
+          await reload;
+        } catch (reloadError) {
+          if (core === reload) core = undefined;
+          fail(null, reloadError);
+        }
       }
     }
   }
