@@ -133,6 +133,23 @@ test('a design that cannot be cloned rejects and the queue continues', async () 
   await expect(good).resolves.toMatchObject({ seed: 2 });
 });
 
+test('the design is snapshotted at create(): later mutation does not reach the worker', async () => {
+  const { factory, workers } = fakeFactory();
+  const dm = createDungeonMaker({ worker: factory });
+  const p = dm.create({ design: 'A', seed: 1 });
+  const design = { map: { width: 10 } } as unknown as DesignConfig;
+  const q = dm.create({ design, seed: 2 });
+  (design as unknown as { map: { width: number } }).map.width = 99;
+  const w = workers[0] as FakeWorker;
+  w.reply(resultFor(w, 1));
+  await p;
+  expect(w.posted.find((m) => m.type === 'create' && m.id === 2)).toMatchObject({
+    design: { map: { width: 10 } },
+  });
+  w.reply(resultFor(w, 2));
+  await q;
+});
+
 test('ready() resolves once the worker reported ready and spawns only once', async () => {
   const { factory, workers } = fakeFactory(autoWorker);
   const dm = createDungeonMaker({ worker: factory });
