@@ -138,6 +138,7 @@ onMounted(async () => {
           max="4294967295"
           step="1"
           :value="seed"
+          :disabled="!loaded"
           :aria-invalid="seedError !== ''"
           @change="onSeed"
         />
