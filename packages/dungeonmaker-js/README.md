@@ -3,8 +3,8 @@
 Procedural dungeon generation for JavaScript: an **unofficial** WebAssembly port of
 [DungeonMaker 2.05](http://dungeonmaker.sourceforge.net/) by Peter Henningsen.
 
-> **Status 0.0.x:** only the low-level entry point `dungeonmaker-js/core` exists. The API is
-> not stable yet; the Web Worker client, JSON design configs and a CLI follow.
+> **Status 0.x:** core, JSON designs, presets and schema are available. The API is not stable
+> yet; the Web Worker client and a CLI follow.
 
 ## Example (Node)
 
@@ -19,6 +19,22 @@ const { width, height, cells } = core.generate(design, 42);
 ```
 
 The same design text and seed always produce the same dungeon, on every platform.
+
+## JSON designs and presets
+
+```js
+import { extendDesign, toDesignText } from 'dungeonmaker-js';
+import { loadCore } from 'dungeonmaker-js/core';
+import * as presets from 'dungeonmaker-js/presets';
+
+const design = extendDesign(presets.design3A, { map: { width: 80, height: 60 } });
+const core = await loadCore();
+const { width, height, cells } = core.generate(toDesignText(design), 42);
+```
+
+Add `"$schema": "https://unpkg.com/dungeonmaker-js/design.schema.json"` to a JSON design for
+editor autocomplete and validation; `validateDesign` from `dungeonmaker-js/schema` checks a
+design at runtime. Old design files are read with `parseDesignText`.
 
 ## License
 

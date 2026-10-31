@@ -29,13 +29,26 @@ try {
   writeFileSync(
     join(projectDir, 'smoke.mjs'),
     `import { readFileSync } from 'node:fs';
+import { toDesignText } from 'dungeonmaker-js';
 import { loadCore } from 'dungeonmaker-js/core';
+import { design3A } from 'dungeonmaker-js/presets';
+import { validateDesign } from 'dungeonmaker-js/schema';
 const core = await loadCore();
-const { cells } = core.generate(readFileSync(process.argv[2], 'utf8'), 42);
-let h = 0x811c9dc5;
-for (const b of cells) h = Math.imul(h ^ b, 0x01000193) >>> 0;
-const hex = h.toString(16).padStart(8, '0');
-if (hex !== '${expected}') { console.error('hash ' + hex + ' !== ${expected}'); process.exit(1); }
+const fnv = (cells) => {
+  let h = 0x811c9dc5;
+  for (const b of cells) h = Math.imul(h ^ b, 0x01000193) >>> 0;
+  return h.toString(16).padStart(8, '0');
+};
+const fail = (msg) => { console.error(msg); process.exit(1); };
+const hex = fnv(core.generate(readFileSync(process.argv[2], 'utf8'), 42).cells);
+if (hex !== '${expected}') fail('hash ' + hex + ' !== ${expected}');
+const issues = validateDesign(design3A);
+if (issues.length !== 0) fail('design3A preset invalid: ' + JSON.stringify(issues));
+const viaJson = fnv(core.generate(toDesignText(design3A), 42).cells);
+if (viaJson !== hex) fail('JSON preset hash ' + viaJson + ' !== ' + hex);
+const schemaUrl = import.meta.resolve('dungeonmaker-js/design.schema.json');
+const schema = JSON.parse(readFileSync(new URL(schemaUrl), 'utf8'));
+if (schema.$id !== 'https://unpkg.com/dungeonmaker-js/design.schema.json') fail('bad schema $id: ' + schema.$id);
 console.log('pack smoke ok: ' + hex);
 `,
   );

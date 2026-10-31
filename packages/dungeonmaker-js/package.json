@@ -25,6 +25,19 @@
     "node": ">=22"
   },
   "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./schema": {
+      "types": "./dist/schema.d.ts",
+      "default": "./dist/schema.js"
+    },
+    "./presets": {
+      "types": "./dist/presets.d.ts",
+      "default": "./dist/presets.js"
+    },
+    "./design.schema.json": "./design.schema.json",
     "./core": {
       "types": "./dist/core.d.ts",
       "default": "./dist/core.js"
@@ -34,6 +47,7 @@
   },
   "files": [
     "dist",
+    "design.schema.json",
     "wasm/dungeonmaker.js",
     "wasm/dungeonmaker.wasm",
     "wasm/BUILD-INFO.json",
