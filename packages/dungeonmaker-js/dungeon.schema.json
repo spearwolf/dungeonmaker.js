@@ -11,6 +11,10 @@
     "cells"
   ],
   "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "JSON Schema URL for editor support; exporters do not emit it."
+    },
     "format": {
       "type": "string",
       "const": "dungeonmaker-js/dungeon"

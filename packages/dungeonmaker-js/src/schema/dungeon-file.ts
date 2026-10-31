@@ -87,6 +87,9 @@ const EntitySchema = Type.Object(
 
 export const DungeonFileSchema = Type.Object(
   {
+    $schema: Type.Optional(
+      Type.String({ description: 'JSON Schema URL for editor support; exporters do not emit it.' }),
+    ),
     format: Type.Literal('dungeonmaker-js/dungeon'),
     formatVersion: Type.Literal(1),
     generator: Type.String({ description: 'dungeonmaker-js@<version>' }),

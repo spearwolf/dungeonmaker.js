@@ -40,6 +40,14 @@ function decodeCells(file: ReturnType<typeof toDungeonFile>): Uint8Array {
   return Uint8Array.from(c.data.join(''), (ch) => c.alphabet.indexOf(ch));
 }
 
+test('a $schema key is allowed so editors can find the schema, but never emitted', () => {
+  const file = toDungeonFile(dungeon, OPTS);
+  expect('$schema' in file).toBe(false);
+  expect(Value.Check(DungeonFileSchema, { $schema: 'https://example.test/s.json', ...file })).toBe(
+    true,
+  );
+});
+
 test('file validates, has the documented key order and legend', () => {
   const file = toDungeonFile(dungeon, OPTS);
   expect(Value.Check(DungeonFileSchema, file)).toBe(true);
