@@ -30,9 +30,12 @@ FLAGS="-std=c++17 -O3 -flto -fno-exceptions -fno-rtti
 -sEXPORTED_RUNTIME_METHODS=HEAPU8,stringToUTF8,lengthBytesUTF8,UTF8ToString
 -sINCOMING_MODULE_JS_API=locateFile,instantiateWasm,print,printErr
 -sSTRICT
+-I native/.build/vendor
 --extern-pre-js native/src/license-banner.js"
 
 mkdir -p "$OUT_DIR"
+# Patched copy of the vendor sources; the path is fixed so __FILE__ in assert messages is stable.
+sh native/prepare-sources.sh native/.build/vendor
 
 run() {
   # shellcheck disable=SC2086
@@ -45,7 +48,7 @@ run em++ $FLAGS native/src/dungeonmaker_unity.cpp native/src/bridge.cpp -o "$OUT
 
 EMSCRIPTEN_VERSION=$(run em++ --version | head -n 1)
 # native/test is excluded on purpose: tests do not change the wasm.
-NATIVE_HASH=$(find native/src native/vendor native/patches native/build.sh -type f |
+NATIVE_HASH=$(find native/src native/vendor native/patches native/build.sh native/prepare-sources.sh -type f |
   LC_ALL=C sort | xargs sha256sum | sha256sum | cut -d' ' -f1)
 
 {

@@ -1,0 +1,96 @@
+Patch: 0001-sequence-random-arguments.patch
+Applies to: native/vendor/dungeonmaker-2.05/DungeonMaker.cpp
+What: Draws random values that were passed as several function arguments of one call
+  (five Mutate2() genes per random Crawler in Init_fromConfig, x/y of the start square
+  in PlonkDownStuff) into local variables first, in parameter order (left to right).
+Why: C++ leaves the evaluation order of function arguments unspecified (GCC on x86-64
+  evaluates right to left, clang/Emscripten left to right), so the same seed produced
+  different dungeons per compiler for every design with random Crawlers (K record).
+  Spec section 5.3 promises identical output on every platform.
+Date: 2026-10-31
+SPDX-License-Identifier: GPL-3.0-or-later
+
+--- a/DungeonMaker.cpp	2026-10-31 12:18:26.846067830 +0100
++++ b/DungeonMaker.cpp	2026-10-31 12:18:26.856754654 +0100
+@@ -3142,13 +3142,27 @@
+ 	      IntCoordinate locNorth(0 , yIndex);
+ 	      IntCoordinate fwdNorth(1 , 0);   //going South
+ 	      IntCoordinate intFwd = fwdNorth;      //intended direction = start direction
+-	      CreateCrawler( locNorth , fwdNorth , 0 , GetMaxAgeC(gen) , gen , intFwd , GetStepLength(gen) , 1 , GetCorrWidth(gen) , Mutate2(config.rC_sSSP) , Mutate2(config.rC_sDSP) , Mutate2(config.rC_tSSP) , Mutate2(config.rC_tDSP) , Mutate2(config.rC_cDP) );
++	      {//patch 0001: draw the mutated genes in parameter order, see native/patches/
++	        int rcSSSP = Mutate2(config.rC_sSSP);
++	        int rcSDSP = Mutate2(config.rC_sDSP);
++	        int rcTSSP = Mutate2(config.rC_tSSP);
++	        int rcTDSP = Mutate2(config.rC_tDSP);
++	        int rcCDP = Mutate2(config.rC_cDP);
++	        CreateCrawler( locNorth , fwdNorth , 0 , GetMaxAgeC(gen) , gen , intFwd , GetStepLength(gen) , 1 , GetCorrWidth(gen) , rcSSSP , rcSDSP , rcTSSP , rcTDSP , rcCDP );
++	      }
+ 	      //now for the South wall
+ 	      yIndex = 2 + rand()%( dimY - 4 );
+ 	      IntCoordinate locSouth(dimX-1 , yIndex);
+ 	      IntCoordinate fwdSouth(-1 , 0);   //going North
+ 	      intFwd = fwdSouth;      //intended direction = start direction
+-	      CreateCrawler( locSouth , fwdSouth , 0 , GetMaxAgeC(gen) , gen , intFwd , GetStepLength(gen) , 1 , GetCorrWidth(gen) , Mutate2(config.rC_sSSP) , Mutate2(config.rC_sDSP) , Mutate2(config.rC_tSSP) , Mutate2(config.rC_tDSP) , Mutate2(config.rC_cDP) );
++	      {//patch 0001: draw the mutated genes in parameter order, see native/patches/
++	        int rcSSSP = Mutate2(config.rC_sSSP);
++	        int rcSDSP = Mutate2(config.rC_sDSP);
++	        int rcTSSP = Mutate2(config.rC_tSSP);
++	        int rcTDSP = Mutate2(config.rC_tDSP);
++	        int rcCDP = Mutate2(config.rC_cDP);
++	        CreateCrawler( locSouth , fwdSouth , 0 , GetMaxAgeC(gen) , gen , intFwd , GetStepLength(gen) , 1 , GetCorrWidth(gen) , rcSSSP , rcSDSP , rcTSSP , rcTDSP , rcCDP );
++	      }
+ 	    }//end North and South walls
+ 
+ 	  //now do the east and West walls
+@@ -3165,13 +3179,27 @@
+ 	      IntCoordinate locWest(xIndex , 0);
+ 	      IntCoordinate fwdWest(0 , 1);   //going East
+ 	      IntCoordinate intFwd = fwdWest;      //intended direction = start direction
+-	      CreateCrawler( locWest , fwdWest , 0 , GetMaxAgeC(gen) , gen , intFwd , GetStepLength(gen) , 1 , GetCorrWidth(gen) , Mutate2(config.rC_sSSP) , Mutate2(config.rC_sDSP) , Mutate2(config.rC_tSSP) , Mutate2(config.rC_tDSP) , Mutate2(config.rC_cDP) );
++	      {//patch 0001: draw the mutated genes in parameter order, see native/patches/
++	        int rcSSSP = Mutate2(config.rC_sSSP);
++	        int rcSDSP = Mutate2(config.rC_sDSP);
++	        int rcTSSP = Mutate2(config.rC_tSSP);
++	        int rcTDSP = Mutate2(config.rC_tDSP);
++	        int rcCDP = Mutate2(config.rC_cDP);
++	        CreateCrawler( locWest , fwdWest , 0 , GetMaxAgeC(gen) , gen , intFwd , GetStepLength(gen) , 1 , GetCorrWidth(gen) , rcSSSP , rcSDSP , rcTSSP , rcTDSP , rcCDP );
++	      }
+ 	      //now for the East wall
+ 	      xIndex = 2 + rand()%( dimX - 4 );
+ 	      IntCoordinate locEast(xIndex , dimY-1);
+ 	      IntCoordinate fwdEast(0 , -1);   //going West
+ 	      intFwd = fwdWest;      //intended direction = start direction
+-	      CreateCrawler( locEast , fwdEast , 0 , GetMaxAgeC(gen) , gen , intFwd , GetStepLength(gen) , 1 , GetCorrWidth(gen) , Mutate2(config.rC_sSSP) , Mutate2(config.rC_sDSP) , Mutate2(config.rC_tSSP) , Mutate2(config.rC_tDSP) , Mutate2(config.rC_cDP) );
++	      {//patch 0001: draw the mutated genes in parameter order, see native/patches/
++	        int rcSSSP = Mutate2(config.rC_sSSP);
++	        int rcSDSP = Mutate2(config.rC_sDSP);
++	        int rcTSSP = Mutate2(config.rC_tSSP);
++	        int rcTDSP = Mutate2(config.rC_tDSP);
++	        int rcCDP = Mutate2(config.rC_cDP);
++	        CreateCrawler( locEast , fwdEast , 0 , GetMaxAgeC(gen) , gen , intFwd , GetStepLength(gen) , 1 , GetCorrWidth(gen) , rcSSSP , rcSDSP , rcTSSP , rcTDSP , rcCDP );
++	      }
+ 	    }//end East and West walls
+ 	}//end creating Crawlers for this generation
+     }//end of going through generations
+@@ -3996,7 +4024,9 @@
+     {
+       tries++;
+       //get candidate starting point
+-      IntCoordinate Test( 1 + ( rand()%(dimX-3) ) , 1 + ( rand()%(dimY-3) ) );
++      int plonkX = 1 + ( rand()%(dimX-3) );  //patch 0001: x first, then y
++      int plonkY = 1 + ( rand()%(dimY-3) );
++      IntCoordinate Test( plonkX , plonkY );
+       //now make a starting direction
+       int startX , startY;
+       if( (rand()%100) < 50 )
+@@ -4067,7 +4097,9 @@
+     {
+       tries++;
+       //get candidate starting point
+-      IntCoordinate Test( 1 + ( rand()%(dimX-3) ) , 1 + ( rand()%(dimY-3) ) );
++      int plonkX = 1 + ( rand()%(dimX-3) );  //patch 0001: x first, then y
++      int plonkY = 1 + ( rand()%(dimY-3) );
++      IntCoordinate Test( plonkX , plonkY );
+       //now make a starting direction
+       int startX , startY;
+       if( (rand()%100) < 50 )

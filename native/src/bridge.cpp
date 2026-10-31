@@ -14,7 +14,7 @@
 #include <string>
 #include <vector>
 
-#include "../vendor/dungeonmaker-2.05/DungeonMaker.h"
+#include "DungeonMaker.h"
 
 static_assert(alifegames::COLUMN == 19, "cell numbering follows SquareData");
 

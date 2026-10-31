@@ -12,6 +12,8 @@ CXX=${CXX:-c++}
 CXXFLAGS="-std=c++17 -O2 -fno-exceptions -fno-rtti -I native/src"
 OUT=$(mktemp -d)
 trap 'rm -rf "$OUT"' EXIT
+sh native/prepare-sources.sh "$OUT/vendor"
+CXXFLAGS="$CXXFLAGS -I $OUT/vendor"
 
 echo "prng_test"
 $CXX $CXXFLAGS native/test/prng_test.cpp -o "$OUT/prng_test"
@@ -34,6 +36,18 @@ $CXX $CXXFLAGS -w native/src/dungeonmaker_unity.cpp native/src/bridge.cpp native
   "$OUT/native_hashes" >/dev/null
   exit 1
 }
+# The generator must not depend on the compiler's (unspecified) evaluation order of
+# function arguments: a second compiler has to produce exactly the same hashes.
+CXX_ALT=${CXX_ALT:-clang++}
+if command -v "$CXX_ALT" >/dev/null 2>&1; then
+  echo "native_hashes with $CXX_ALT (evaluation-order independence)"
+  $CXX_ALT $CXXFLAGS -w native/src/dungeonmaker_unity.cpp native/src/bridge.cpp native/test/native_hashes.cpp -o "$OUT/native_hashes_alt"
+  "$OUT/native_hashes_alt" 2>/dev/null >"$OUT/hashes_alt.json"
+  diff -u "$OUT/hashes.json" "$OUT/hashes_alt.json"
+else
+  echo "skipping evaluation-order check: $CXX_ALT not found"
+fi
+
 case "$MODE" in
   --write)
     mkdir -p "$(dirname "$GOLDEN")"

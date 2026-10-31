@@ -4,6 +4,8 @@
  * What: compiles the unmodified vendored DungeonMaker.cpp with rand()/srand()
  *       redirected to the portable PCG32 generator from prng.h.
  * Why:  platform-independent determinism without touching the vendor file (spec §5.3).
+ *       The include path points at the copy prepared by native/prepare-sources.sh,
+ *       i.e. the vendor sources with native/patches/ applied.
  * Date: 2026-10-31
  *
  * Order matters: every standard header the vendor code includes must be loaded
@@ -28,6 +30,6 @@
 
 #define rand dm_rand
 #define srand dm_srand
-#include "../vendor/dungeonmaker-2.05/DungeonMaker.cpp"
+#include "DungeonMaker.cpp"  // patched copy, see native/prepare-sources.sh
 #undef rand
 #undef srand

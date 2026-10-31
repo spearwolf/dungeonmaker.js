@@ -21,8 +21,10 @@
     "-sEXPORTED_RUNTIME_METHODS=HEAPU8,stringToUTF8,lengthBytesUTF8,UTF8ToString",
     "-sINCOMING_MODULE_JS_API=locateFile,instantiateWasm,print,printErr",
     "-sSTRICT",
+    "-I",
+    "native/.build/vendor",
     "--extern-pre-js",
     "native/src/license-banner.js"
   ],
-  "nativeSourceHash": "sha256:5a1acc23272e30e5de5e9f3e7ad5ffc22994bcb254e3169e1f3742ff05873424"
+  "nativeSourceHash": "sha256:66f7c910e3fbf936c1768cec25068855848f8f220ace84bdb910aab546b392e8"
 }

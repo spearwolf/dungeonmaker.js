@@ -1,7 +1,7 @@
 # Patches to the vendored DungeonMaker sources
 
-There are no patches yet. Each future patch is a unified diff (`*.patch`) that starts,
-before its first `---` line, with this header:
+Each patch is a unified diff (`*.patch`, applied with `patch -p1` in name order) that
+starts, before its first `---` line, with this header:
 
 ```
 Patch: <name>.patch
@@ -12,6 +12,12 @@ Date: YYYY-MM-DD
 SPDX-License-Identifier: GPL-3.0-or-later
 ```
 
-Patches are applied by the build to a temporary copy of the sources. The directory
+`native/prepare-sources.sh` applies them to a copy of the sources (the WebAssembly build
+uses `native/.build/vendor/`, the native tests a temp directory). The directory
 `native/vendor/dungeonmaker-2.05/` itself always stays byte-identical to the upstream
 release (see `native/vendor/README.md`), so every modification is visible as a file here.
+
+## Current patches
+
+- `0001-sequence-random-arguments.patch` — fixes the order in which random values passed
+  as several arguments of one call are drawn (spec §5.3, platform-independent output).

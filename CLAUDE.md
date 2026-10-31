@@ -12,7 +12,7 @@ The 2014 asm.js build (root `index.*`, `createdungeon*`, `pre.js`, `build.sh`, `
 
 - `native/vendor/dungeonmaker-2.05/` — upstream sources, manual and the eleven sample designs, **byte-identical** to the release tarball. Never edit; see `native/vendor/README.md`.
 - `native/src/` — own C++: unity translation unit (PRNG redirection), C-ABI bridge.
-- `native/patches/` — minimal upstream patches with a header (what/why/date); none yet.
+- `native/patches/` — minimal upstream patches with a header (what/why/date), applied by `native/prepare-sources.sh` to a copy of the vendor sources.
 - `native/build.sh` — Emscripten build in a pinned `emscripten/emsdk` container; writes `packages/dungeonmaker-js/wasm/` (committed build output).
 - `packages/dungeonmaker-js/` — the npm package (TypeScript, ESM only, emitted with `tsc`).
 
@@ -26,4 +26,5 @@ The toolchain is pnpm (versions pinned in `mise.toml`), TypeScript, Vitest, Biom
 - **Exit paths:** `Init_fromFile`/`Init_fromText` call `exit(1)` on parse errors. Use `Config::AcceptDesign` + `Init_fromConfig` instead.
 - **Parser traps:** a `D` record not followed by an `XX` token makes `AcceptDesign` loop forever; a design missing the `BC`/`BR` records trips an `assert` in `Init_fromConfig`.
 - **Design format:** line-oriented, first token = record type (`D`, `R`, `BC`, …), `XX` = comment. Authoritative spec: `native/vendor/dungeonmaker-2.05/DM2_Manual/manDesign.txt` plus `Config::AcceptDesign`.
+- **Evaluation order:** several `rand()`-drawing calls as arguments of one function call give compiler-dependent results (GCC right to left, clang left to right); patch `0001` sequences the known cases. New such code must draw into locals first.
 - `PlonkDownStuff()`/`PutPlonkOnMap()` are public but not called by `generate()`; MOB/treasure cells only appear when a design places them via `R` rectangles.
