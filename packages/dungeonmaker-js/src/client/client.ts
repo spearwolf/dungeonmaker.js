@@ -11,6 +11,8 @@ import {
 } from '../protocol.js';
 import type { DesignConfig } from '../schema/model.js';
 import { resolveSeed } from './seed.js';
+import { spawnDefaultWorker } from './spawn.js';
+import { validateOrThrow } from './validate.js';
 
 export const DEFAULT_TIMEOUT = 30_000;
 
@@ -69,6 +71,13 @@ function checkTimeout(timeout: number): number {
   throw new RangeError(
     `timeout must be Infinity or a number of milliseconds in 1 … ${MAX_TIMEOUT}, got ${String(timeout)}`,
   );
+}
+
+/** A URL object becomes its href; a relative string is resolved against the page (not this module). */
+function resolveWasmUrl(url: string | URL): string {
+  if (typeof url !== 'string') return url.href;
+  const base = (globalThis as { location?: { href?: string } }).location?.href;
+  return base ? new URL(url, base).href : url;
 }
 
 function abortReason(signal: AbortSignal): unknown {
@@ -152,10 +161,9 @@ export function createDungeonMaker(options: DungeonMakerOptions = {}): DungeonMa
   }
 
   function spawn(): WorkerState {
-    if (!options.worker) throw new WorkerError('no worker factory configured');
     let worker: Worker;
     try {
-      worker = options.worker();
+      worker = (options.worker ?? spawnDefaultWorker)();
     } catch (e) {
       throw new WorkerError('could not create the worker', { cause: e });
     }
@@ -184,7 +192,7 @@ export function createDungeonMaker(options: DungeonMakerOptions = {}): DungeonMa
       worker.removeEventListener('messageerror', onMessageError);
     };
     const init: ToWorker = { type: 'init', v: PROTOCOL_VERSION };
-    if (options.wasmUrl !== undefined) init.wasmUrl = String(options.wasmUrl);
+    if (options.wasmUrl !== undefined) init.wasmUrl = resolveWasmUrl(options.wasmUrl);
     current = state;
     try {
       worker.postMessage(init);
@@ -329,6 +337,12 @@ export function createDungeonMaker(options: DungeonMakerOptions = {}): DungeonMa
     // Snapshot now: a caller mutating a shared design while the job waits must not change it.
     const design =
       typeof request.design === 'string' ? request.design : structuredClone(request.design);
+    // Legacy text is left to the core; a config is checked here, before anything is enqueued.
+    if (options.validate && typeof design !== 'string') {
+      await validateOrThrow(design);
+      if (disposed) throw disposedError();
+      if (signal?.aborted) throw abortReason(signal);
+    }
     return new Promise<Dungeon>((resolve, reject) => {
       const job: Job = {
         id: nextId++,

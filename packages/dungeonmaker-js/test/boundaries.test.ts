@@ -43,7 +43,16 @@ test('the scan sees the source tree and recognises runtime imports', () => {
   expect(runtimeImports("await import('typebox');")).not.toEqual([]);
 });
 
-test.each(files.filter((f) => !f.startsWith('schema/') && f !== 'schema.ts'))(
+/** The one module that may reach the schema, and only through a dynamic import. */
+const DYNAMIC_ONLY = 'client/validate.ts';
+
+test('client/validate.ts loads the schema only dynamically', () => {
+  const source = readFileSync(new URL(DYNAMIC_ONLY, SRC), 'utf8');
+  expect(source).toMatch(/import\(\s*['"]\.\.\/schema\/validate\.js['"]\s*\)/);
+  expect([...source.matchAll(FROM)].filter(([, c]) => !/^type\b/.test(c ?? ''))).toEqual([]);
+});
+
+test.each(files.filter((f) => !f.startsWith('schema/') && f !== 'schema.ts' && f !== DYNAMIC_ONLY))(
   'src/%s loads neither typebox nor a schema module at runtime',
   (file) => {
     expect(runtimeImports(readFileSync(new URL(file, SRC), 'utf8'))).toEqual([]);

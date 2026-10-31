@@ -1,4 +1,5 @@
 {
   "wasmGzipBytes": 93184,
-  "glueGzipBytes": 5120
+  "glueGzipBytes": 5120,
+  "clientGzipBytes": 5632
 }

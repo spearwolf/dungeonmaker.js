@@ -9,7 +9,7 @@
     "typecheck": "pnpm -r typecheck",
     "test": "vitest run",
     "build": "pnpm -r build",
-    "check:package": "publint --strict packages/dungeonmaker-js && pnpm --filter dungeonmaker-js exec attw --pack . --profile esm-only --exclude-entrypoints ./dungeonmaker.wasm ./design.schema.json",
+    "check:package": "publint --strict packages/dungeonmaker-js && pnpm --filter dungeonmaker-js exec attw --pack . --profile esm-only --exclude-entrypoints ./worker ./dungeonmaker.wasm ./design.schema.json",
     "size": "node scripts/check-size.mjs",
     "pack:smoke": "node scripts/pack-smoke.mjs"
   },

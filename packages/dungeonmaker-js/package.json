@@ -20,7 +20,9 @@
     "directory": "packages/dungeonmaker-js"
   },
   "type": "module",
-  "sideEffects": false,
+  "sideEffects": [
+    "./dist/worker.js"
+  ],
   "engines": {
     "node": ">=22"
   },
@@ -41,6 +43,9 @@
     "./core": {
       "types": "./dist/core.d.ts",
       "default": "./dist/core.js"
+    },
+    "./worker": {
+      "default": "./dist/worker.js"
     },
     "./dungeonmaker.wasm": "./wasm/dungeonmaker.wasm",
     "./package.json": "./package.json"
