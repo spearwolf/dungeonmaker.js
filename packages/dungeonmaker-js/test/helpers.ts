@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 import { readFileSync } from 'node:fs';
+import { parseDesignText } from '../src/config/parse.js';
 import type { CoreResult } from '../src/core.js';
+import type { DesignConfig } from '../src/schema/model.js';
 
 const VENDOR = new URL('../../../native/vendor/dungeonmaker-2.05/', import.meta.url);
 
@@ -27,6 +29,24 @@ export const golden: Record<string, string> = JSON.parse(
 
 export function readDesign(name: string): string {
   return readFileSync(new URL(name, VENDOR), 'utf8');
+}
+
+/** The vendor design `name` as a config. */
+export function vendorConfig(name: string): DesignConfig {
+  return parseDesignText(readDesign(name));
+}
+
+/**
+ * Rewrites a design text the way another editor might save it: UTF-8 BOM, CRLF line
+ * ends, every record wrapped after its tag with the values tab-separated on the next
+ * line. Comment lines and blank lines stay as they are.
+ */
+export function reflow(text: string): string {
+  const lines = text.split(/\r?\n/).flatMap((line) => {
+    const [tag, ...values] = line.trim().split(/\s+/);
+    return !tag || tag.startsWith('X') || values.length === 0 ? [line] : [tag, values.join('\t')];
+  });
+  return `\uFEFF${lines.join('\r\n')}`;
 }
 
 /** Replaces the two numbers of the first D line (library dimX, dimY), like native/test/design_util.h. */
