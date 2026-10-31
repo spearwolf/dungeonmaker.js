@@ -70,16 +70,30 @@ test('toTiles collapses all 20 cell values per the table', () => {
   ]);
 });
 
-test('the default palette has the documented colors', () => {
+test('the default palette has the documented colors for all 20 cell names', () => {
   expect(Object.keys(DEFAULT_PALETTE)).toEqual([...CELL_NAMES]);
-  expect(DEFAULT_PALETTE.closed).toBe('#303030');
-  expect(DEFAULT_PALETTE.insideTunnelOpen).toBe('#e8e8e8');
-  expect(DEFAULT_PALETTE.insideAnteroomOpen).toBe('#e0e0e0');
-  expect(DEFAULT_PALETTE.open).toBe('#f0f0f0');
-  expect(DEFAULT_PALETTE.horizontalDoor).toBe('#a04000');
-  expect(DEFAULT_PALETTE.mob2).toBe('#f00030');
-  expect(DEFAULT_PALETTE.treasure3).toBe('#e0e000');
-  expect(DEFAULT_PALETTE.column).toBe('#00ff00');
+  expect(DEFAULT_PALETTE).toEqual({
+    open: '#f0f0f0',
+    closed: '#303030',
+    guaranteedOpen: '#f0f0f0',
+    guaranteedClosed: '#303030',
+    nonJoinOpen: '#f0f0f0',
+    nonJoinClosed: '#303030',
+    nonJoinGuaranteedOpen: '#f0f0f0',
+    nonJoinGuaranteedClosed: '#303030',
+    insideRoomOpen: '#f0f0f0',
+    insideTunnelOpen: '#e8e8e8',
+    insideAnteroomOpen: '#e0e0e0',
+    horizontalDoor: '#a04000',
+    verticalDoor: '#a04000',
+    mob1: '#ff0040',
+    mob2: '#f00030',
+    mob3: '#e00020',
+    treasure1: '#ffff00',
+    treasure2: '#f0f000',
+    treasure3: '#e0e000',
+    column: '#00ff00',
+  });
 });
 
 test('paletteRgb has 20 * 3 bytes and accepts #rgb', () => {
