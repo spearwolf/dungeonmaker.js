@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 import { createDungeon } from 'dungeonmaker-js';
-import { toPng, toTilesetPng } from 'dungeonmaker-js/export';
+import { toDungeonJson, toPng, toTiledMap, toTilesetPng } from 'dungeonmaker-js/export';
 import { design3A } from 'dungeonmaker-js/presets';
 import golden from '../golden/export-sha256.json' with { type: 'json' };
 
@@ -14,4 +14,23 @@ test('toPng and toTilesetPng are byte-identical to the Node golden hashes', asyn
   const png = await toPng(dungeon, { generator: 'dungeonmaker-js@test' });
   expect(await sha256Hex(png)).toBe(golden.png);
   expect(await sha256Hex(await toTilesetPng())).toBe(golden.tileset);
+}, 30_000);
+
+test('toTiledMap of a plain dungeon is byte-identical to the Node golden hash', async () => {
+  const dungeon = await createDungeon({ design: design3A, seed: 42 });
+  const tmj = toTiledMap(dungeon, { generator: 'dungeonmaker-js@test' });
+  expect(await sha256Hex(new TextEncoder().encode(tmj))).toBe(golden['tmj-plain']);
+}, 30_000);
+
+test('toDungeonJson of a layered dungeon is byte-identical to the Node golden hash', async () => {
+  const dungeon = await createDungeon({
+    design: design3A,
+    seed: 42,
+    output: { rooms: true, entities: 'list', steps: true },
+  });
+  const json = toDungeonJson(dungeon, {
+    source: { preset: 'design3A' },
+    generator: 'dungeonmaker-js@test',
+  });
+  expect(await sha256Hex(new TextEncoder().encode(json))).toBe(golden.json);
 }, 30_000);
