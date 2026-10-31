@@ -1,6 +1,11 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// Entry `dungeonmaker-js/export`: dungeon JSON, ASCII text, raw bytes, PNG and Tiled map. No DOM, no TypeBox runtime.
 
+/**
+ * Entry `dungeonmaker-js/export`: dungeon JSON, ASCII text, raw bytes, PNG and Tiled map.
+ * No DOM, no TypeBox runtime.
+ *
+ * @module dungeonmaker-js/export
+ */
 export { crc32 } from './export/crc32.js';
 export {
   DUNGEON_FORMAT,

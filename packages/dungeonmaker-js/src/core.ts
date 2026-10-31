@@ -1,5 +1,10 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// Entry point `dungeonmaker-js/core`: the WebAssembly generator in the current thread.
+
+/**
+ * Entry point `dungeonmaker-js/core`: the WebAssembly generator in the current thread.
+ *
+ * @module dungeonmaker-js/core
+ */
 export { Cell } from './cell.js';
 export {
   type CompiledWasm,

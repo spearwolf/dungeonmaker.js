@@ -5,7 +5,7 @@
  * generated dungeon. Unlike the other entries, its declarations name DOM types
  * (`ImageData`, `HTMLCanvasElement`, `OffscreenCanvas`) for `toImageData` and `drawToCanvas`.
  *
- * @module
+ * @module dungeonmaker-js/render
  */
 export { ASCII_CHARS, type DungeonLike, toAscii } from './render/ascii.js';
 export { drawToCanvas, toImageData } from './render/canvas.js';

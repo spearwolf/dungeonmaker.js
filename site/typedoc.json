@@ -1,0 +1,40 @@
+{
+  "$schema": "https://typedoc.org/schema.json",
+  "entryPoints": [
+    "../packages/dungeonmaker-js/src/index.ts",
+    "../packages/dungeonmaker-js/src/core.ts",
+    "../packages/dungeonmaker-js/src/schema.ts",
+    "../packages/dungeonmaker-js/src/presets.ts",
+    "../packages/dungeonmaker-js/src/render.ts",
+    "../packages/dungeonmaker-js/src/export.ts",
+    "../packages/dungeonmaker-js/src/node/index.ts"
+  ],
+  "tsconfig": "./tsconfig.typedoc.json",
+  "plugin": ["typedoc-plugin-markdown", "typedoc-vitepress-theme"],
+  "out": "./api",
+  "docsRoot": ".",
+  "readme": "none",
+  "excludePrivate": true,
+  "excludeInternal": true,
+  "treatWarningsAsErrors": true,
+  // These runtime values only exist to derive exported types (`typeof X`, `Static<typeof X>`).
+  // Exporting them would put the TypeBox runtime or the token tables into the entries that
+  // are meant to stay free of them (`dungeonmaker-js`, `dungeonmaker-js/export`).
+  "intentionallyNotExported": [
+    "CARDINAL_DIRECTIONS",
+    "CELL_NAMES",
+    "DIRECTIONS",
+    "CrawlerPairMemberSchema",
+    "CrawlerSeedSchema",
+    "DesignConfigObject",
+    "DungeonFileSchema",
+    "GenesSchema",
+    "PointSchema",
+    "PopulationSchema",
+    "RectangleSchema",
+    "RoomSizeProbabilitySchema",
+    "TunnelerGenesSchema",
+    "TunnelerSeedSchema"
+  ],
+  "validation": { "notExported": true, "invalidLink": true, "notDocumented": false }
+}

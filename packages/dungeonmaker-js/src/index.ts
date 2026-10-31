@@ -1,5 +1,10 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// Main entry `dungeonmaker-js`: design config API and worker client (no TypeBox runtime, no Wasm).
+
+/**
+ * Main entry `dungeonmaker-js`: design config API and worker client (no TypeBox runtime, no Wasm).
+ *
+ * @module dungeonmaker-js
+ */
 export { Cell } from './cell.js';
 export type {
   AbortSignalLike,

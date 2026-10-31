@@ -3,7 +3,7 @@ import type { DungeonLike } from './ascii.js';
 import { type Palette, paletteRgb } from './palette.js';
 
 export interface RasterOptions {
-  /** Overrides of {@link DEFAULT_PALETTE} per cell name. */
+  /** Overrides of {@link dungeonmaker-js/render!DEFAULT_PALETTE | DEFAULT_PALETTE} per cell name. */
   palette?: Partial<Palette>;
   /** Integer pixel size per cell, 1..64. Default 1. */
   scale?: number;

@@ -9,7 +9,7 @@
  * Never mutate them; derive a variant with `extendDesign(preset, patch)`, which returns
  * a fresh copy.
  *
- * @module
+ * @module dungeonmaker-js/presets
  */
 export { design } from './presets/design.js';
 export { design2 } from './presets/design2.js';

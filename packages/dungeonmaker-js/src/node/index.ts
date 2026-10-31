@@ -1,6 +1,10 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// Entry `dungeonmaker-js/node`: generate dungeons straight to files. Node only.
 
+/**
+ * Entry `dungeonmaker-js/node`: generate dungeons straight to files. Node only.
+ *
+ * @module dungeonmaker-js/node
+ */
 export { readDesignFile } from './design-file.js';
 export {
   EXPORT_EXTENSIONS,

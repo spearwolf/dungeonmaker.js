@@ -46,7 +46,14 @@ export default defineConfig({
     nav: [
       { text: 'Playground', link: '/' },
       { text: 'Editor', link: '/editor' },
-      { text: 'Reference', link: '/reference/config' },
+      {
+        text: 'Reference',
+        items: [
+          { text: 'Design config', link: '/reference/config' },
+          { text: 'Dungeon file format', link: '/reference/dungeon-format' },
+          { text: 'API', link: '/api/' },
+        ],
+      },
     ],
     sidebar,
     socialLinks: [{ icon: 'github', link: 'https://github.com/spearwolf/dungeonmaker.js' }],

@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "generate": "node scripts/generate-reference.mjs",
+    "generate": "node scripts/generate-reference.mjs && typedoc",
     "dev": "pnpm generate && vitepress dev",
     "build": "pnpm generate && vitepress build",
     "typecheck": "tsc -p tsconfig.json",

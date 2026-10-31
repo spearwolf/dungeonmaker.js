@@ -315,6 +315,27 @@ export const checks = [
       assert(hash !== good, 'the 3x3 dungeon did not replace the last good one');
     },
   },
+  {
+    name: 'api reference covers every typed entry',
+    async run(page, base) {
+      await page.goto(`${base}api/`);
+      const links = await page
+        .locator('a')
+        .evaluateAll((as) => as.map((a) => a.textContent?.trim()));
+      for (const entry of ['', '/core', '/schema', '/presets', '/render', '/export', '/node']) {
+        const name = `dungeonmaker-js${entry}`;
+        assert(links.includes(name), `no link "${name}" on the API index`);
+      }
+      const text = async (path) => {
+        await page.goto(`${base}api/${path}`);
+        return (await page.locator('main').textContent()) ?? '';
+      };
+      const main = await text('dungeonmaker-js/');
+      assert(main.includes('createDungeon'), 'the dungeonmaker-js page lacks createDungeon');
+      const exporter = await text('dungeonmaker-js/export/');
+      assert(exporter.includes('toDungeonJson'), 'the export page lacks toDungeonJson');
+    },
+  },
 ];
 
 async function serveDist() {

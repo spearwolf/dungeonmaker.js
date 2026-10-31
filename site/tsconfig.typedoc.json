@@ -1,0 +1,7 @@
+{
+  "extends": "../packages/dungeonmaker-js/tsconfig.build.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "types": ["node"]
+  }
+}
