@@ -1,4 +1,6 @@
-*.o
-createdungeon
-dungeonmaker
-dungeonmaker-2.05
+node_modules/
+dist/
+coverage/
+*.tsbuildinfo
+native/.emcache/
+.DS_Store

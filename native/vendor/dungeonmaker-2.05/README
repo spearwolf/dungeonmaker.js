@@ -1,0 +1,26 @@
+This program is distributed under the Free Software Foundation's General Public License.
+Commercial licenses are also available. Copyright for program and documentation: Dr. Peter Henningsen, 2002
+
+If you want to build the program on Windows, check out the "Windows" directory.
+If you want to use the DungeonMaker classes in your own program, check out the
+ProgrammerInterface directory.
+
+To build the program on Linux, run "make" in the dungeonmaker2-directory. 
+In order for this to work, you need the library SDL-devel, which is available from 
+http://libsdl.org. Version 1.08 or later are OK.
+
+Running "make" will build the executable "dungeonmaker". 
+Bring up a command console in a window (on KDE or Gnome) and execute
+"dungeonmaker"   for good-looking dungeons, or
+"dungeonmaker -d"   for information-rich dungeons, used mostly in the design process.
+The dungeon-creation process will be shown as a movie in a separate SDL-window.
+You can scale the map with the command line parameters -- (for smaller) and -+ (for larger).
+E.g. "dungeonmaker -- --" will create the dungeons quite fast in a very small window.
+When you have seen enough of a dungeon, close the SDL-window, which will return
+control to your command line.
+
+To make the most effective use of your time, we recommend that you open the 
+DM2Manual and read our comments on the various designs while you run them.
+
+Peter Henningsen
+peter@alifegames.com

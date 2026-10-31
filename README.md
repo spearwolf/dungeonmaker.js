@@ -1,42 +1,16 @@
 # dungeonmaker.js
 
-*javascript port* (cross compiled with *emscripten* to *asmjs*) of the [**dungeonmaker**](http://dungeonmaker.sourceforge.net/) library!
+An **unofficial** WebAssembly port of [DungeonMaker 2.05](http://dungeonmaker.sourceforge.net/)
+by Peter Henningsen — a procedural dungeon generator.
 
-## how to use
+**Status:** being rebuilt as the npm package `dungeonmaker-js` (WebAssembly core, Web Worker
+client, Node CLI). The design lives in
+[`docs/superpowers/specs/2026-10-31-dungeonmaker-package-design.md`](docs/superpowers/specs/2026-10-31-dungeonmaker-package-design.md).
 
-![preview](./preview.png)
+The original 2014 asm.js version is preserved at the git tag `legacy-2014`; its demo at
+`legacy-2014-demo` (still served from the `gh-pages` branch).
 
+## License
 
-## how to build
-
-you don't need this - a pre-built version can be found inside `dict/`
-
-### build *dungeonmaker* library
-
-1. extract the **dungeonmaker** archive
-
-   ```
-    $ tar xvf dungeonmaker-2.05.tar.gz
-    $ ln -s dungeonmaker-2.05 dungeonmaker
-   ```
-
-2. install [emscripten](http://kripken.github.io/emscripten-site/)
-3. build the library
-
-   ```
-    $ cd dungeonmaker/
-    $ emconfigure ./configure
-    $ emmake make
-   ```
-
-### build *dungeonmaker.js*
-
-inside the root directory ..
-
-```
-  $ sh build.sh
-```
-
-### install http server
-
-you will need a http server to run the example from `dist/`
+GPL-3.0-or-later; includes a modified version of DungeonMaker 2.05 © Peter Henningsen.
+See `LICENSE` and `NOTICE`.

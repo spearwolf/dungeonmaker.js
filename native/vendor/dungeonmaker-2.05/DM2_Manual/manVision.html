@@ -1,0 +1,125 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html>
+<head>
+	<title>DungeonMaker Manual</title>
+</head>
+
+<body link="Red" vlink="Maroon" alink="Black" bgcolor="White">
+
+
+<div align="center"><font face="" color="Red">
+<h3>
+How We Envision Using the DungeonMaker
+</h3></font>
+</div>
+
+The DungeonMaker has very general capabilities, and we expect it to be used in a 
+wide variety of ways: An earlier version is being used for pen-and-paper 
+roleplaying, and it  
+can certainly be used for traditional computer role playing games where MOBs 
+just stay at their spawn point and attack when a player approaches. However, 
+we envision the environments created by the DungeonMaker to be populated by 
+a new generation of smarter MOBs which have a life of their own, and move about 
+on their own business. They might already be in a defensive stance when the 
+player enters, with patrols looking for intruders and heavy guards in their 
+treasure rooms,  or they might be unsuspecting and peaceable, sleeping in 
+their bunks and socializing in small groups in their anterooms. However, when 
+a player attacks or steals their 
+treasure, all the inhabitants of the dungeon will eventually hear about it and 
+make it their business to 
+hunt down that player. <i><b>alifegames.com</b></i>'s next project is the 
+development of this type of AI.<br><br>
+
+While the dungeons and labyrinths can also be used with more traditional AI, 
+they are geared to work optimally with the realistic MOBs described above. For 
+one, the DungeonMaker works best when it can make fairly large dungeons - we do 
+not recommend its use for creating really small places. In large dungeons as we 
+envision them, a group of players will not be able to take on the entire 
+population of MOBs in one huge battle. We intend to make sure of this by 
+adjusting, during dungeon creation, the level of MOBs to the level of the player 
+party entering the dungeon. (In a MMORPG where players can keep 
+entering a dungeon where a battle is already under way, we would have 
+spawnpoints in very protected locations, and teleport suitably powerful MOBs
+into the dungeon when powerful players enter.) So the players will not be 
+able to just
+systematically kill every MOB and loot every bit of treasure in a dungeon - 
+they will have to make a <i><b>raid</b></i>: Go in, get as much experience and 
+treasure as possible, and then get out before they are overwhelmed.<br><br>
+
+<A NAME="IMAP">The</a> layout of the dungeons on a square grid makes it possible to have very 
+effective AI - in particular, the pathfinding is quite easy to handle, and 
+MOBs will not just amble around at random, but follow purposeful paths that 
+make sense. Many of these paths will be precomputed during dungeon creation 
+(after the playability test has been passed) and stored in the map, so that 
+no computation is neccessary for a MOB that wants to follow a path to an 
+exit, a chokepoint , or the largest treasure room. 
+The map already has other built-in intelligence, 
+so MOBs will know whether they are in a labyrinth, a tunnel, an anteroom, 
+or a room, and if they are in a room they will have access to a list of all the 
+squares in the room. The <i><b>intelligent map</b></i>
+ will also deal with 
+player locations, and all this will enable MOBs to appear <i>very</i> smart 
+before they even run any serious AI-algorithm. Of course, even though the 
+map is grid-based, the rendering can still be in 3D, possibly stretching and 
+bending the map so as to get rid of all the straight lines and regular 
+measurements.<br><br>
+
+While all this can be done on isolated maps such as the <i>Single 
+Tunneler</i>, we envision the players to run raids through a <i><b>series of connected 
+dungeons</b></i>, using these rules: When you enter a dungeon, the door closes 
+behind you for 
+good, and you will have to make it to an exit in order to survive. The exits 
+lead to other dungeons, or to the surface, where you can do trade and buy 
+supplies. If you go through an exit at the bottom of the map, you will enter a 
+dungeon with more dangerous MOBs than the one you just left, if you leave at 
+the top things will get easier, and if you go sideways they will stay the same. 
+The lower down you go, the better treasure you can get. Every dungeon has a 
+number of magical artefacts and one major treasure. When you steal one of these, the 
+AI will mount a serious attempt to corner and catch you, while they might 
+otherwise have been content to just see you leave. If you steal the major treasure, 
+the alarm will even go out to neighboring dungeons, and they will already be in an 
+alert hunting stance when you enter them. Such neighboring dungeons could be 
+created in a separate thread when the players are approaching one of the exits, 
+so there would be no need for loading times. On the other hand, it might be cool 
+to show the <i>dungeon-creation-movie</i> while the graphic engine loads 
+textures and stuff. It would be unneccesary to store 
+maps, because random seeds and design files alone would allow the recreation of the dungeon 
+landscape the players had passed through.<br><br>
+
+We envision the normal mode of play for our dungeons to be on a 
+<i><b>fully revealed map</b></i>, where all MOBs are visible except those 
+inside rooms with closed doors. This makes for exciting play: 
+Players will not only have to run their combat, but simultaneously watch the 
+overall map to see whether bands of MOBs are approaching, and whether their exit 
+route is in danger of becoming blocked. This is really two games in one, the 
+traditional <i>hack'n'slash</i>, and a very challenging game of strategic 
+positioning played out on the global map-view. It will often be the 
+best choice for a player to abandon a winning fight and run in 
+order to avoid becoming boxed in and forced into a losing fight. The players 
+will have a strong incentive to deny the MOBs knowledge of their location, and 
+will constantly have to re-evaluate their best paths through the environment. 
+In single-player games, we consider it best if players have the option to pause 
+the game in order to evaluate the situation at their leasure and give 
+orders to their party members. For use in MMORPGs, we would prefer 
+if a group of players that had decided to go on a dungeon quest were given their 
+own personal key to enter a dungeon where nobody could join them afterwards, 
+though other options are possible. An interesting possibility would be if 
+players had the first dungeon guaranteed for themselves, but could meet 
+other players when going down deeper.
+<br><br>
+
+
+
+
+
+<div align="center"><a href="manual1.html"><img src="Prev.gif" width=80 
+height=40 border=0 alt="general introduction"></a>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<a href="index.html"><img src="Contents.gif" width=80 height=40 border=0 alt="contents"></a>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<a href="manDesign.txt"><img src="Next.gif" width=80 height=40 border=0 alt="design howto"></a>
+</div>
+</body>
+</html>
+

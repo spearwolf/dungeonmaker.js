@@ -1,0 +1,72 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html>
+<head>
+	<title>DungeonMaker Manual</title>
+</head>
+
+<body link="Red" vlink="Maroon" alink="Black" bgcolor="White">
+
+
+<div align="center"><font face="" color="Red">
+<h3>
+Chokepoint - Designs
+</h3></font>
+</div>
+
+Chokepoints are points where a player <i>must</i> pass through in order to get 
+from the entrance to the exit, or the big treasure room, or any other objective 
+the player might have. They are an integral part of our plans for 
+<a href="manVision.html#IMAP"><i>intelligent maps</i></a>: These maps will 
+include precomputed paths to all chokepoints, so the AI will have an easy time 
+getting there and will be able to look pretty smart without having to compute 
+too much. On the labyrinth map, the entrance is at the left top, and three 
+exits are at and around the right bottom of the map. Two <i>closed</i> Crawlers 
+starting out from the pre-placed room ensure that the room is a chokepoint between 
+the entrance and every exit. Other design Crawlers ensure that the paths to the 
+exits are quite long and convoluted. The two Crawlers starting off towards the right 
+edge of the map are a <i>Crawler-pair</i>: One of them is <i>closed</i> and will 
+in most cases (but not all) connect with the outside wall, the other is 
+<i>open</i> - but it is randomly decided 
+which one is which. This makes it possible to have very different paths through 
+dungeons made with the same design file.<br><br>
+
+In this design the areas around the design Crawlers get more walls per 
+unit of space than the area towards the left top which is dominated by 
+RandCrawlers. In general, it is easy to have labyrinths with quite 
+different characteristics in different parts of the map.<br><br>
+
+After the Crawlers have done their thing, rooms are created in the labyrinth. 
+This process takes considerable time on a map of this size (though it speeds up 
+towards the end), and if you try to close the window while it is 
+under way, you will only get a response when the next room is found and the 
+window is updated. Sorry for that, but this is only a demo program.<br><br>
+
+<div align="center">
+<font size="-1" color="Red">
+chokepoint in labyrinth<br>
+</font>
+<img src="capturedA5.gif" width=481 height=319 border=0 alt="labyrinth with chokepoint">
+</div><br>
+
+The chokepoint in the dungeon is the pre-placed open space in the center of 
+the map. This design is tuned more towards creating tunnels than rooms, although 
+plenty of rooms still get made.<br><br>
+
+<div align="center">
+<font size="-1" color="Red">
+chokepoint in dungeon<br>
+</font>
+<img src="capturedA6.gif" width=641 height=324 border=0 alt="dungeon with chokepoint">
+</div><br>
+
+
+<div align="center"><a href="manual3.html"><img src="Prev.gif" width=80 
+height=40 border=0 alt="general introduction"></a>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<a href="index.html"><img src="Contents.gif" width=80 height=40 border=0 alt="contents"></a>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<a href="manual5.html"><img src="Next.gif" width=80 height=40 border=0 alt="next page"></a>
+</div>
+</body>
+</html>

@@ -1,0 +1,72 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html>
+<head>
+	<title>DungeonMaker Manual</title>
+</head>
+
+<body link="Red" vlink="Maroon" alink="Black" bgcolor="White">
+
+
+<div align="center"><font face="" color="Red">
+<h3>
+TUNNELER DEMOs
+</h3></font>
+</div>
+
+Both these demos show what a <i><b>single Tunneler</b></i> and its offspring 
+can do. The original Tunneler starts off at the opening on the left side of the 
+map, and you can see how baby Tunnelers can have smaller or larger <i>tunnelWidth</i>s 
+than their parents. You can also see how rooms and anterooms are made. 
+MOBs are depicted in red, and treasure in green. We always put the most valuable 
+treasure (bright green) in the largest room, and let it be guarded by the largest 
+group of MOBs, which always includes a member of the highest ranking class of 
+MOBs (formerly called a <i>boss monster</i>). We expect that programs using  
+the DungeonMaker will use much more sophisticated methods of object placement, 
+but this can only be implemented when one knows what kinds of objects are to 
+be placed and what their in-game-relationship is.<br><br>
+
+In the first demo, Tunnelers first get babies with larger <i>tunnelWidth</i>, 
+so the standard 3-square-wide tunnels are followed by wider tunnels (which take 
+up much space), and then the dungeon-generating process switches to ever narrower 
+tunnels.<br><br>
+
+<div align="center">
+<font size="-1" color="Red">
+tunneler demo # 1<br>
+</font>
+<img src="capturedA3.gif" width=1001 height=321 border=0 alt="single tunneler at work">
+</div><br>
+
+There is a large variability in outcomes, and while in most cases the map is 
+almost filled, sometimes the Tunnelers die out after filling only a small part 
+of the available space. Such dungeons should usually be rejected by a playability 
+test. It would be easy to implement a count on the number of squares that have 
+been changed in the dungeon-making process, and to reject dungeons with too 
+little activity. This would also make it possible to wind down the construction 
+process when the dungeon has reached a predetermined size, an option we consider 
+for the next version of the DungeonMaker.
+<br><br>
+
+In the second demo the Tunnelers first become very narrow, then wide, then 
+narrow again. Since we can ensure that large rooms are only built adjacent to wide 
+corridors, such a design can ensure that the largest rooms with the biggest 
+treasure are far from the dungeon entrance.
+
+<br><br>
+<div align="center">
+<font size="-1" color="Red">
+tunneler demo # 2<br>
+</font>
+<img src="capturedA4.gif" width=1000 height=320 border=0 alt="small standard dungeon">
+</div><br>
+
+<div align="center"><a href="manual2.html"><img src="Prev.gif" width=80 
+height=40 border=0 alt="general introduction"></a>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<a href="index.html"><img src="Contents.gif" width=80 height=40 border=0 alt="contents"></a>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<a href="manual4.html"><img src="Next.gif" width=80 height=40 border=0 alt="next page"></a>
+</div>
+</body>
+</html>

@@ -4,67 +4,26 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this is
 
-A 2014 experiment: the C++ procedural dungeon generator **DungeonMaker 2.05** (Peter Henningsen / alifegames, GPL, archived as `dungeonmaker-2.05.tar.gz`) cross-compiled with an old **fastcomp-era Emscripten to asm.js**, wrapped in a small browser API that runs generation in a Web Worker and renders the result to a `<canvas>`. No package.json, no tests, no linter, no bundler — plain ES5 scripts, a shell build script, and committed build output.
+A modernization of a 2014 experiment: the C++ procedural dungeon generator **DungeonMaker 2.05** (Peter Henningsen / alifegames, GPL) becomes the npm package **`dungeonmaker-js`** — WebAssembly core, Web Worker client, Node CLI, demo site. The binding design is `docs/superpowers/specs/2026-10-31-dungeonmaker-package-design.md`; the current implementation plan (phase 0 + 1) is `docs/superpowers/plans/2026-10-31-dungeonmaker-phase-0-1.md`.
 
-The `gh-pages` branch holds a copy of `dist/` (the live demo).
+The 2014 asm.js build (root `index.*`, `createdungeon*`, `pre.js`, `build.sh`, `dist/`) was removed from `master`; it lives at the tag `legacy-2014`, its demo at `legacy-2014-demo` (the `gh-pages` branch keeps serving it until the new site exists).
 
-## Build & run
+## Layout
 
-The toolchain is **not installed** on this machine (`emcc` is missing), and `build.sh` targets a 2014 Emscripten (asm.js + separate `.mem` memory-init file, `--embed-file`, `cwrap` with return type `'[number]'`). A current emsdk will emit WASM and different glue; treat any rebuild as a port, not a re-run.
+- `native/vendor/dungeonmaker-2.05/` — upstream sources, manual and the eleven sample designs, **byte-identical** to the release tarball. Never edit; see `native/vendor/README.md`.
+- `native/src/` — own C++: unity translation unit (PRNG redirection), C-ABI bridge.
+- `native/patches/` — minimal upstream patches with a header (what/why/date); none yet.
+- `native/build.sh` — Emscripten build in a pinned `emscripten/emsdk` container; writes `packages/dungeonmaker-js/wasm/` (committed build output).
+- `packages/dungeonmaker-js/` — the npm package (TypeScript, ESM only, emitted with `tsc`).
 
-Original build steps (from README):
+The toolchain is pnpm (versions pinned in `mise.toml`), TypeScript, Vitest, Biome. `emcc` is never installed locally; only the container runs it.
 
-```sh
-tar xvf dungeonmaker-2.05.tar.gz && ln -s dungeonmaker-2.05 dungeonmaker   # both are .gitignored
-cd dungeonmaker && emconfigure ./configure && emmake make && cd ..
-sh build.sh                                                                  # links + assembles dist/
-```
+## Gotchas in the vendored library
 
-Running the demo needs an HTTP server (Worker + `.mem` are fetched via XHR):
-
-```sh
-cd dist && python3 -m http.server     # then open http://localhost:8000/
-```
-
-`createdungeon.html` (synchronous, main-thread variant) and `createdungeon_worker.html` (worker variant) can be served the same way from the repo root.
-
-## Build pipeline — which files are source, which are generated
-
-```
-dungeonmaker/.libs/DungeonMaker.o + createdungeon.cpp + pre.js + design* (embedded FS)
-        │ emcc -O2 -o index.html
-        ▼
-index.html (emcc's default shell, unused) · index.js (asm.js module, ~1.1 MB) · index.html.mem
-        │ build.sh concatenates
-        ├─ index.js + createdungeon.cwrap.js         → createdungeon.js          (sync API, globals)
-        └─ index.js + createdungeon_worker.cwrap.js  → createdungeon_worker.js   (worker script)
-        │ build.sh copies with sed-renamed references
-        ▼
-dist/index.html          ← createdungeon_worker.html  (createdungeon_main.js → dungeonmaker.js)
-dist/dungeonmaker.js     ← createdungeon_main.js      (createdungeon_worker.js → dungeonmaker_worker.js)
-dist/dungeonmaker_worker.js / .mem  ← createdungeon_worker.js / index.html.mem
-```
-
-Hand-written sources: `createdungeon.cpp`, `pre.js`, `createdungeon.cwrap.js`, `createdungeon_worker.cwrap.js`, `createdungeon_main.js`, `createdungeon.html`, `createdungeon_worker.html`, `build.sh`, and the `design*` files.
-Everything else (`index.*`, `createdungeon.js`, `createdungeon_worker.js`, all of `dist/`) is build output that is committed. `dist/` is currently byte-for-byte in sync with its sources; edits to `createdungeon_main.js` or `createdungeon_worker.html` must be mirrored into `dist/` (build.sh does this with `sed`, no emcc needed for those two).
-
-## Architecture
-
-**C++ bridge (`createdungeon.cpp`)** — exports one C function, `createDungeonData(designFile, seed)`: runs `DungeonMaker::Init_fromFile` + `generate()` and writes the map into a single global `int[]` buffer laid out as `[width, height, cell(0,0), cell(1,0), …]` (row-major, `index = 2 + y*width + x`). The buffer is freed and reallocated on every call, so a previous result's pointer becomes invalid. The rest of the file (ASCII/JSON converters, `main`) is dead code from the 2009 native CLI.
-
-**Cell codes are this project's own numbering, not the library enum.** `toInt()` maps by name: OPEN 0, CLOSED 1, G_CLOSED 2, G_OPEN 3, NJ_OPEN 4, NJ_G_OPEN 5, NJ_CLOSED 6, NJ_G_CLOSED 7, IR_OPEN 8, IT_OPEN 9, IA_OPEN 10, H_DOOR 11, V_DOOR 12, MOB1–3 13–15, TREAS1–3 16–18, COLUMN 19, unknown −1. `alifegames::SquareData` in `DungeonMaker.h` orders the first eight differently (G_OPEN=2, G_CLOSED=3, NJ_CLOSED=5, …). The JS colour tables index with `COLOR[val + 1]` against the `toInt` numbering.
-
-**Design files (`design`, `design2`, … `designOld1`)** — unmodified copies of the library's sample designs, embedded into Emscripten's virtual FS at `/`; the design *name* passed from JS is a file path. Line-oriented text format: the first token of each line is a record type (`D` dimensions/background/openings, `R` rectangles, `BC`/`BR`/`BT` spawn probabilities, `T` room sizes, …), `XX` marks comments. The authoritative spec is `DM2_Manual/manDesign.txt` inside the tarball. The library also has `Init_fromText(designText, seed)`, which would allow passing design strings from JS without embedding files — it is not exported yet.
-
-**Two JS front ends:**
-- *Sync* (`createdungeon.cwrap.js` → `createdungeon.js`): globals `createDungeon(design, seed?)` and `showDungeon(dungeon)`. Copies the result out of `HEAP32` into a fresh `Int32Array`.
-- *Worker* (the published one): `createdungeon_main.js` is a UMD-ish module exposing `dungeonmaker.{createDungeon, onCreateDungeon, showDungeon, Dungeon}`. `createDungeon(design, seed?)` lazily spawns one Worker from `createDungeon.workerUrl`, waits for the `"Ready."` message (sent by `pre.js`'s `Module.postRun`), posts `{design, seed, uuid}`, and returns a Promise resolved by matching `uuid`. Every result is also broadcast to all `onCreateDungeon` listeners (the demo page renders via that broadcast, not via the Promise). `Dungeon` wraps the array with `width`, `height`, `get(x, y)`, `set(x, y, v)`.
-
-## Gotchas worth knowing before changing anything
-
-- The worker posts `HEAP32.subarray(...)`; structured clone copies the **whole underlying ArrayBuffer** (16 MB `TOTAL_MEMORY`) per dungeon, and `Dungeon.data` is a view into that clone.
-- Seed: JS picks `Math.random()*1e7|0` when none is given; the library calls `srand(seed)`, but treats `seed == 0` as "use `time(NULL)`", so seed 0 is not reproducible. Determinism holds only within the same libc `rand()` (native builds will not match).
-- An unknown design name makes `Init_fromFile` call `exit(1)`; in the worker the Promise then never settles.
-- `pre.js` assumes a worker context (`self.postMessage("Ready.")`) and routes stdout/stderr to `console.debug`/`console.warn`; it is also linked into the sync build.
-- The colour table and `showDungeon` exist twice (`createdungeon.cwrap.js`, `createdungeon_main.js`) and must be kept in step.
-- README says the pre-built version is in `dict/` — it means `dist/`.
+- **Axes:** the map is stored as `Map[x * dimY + y]`; library `x` is the *row* (north = `x--`), `y` the *column* (east = `y++`). Read linearly, that is already north-up row-major with `width = dimY`, `height = dimX`. The 2014 bridge transposed it.
+- **Cell enum:** `alifegames::SquareData` order is `OPEN, CLOSED, G_OPEN, G_CLOSED, NJ_OPEN, NJ_CLOSED, NJ_G_OPEN, NJ_G_CLOSED, IR_OPEN, IT_OPEN, IA_OPEN, H_DOOR, V_DOOR, MOB1–3, TREAS1–3, COLUMN` (0–19).
+- **Seed:** `Init_fromFile`/`Init_fromText` replace seed `0` with `time(NULL)`; `Init_fromConfig` calls `srand(seed)` directly. The package only accepts seeds `1 … 2³²−1`.
+- **Exit paths:** `Init_fromFile`/`Init_fromText` call `exit(1)` on parse errors. Use `Config::AcceptDesign` + `Init_fromConfig` instead.
+- **Parser traps:** a `D` record not followed by an `XX` token makes `AcceptDesign` loop forever; a design missing the `BC`/`BR` records trips an `assert` in `Init_fromConfig`.
+- **Design format:** line-oriented, first token = record type (`D`, `R`, `BC`, …), `XX` = comment. Authoritative spec: `native/vendor/dungeonmaker-2.05/DM2_Manual/manDesign.txt` plus `Config::AcceptDesign`.
+- `PlonkDownStuff()`/`PutPlonkOnMap()` are public but not called by `generate()`; MOB/treasure cells only appear when a design places them via `R` rectangles.

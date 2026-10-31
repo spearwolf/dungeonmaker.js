@@ -1,0 +1,75 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html>
+<head>
+	<title>DungeonMaker Manual</title>
+</head>
+
+<body link="Red" vlink="Maroon" alink="Black" bgcolor="White">
+
+
+<div align="center"><font face="" color="Red">
+<h3>
+CRAWLER DEMOs
+</h3></font>
+</div>
+
+Design files allow the placement of openings in the corners and in the 
+centers of the outer walls, and on the first demo we have chosen to have 
+openings in the 4 wall centers. These can be entrances and exits to the 
+dungeon/labyrinth.<br><br>
+There are no design Crawlers in this demo, only RandCrawlers, which start off 
+the edge of the map at random points. The parameters for the RandCrawlers have 
+been selected so that the labyrinth does not become too hard, and many open 
+spaces remain.
+<br>
+
+<div align="center">
+<font size="-1" color="Red">
+Crawler demo # 1<br>
+</font>
+<img src="capturedA1.gif" width=323 height=322 border=0 alt="crawlers@work # 1">
+</div><br><br>
+
+The next labyrinth lacks RandCrawlers, and is based on two design Crawlers which 
+branch out from a guaranteed-open space in the center of the map. Such design 
+features can be made visible by running the program with the command-line 
+argument <i>d</i> (for design), as in <i>dungeonmaker -d</i>. Both Crawlers are 
+<i>closed</i> and will always connect with the outer labyrinth wall, thus 
+forcing the player who wants to get from the entrance at the top to the exit 
+at the bottom of the map to go through the guaranteed-open space in the center. 
+Obviously this could be used to place story elements.<br><br>
+
+The two design Crawlers have quite different parameters, which leads to different 
+labyrinth styles on the left and right side of the map. Other parameters have been 
+chosen so that in most cases Crawlers will die out before all the space on the 
+map has been filled. This makes it easier to see how Crawlers operate. Even if 
+we had let the Crawlers fill the entire space, there would always be a very 
+boring path following the outer labyrinth wall, which is the reason we 
+introduced the RandCrawlers.
+<br><br>
+
+While our demo program normally shows dungeons in real time while they are 
+being created, this 
+design is created first, then shown from a stored "movie". This approach is 
+preferable when dungeons must be tested for playability, and some 
+will be rejected. We only show this here to demonstrate that the data structures 
+for this are already in place.
+<br>
+
+<div align="center">
+<font size="-1" color="Red">
+Crawler demo # 2<br>
+</font>
+<img src="capturedA2.gif" width=321 height=321 border=0 alt="crawlers@work # 2">
+</div><br><br>
+
+<div align="center"><a href="manual1.html"><img src="Prev.gif" width=80 
+height=40 border=0 alt="general introduction"></a>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<a href="index.html"><img src="Contents.gif" width=80 height=40 border=0 alt="contents"></a>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<a href="manual3.html"><img src="Next.gif" width=80 height=40 border=0 alt="next page"></a>
+</div>
+</body>
+</html>

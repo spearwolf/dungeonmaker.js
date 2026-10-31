@@ -1,0 +1,148 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html>
+<head>
+	<title>DungeonMaker Manual</title>
+</head>
+
+<body link="Red" vlink="Maroon" alink="Black" bgcolor="White">
+<div align="center"><font face="" color="Red"><h2>DungeonMaker</h2>
+<h3>
+How Dungeons are Created
+</h3></font>
+</div>
+
+First, you can put as many pre-placed design elements into the dungeon as you 
+like, such as guaranteed-open spaces, or rooms and walls. You can use these 
+to place special NPC's and other story hooks, for which you want a specific 
+environment. The DungeonMaker then constructs a random dungeon around these 
+pre-placed elements. This is done by a population of <i>Builders</i>, little 
+alife-agents which scurry through the dungeon, leaving walls or tunnels in 
+their wake.<br><br>
+
+Where the background of the dungeon is open, Builders of subclass 
+<i>WallCrawler</i> (referred to as <i>Crawlers</i>) are active 
+building walls. Where the background is closed, <i>Tunnelers</i> do their 
+thing. While Crawlers only spawn other Crawlers, Tunnelers also spawn 
+<i>Roomies</i>, which (surprise!) make rooms. This whole process is governed by 
+a large number of parameters, which are specified in a <i>design</i>-file.<br><br>
+
+Every Builder belongs to a specific generation, with generation X starting 
+its life only after generation X-1 has died out. Builders die either because 
+they have run out of space, or 
+because they have reached their maximum age. While they are alive, they make 
+a series of steps, which consist of building a stretch of wall or tunnel, 
+possibly changing direction, and possibly spawning one or two babies.<br><br>
+
+<div align="center"><font face="" color="Red">
+<h3>
+Crawlers
+</h3></font>
+</div>
+
+The behavior of a solitary Crawler is dominated by the parameters 
+<i>corrWidth</i> (which determines how much space it leaves between the walls 
+it builds and other closed squares), <i>stepLength</i> (which determines how 
+many open squares it can fill with wall squares each step), and 
+<i>changeDirProb</i> (which is the percentage of cases in which this Crawler 
+will change direction at the end of a step). The first two parameters are 
+the same for all members of one generation, whereas the third is inherited 
+(with some random mutation) from the parent Crawler. Inherited parameters 
+make it possible to have labyrinths with different characteristics in different 
+regions (depending on the parameters of the
+design Crawlers which are the ancestors of their respective regions), 
+whereas per-generation 
+parameters help to ensure that Crawlers work well together and make it easy to 
+enforce a desired frequency of walls/open spaces in a design.<br><br>
+
+Crawlers can come into existence as <i>design Crawlers</i>, whose parameters 
+are specified in the design file (overriding parameters normally determined by 
+generation), or as <i>RandCrawlers</i>, which randomly start off the edge of 
+the map. All RandCrawlers have the same inheritable parameters, and in the 
+design file we can specify the probabilities with which they will be born in any 
+given generation. While design Crawlers can be "closed", which allows
+them to join an existing wall and thus makes it possible to block a passage, all 
+RandCrawlers and baby Crawlers are "open", and must leave an opening at the end of 
+their run. This means that, unless the designer has placed closed Crawlers in 
+the wrong place, the Crawlers will never cut off a part of the labyrinth. 
+Everything is guaranteed to remain accessible.<br><br>
+
+<div align="center"><font face="" color="Red">
+<h3>
+Tunnelers
+</h3></font>
+</div>
+
+Tunnelers are much more complicated than Crawlers. While Crawlers only build 
+walls that are one square wide, Tunnelers can build tunnels of any uneven width. 
+They can also build <i>anterooms</i>, which are most often placed in front of 
+rooms, or at the intersection of tunnels, and which I envision to be places 
+where the MOBs (mobile objects inhabiting the dungeon) meet and socialize. Finally, 
+they can spawn <i>Roomies</i>. Roomies are Builders that make just one step, or none: 
+If they see enough closed space for the size of room they want to excavate, they 
+build their room in one fell swoop when their generation comes alive, otherwise 
+they self-destruct.<br><br>
+
+Tunnelers only come into existence as design Tunnelers, or as babies. Usually 
+there's one design Tunneler starting at every entrance to the dungeon that 
+leads into an area of closed squares, and at every door to a pre-placed room 
+in such closed areas. While Tunnelers are fond of joining with each other  
+and of busting into rooms, 
+in general there is no guarantee that they will do so, and it is possible 
+that the tunnel systems made by two Tunnelers and their offspring will never connect. 
+If one Tunneler starts from a dungeon entry, and another from an exit, then 
+the software that uses the DungeonMaker will have to test that the two points have 
+in fact been connected, and run the Dungeonmaker again with another random 
+seed if they are not. This is a special case of a <i>playability-test</i>, 
+which we expect to implement for any commercial use of the DungeonMaker, and 
+which would generally test for more criteria than mere connectedness.
+<br><br>
+
+<div align="center"><font face="" color="Red">
+<h3>
+Miscellaneous
+</h3></font>
+</div>
+
+After all the Builders have run their course, the DungeonMaker can do two more 
+things. It can place rooms in open areas that have been worked by Crawlers - 
+this is done by searching for areas that can be turned into closed rooms by placing 
+a door in a single square. And then it can place treasure and MOBs. This 
+process will have to be fine-tuned for every single game the DungeonMaker is 
+used for, and has been implemented as a generic demonstration only. While the 
+Dungeonmaker can place treasure and MOBs of an unlimited number of categories, 
+the graphic program boils it all down to 3 colors each, with the more lively 
+colors being used for bigger treasure and MOBs.<br><br>
+
+The demo program that presents the output of the DungeonMaker shows the 
+construction of the dungeons as a movie. This is interesting to watch and, if 
+you watch it enough, will give you a deep intuitive insight into the dungeon 
+creation process. I was able to greatly improve on the performance of the Crawlers 
+in version 2 after having watched their version 1 brethren do their thing 
+thousands of times. Tunnelers are new in version 2, and a similar improvement 
+in future versions of the program seems possible - I have a few ideas, but before
+I radically re-write the Tunnelers I want to ponder them for a few months.
+<br><br>
+After the program has presented a dungeon, you 
+must close the window where it is shown, whereupon you will be presented, on the 
+command line, with the choice to enter '<b>q</b>' for '<i>quit the program</i>', '<b>n</b>' for 
+'<i>next design</i>', or '<b>r</b>' for '<i>repeat this design with a different 
+random seed</i>'. 
+I urge you to choose <b>r</b> as often as you have time and patience in order to 
+see both the variability and the similarity of dungeons made from one design 
+file.<br><br>
+
+On the following pages we show examples of the dungeons constructed from the 
+design files that come with the program, we comment on the designs, and explain 
+as many important details of the program as we can think of. We recommend reading 
+these pages concurrently with running the program.<br><br>
+
+
+<div align="center"><a href="manual0.html"><img src="Prev.gif" width=80 height=40 border=0 alt="this link leads you nowhere, so don't click it"></a>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<a href="index.html"><img src="Contents.gif" width=80 height=40 border=0 alt="contents"></a>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<a href="manual2.html"><img src="Next.gif" width=80 height=40 border=0 alt="next page"></a>
+</div>
+</body>
+</html>

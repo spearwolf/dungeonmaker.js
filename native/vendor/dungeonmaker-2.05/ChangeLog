@@ -1,0 +1,82 @@
+2005-12-06 10:32  acdalton
+
+	* Makefile, Makefile.am, Makefile.demo, aclocal.m4, config.guess,
+	  config.sub, configure.ac, depcomp, ltmain.sh: - final
+	  changes/additions for gnu build compatibility
+
+2005-12-05 21:12  acdalton
+
+	* AUTHORS, COPYING, ChangeLog, INSTALL, Makefile.am, NEWS, README,
+	  README.txt, aclocal.m4, configure.ac, install-sh, missing: -
+	  further preparatios for GNU build system
+
+2005-12-05 20:08  acdalton
+
+	* VERSION, configure.ac: - preparing for GNU build system
+
+2005-11-21 09:13  acdalton
+
+	* Makefile.bsd: - updated Makefile.bsd with correct version number
+
+2005-11-21 09:11  acdalton
+
+	* DungeonMaker.cpp, DungeonMaker.h, Makefile, Makefile.bsd,
+	  VERSION, main.cpp: - merged changes from forked project which
+	  include:   - creation of generate() method in DungeonMaker object
+	  which abstracts the previous main.cpp   - no longer requiring
+	  that design data be read from files; one can pass a string to the
+	  new AcceptDesign() method (ReadDesign still works as it used to)
+	  - added accessors GetRooms(), GetMOBInfo(), and GetTreasInfo()
+	  for help with customized plonking   - some minor changes to make
+	  gcc happy - Makefile has been altered to not include the SDL
+	  material (although all that is still available in the interactive
+	  subdirectory) - Makefile.bsd is now available to make building
+	  shared libraries on such systems easier
+
+2005-11-21 09:05  acdalton
+
+	* Makefile, Makefile.sdl: - making room for new Makefile
+
+2005-11-21 09:02  acdalton
+
+	* SDL_Renderer.cpp, SDL_Renderer.h, interactive/SDL_Renderer.cpp,
+	  interactive/SDL_Renderer.h, interactive/main.cpp,
+	  interactive/Windows/README.txt, interactive/Windows/main.cpp: -
+	  altering directory structure
+
+2005-11-21 08:47  acdalton
+
+	* DungeonMaker.cpp, DungeonMaker.h, Makefile, SDL_Renderer.cpp,
+	  SDL_Renderer.h, design, design2, design3A, design4A, design6,
+	  design7, designEmpty, designEmpty2, designOld1, main.cpp,
+	  README.txt, design3WithTunnelers, design5,
+	  DM2_Manual/Contents.gif, DM2_Manual/Next.gif,
+	  DM2_Manual/Prev.gif, DM2_Manual/capturedA2.gif,
+	  DM2_Manual/capturedA3.gif, DM2_Manual/capturedA8.gif,
+	  DM2_Manual/index.html, DM2_Manual/manual0.html,
+	  DM2_Manual/manual1.html, DM2_Manual/manual9.html,
+	  DM2_Manual/capturedA4.gif, DM2_Manual/capturedA5.gif,
+	  DM2_Manual/capturedA6.gif, DM2_Manual/capturedA7.gif,
+	  DM2_Manual/manual2.html, DM2_Manual/manual3.html,
+	  DM2_Manual/capturedA1.gif, DM2_Manual/manDesign.txt,
+	  DM2_Manual/manVision.html, DM2_Manual/manual4.html,
+	  DM2_Manual/manual5.html: - Initial import of v2.02 code
+
+2005-11-21 08:47  acdalton
+
+	* DungeonMaker.cpp, DungeonMaker.h, Makefile, SDL_Renderer.cpp,
+	  SDL_Renderer.h, design, design2, design3A, design4A, design6,
+	  design7, designEmpty, designEmpty2, designOld1, main.cpp,
+	  README.txt, design3WithTunnelers, design5,
+	  DM2_Manual/Contents.gif, DM2_Manual/Next.gif,
+	  DM2_Manual/Prev.gif, DM2_Manual/capturedA2.gif,
+	  DM2_Manual/capturedA3.gif, DM2_Manual/capturedA8.gif,
+	  DM2_Manual/index.html, DM2_Manual/manual0.html,
+	  DM2_Manual/manual1.html, DM2_Manual/manual9.html,
+	  DM2_Manual/capturedA4.gif, DM2_Manual/capturedA5.gif,
+	  DM2_Manual/capturedA6.gif, DM2_Manual/capturedA7.gif,
+	  DM2_Manual/manual2.html, DM2_Manual/manual3.html,
+	  DM2_Manual/capturedA1.gif, DM2_Manual/manDesign.txt,
+	  DM2_Manual/manVision.html, DM2_Manual/manual4.html,
+	  DM2_Manual/manual5.html: Initial revision
+
