@@ -5,7 +5,6 @@
     "moduleResolution": "Bundler",
     "lib": ["ES2022", "DOM"],
     "types": ["node", "vitest/globals"],
-    "allowJs": true,
     "noEmit": true,
     "resolveJsonModule": true,
     "declaration": false,
