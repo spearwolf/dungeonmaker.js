@@ -14,6 +14,7 @@ const COVERED = [
   /^native\/src\//,
   /^native\/test\//,
   /^native\/build\.sh$/,
+  /^site\/(src|scripts|test|components|\.vitepress)\/.*\.(ts|mjs|vue)$/,
 ];
 
 /**

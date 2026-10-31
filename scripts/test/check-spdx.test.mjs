@@ -20,3 +20,14 @@ test('reports files without header or with header below line 3', () => {
     ]),
   ).toEqual(['c.ts', 'd.ts']);
 });
+
+test('Vue components carry the header as an HTML comment in line 1', () => {
+  expect(
+    findMissingSpdx([
+      {
+        path: 'site/components/X.vue',
+        content: '<!-- SPDX-License-Identifier: GPL-3.0-or-later -->\n<template></template>',
+      },
+    ]),
+  ).toEqual([]);
+});

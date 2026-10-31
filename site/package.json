@@ -1,0 +1,31 @@
+{
+  "name": "dungeonmaker-js-site",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vitepress dev",
+    "build": "vitepress build",
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "vitest run",
+    "e2e": "node scripts/e2e.mjs"
+  },
+  "dependencies": {
+    "@codemirror/language": "6.13.1",
+    "@codemirror/lint": "6.9.7",
+    "@codemirror/state": "6.7.6",
+    "@codemirror/view": "6.43.15",
+    "@codemirror/lang-json": "6.0.2",
+    "@lezer/common": "1.5.5",
+    "codemirror": "6.0.2",
+    "codemirror-json-schema": "0.8.1",
+    "dungeonmaker-js": "workspace:*",
+    "vitepress": "1.6.4",
+    "vue": "3.5.44"
+  },
+  "devDependencies": {
+    "typedoc": "0.28.20",
+    "typedoc-plugin-markdown": "4.14.1",
+    "typedoc-vitepress-theme": "1.1.4",
+    "typescript": "6.0.3"
+  }
+}

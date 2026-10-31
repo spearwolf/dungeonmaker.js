@@ -3,7 +3,17 @@
   "vcs": { "enabled": true, "clientKind": "git", "useIgnoreFile": true },
   "files": {
     "ignoreUnknown": true,
-    "includes": ["**", "!native/vendor", "!packages/*/wasm", "!**/dist", "!docs", "!pnpm-lock.yaml"]
+    "includes": [
+      "**",
+      "!native/vendor",
+      "!packages/*/wasm",
+      "!**/dist",
+      "!docs",
+      "!site/.vitepress/dist",
+      "!site/.vitepress/cache",
+      "!site/api",
+      "!pnpm-lock.yaml"
+    ]
   },
   "formatter": { "enabled": true, "indentStyle": "space", "indentWidth": 2, "lineWidth": 100 },
   "linter": { "enabled": true, "rules": { "preset": "recommended" } },

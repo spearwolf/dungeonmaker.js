@@ -1,0 +1,26 @@
+{
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "lib": ["ES2022", "DOM"],
+    "types": ["node", "vitest/globals"],
+    "allowJs": true,
+    "noEmit": true,
+    "resolveJsonModule": true,
+    "declaration": false,
+    "paths": {
+      "dungeonmaker-js": ["../packages/dungeonmaker-js/src/index.ts"],
+      "dungeonmaker-js/core": ["../packages/dungeonmaker-js/src/core.ts"],
+      "dungeonmaker-js/schema": ["../packages/dungeonmaker-js/src/schema.ts"],
+      "dungeonmaker-js/presets": ["../packages/dungeonmaker-js/src/presets.ts"],
+      "dungeonmaker-js/render": ["../packages/dungeonmaker-js/src/render.ts"],
+      "dungeonmaker-js/export": ["../packages/dungeonmaker-js/src/export.ts"],
+      "dungeonmaker-js/node": ["../packages/dungeonmaker-js/src/node/index.ts"],
+      "dungeonmaker-js/design.schema.json": ["../packages/dungeonmaker-js/design.schema.json"],
+      "dungeonmaker-js/dungeon.schema.json": ["../packages/dungeonmaker-js/dungeon.schema.json"]
+    }
+  },
+  "include": ["src", "test", "scripts", ".vitepress"],
+  "exclude": [".vitepress/dist", ".vitepress/cache"]
+}

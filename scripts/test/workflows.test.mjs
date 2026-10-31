@@ -61,3 +61,11 @@ test('the bundler smoke test is part of the required ci gate', () => {
   expect(jobs.ci.needs).toContain('bundlers');
   expect(jobs.bundlers.steps.some((s) => s.run?.includes('pnpm bundler:smoke'))).toBe(true);
 });
+
+test('the site build and its browser checks are part of the required ci gate', () => {
+  const { jobs } = load('ci.yml');
+  expect(jobs.ci.needs).toContain('site');
+  const runs = jobs.site.steps.map((s) => s.run ?? '');
+  expect(runs).toEqual(expect.arrayContaining(['pnpm site:build', 'pnpm site:e2e']));
+  expect(runs.some((r) => /playwright install --with-deps chromium/.test(r))).toBe(true);
+});

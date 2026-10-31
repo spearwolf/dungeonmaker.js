@@ -1,2 +1,5 @@
 packages:
   - "packages/*"
+  - "site"
+allowBuilds:
+  esbuild: false
