@@ -69,3 +69,24 @@ test('the site build and its browser checks are part of the required ci gate', (
   expect(runs).toEqual(expect.arrayContaining(['pnpm site:build', 'pnpm site:e2e']));
   expect(runs.some((r) => /playwright install --with-deps chromium/.test(r))).toBe(true);
 });
+
+test('pages.yml builds the site and uploads the VitePress output', () => {
+  const { jobs } = load('pages.yml');
+  expect(jobs.build.steps.some((s) => s.run === 'pnpm site:build')).toBe(true);
+  const upload = jobs.build.steps.find((s) => s.uses?.startsWith('actions/upload-pages-artifact@'));
+  expect(upload?.with?.path).toBe('site/.vitepress/dist');
+});
+
+test('pages.yml deploys only from master with minimal permissions', () => {
+  const wf = load('pages.yml');
+  expect(wf.on.push.branches).toEqual(['master']);
+  expect(wf.on).toHaveProperty('workflow_dispatch');
+  expect(wf.permissions).toEqual({ contents: 'read' });
+  expect(wf.concurrency).toEqual({ group: 'pages', 'cancel-in-progress': false });
+  const { deploy } = wf.jobs;
+  expect(deploy.needs).toBe('build');
+  expect(deploy.if).toBe("github.ref == 'refs/heads/master'");
+  expect(deploy.permissions).toEqual({ pages: 'write', 'id-token': 'write' });
+  expect(deploy.environment.name).toBe('github-pages');
+  expect(deploy.steps.some((s) => s.uses?.startsWith('actions/deploy-pages@'))).toBe(true);
+});

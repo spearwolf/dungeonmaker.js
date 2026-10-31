@@ -51,8 +51,8 @@ version is published by hand.
    for a click.
 10. **Actions → General → Workflow permissions:** keep the default (read). The release job
     requests `contents: write` and `id-token: write` itself.
-11. **Pages:** leave as is until the site workflow exists; the 2014 demo keeps running from the
-    `gh-pages` branch.
+11. **Pages:** switch it on as described in [Site deployment](#site-deployment) below; that
+    section replaces any manual Pages setup.
 12. Recommended: **Rules → Rulesets** for `master` requiring the status check `ci`.
 13. The repository must stay **public**, otherwise there is no provenance.
 14. **Secrets: none.** Do not create an `NPM_TOKEN`.
@@ -79,6 +79,19 @@ CI does the rest: _Actions → release_, npmjs.com (with provenance badge), _Rel
 repository (with the package tarball and `source.tar.gz` as the corresponding source).
 Prerelease versions (`1.2.0-beta.1`) are published with the dist-tag `next`. If a push touches
 `package.json` without raising the version, the `check` job ends quietly.
+
+## Site deployment
+
+`.github/workflows/pages.yml` builds the VitePress site (`pnpm site:build`) and deploys it to
+GitHub Pages on every push to `master` that touches `site/**`, `packages/dungeonmaker-js/**`,
+`pnpm-lock.yaml` or the workflow itself, and on _Run workflow_. The `deploy` job only runs on
+`master`. Owner steps, once:
+
+1. **Settings → Pages → Source:** "GitHub Actions".
+2. **Actions → `pages` → Run workflow** on `master`.
+3. Check the URL the `deploy` job reports (expected: `https://spearwolf.github.io/dungeonmaker.js/`).
+4. The `gh-pages` branch (the 2014 demo) is no longer maintained after that, but it is not
+   deleted; the tag `legacy-2014-demo` preserves it.
 
 ## Pitfalls
 
