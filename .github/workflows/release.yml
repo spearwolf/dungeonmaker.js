@@ -74,9 +74,10 @@ jobs:
       - name: Fetch the published tarball
         run: |
           mkdir -p out
-          for _ in 1 2 3 4 5 6; do
+          # A fresh version can take a minute or more to become fetchable; wait up to 5 minutes.
+          for _ in $(seq 1 20); do
             npm pack "dungeonmaker-js@$VERSION" --pack-destination out && break
-            sleep 10
+            sleep 15
           done
           test -f "out/dungeonmaker-js-$VERSION.tgz"
       - run: git archive --format=tar.gz --prefix="dungeonmaker.js-v$VERSION/" -o out/source.tar.gz HEAD
