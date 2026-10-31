@@ -1,0 +1,55 @@
+# The file name MUST stay release.yml: npm Trusted Publishing checks it (see RELEASING.md).
+name: release
+on:
+  push:
+    branches: [master]
+    paths: ["packages/dungeonmaker-js/package.json"]
+  workflow_dispatch:
+concurrency:
+  group: release
+  cancel-in-progress: false
+permissions:
+  contents: read
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    outputs:
+      publish: ${{ steps.decide.outputs.publish }}
+      version: ${{ steps.decide.outputs.version }}
+      dist-tag: ${{ steps.decide.outputs.dist-tag }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: jdx/mise-action@v5
+      - run: pnpm install --frozen-lockfile
+      - id: decide
+        run: node scripts/release-check.mjs
+
+  publish:
+    needs: check
+    if: needs.check.outputs.publish == 'true'
+    runs-on: ubuntu-latest # GitHub-hosted runners are required for Trusted Publishing
+    environment: npm
+    permissions:
+      contents: write
+      id-token: write
+    env:
+      VERSION: ${{ needs.check.outputs.version }}
+      DIST_TAG: ${{ needs.check.outputs.dist-tag }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: jdx/mise-action@v5
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm lint && pnpm typecheck && pnpm test && pnpm build && pnpm size && pnpm check:package && pnpm pack:smoke
+      - run: npm pkg set gitHead="$GITHUB_SHA"
+        working-directory: packages/dungeonmaker-js
+      - run: pnpm --filter dungeonmaker-js pack --pack-destination "$GITHUB_WORKSPACE/out"
+      - name: npm >= 11.5.1 (Trusted Publishing)
+        run: |
+          node -e "process.exit(require('semver').gte(process.argv[1], '11.5.1') ? 0 : 1)" "$(npm --version)"
+      # Publish first: if it fails, no orphaned tag or release exists. Retry via workflow_dispatch.
+      - run: npm publish "out/dungeonmaker-js-$VERSION.tgz" --access public --tag "$DIST_TAG"
+      - run: git archive --format=tar.gz --prefix="dungeonmaker.js-v$VERSION/" -o out/source.tar.gz HEAD
+      - run: git tag "v$VERSION" && git push origin "v$VERSION"
+      - run: gh release create "v$VERSION" --generate-notes "out/dungeonmaker-js-$VERSION.tgz" out/source.tar.gz
+        env:
+          GH_TOKEN: ${{ github.token }}

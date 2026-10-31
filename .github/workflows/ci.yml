@@ -28,7 +28,7 @@ jobs:
         env:
           CXX: g++
           CXX_ALT: clang++
-          DM_REQUIRE_CXX_ALT: '1'
+          DM_REQUIRE_CXX_ALT: "1"
 
   # The committed wasm must be exactly what native/ builds (bit-reproducible, spec §8.1).
   wasm-drift:
