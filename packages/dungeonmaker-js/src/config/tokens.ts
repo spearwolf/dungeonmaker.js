@@ -109,3 +109,9 @@ export const CELL_TOKENS: Readonly<Record<CellName, string>> = {
   treasure3: 'TREAS3',
   column: 'COLUMN',
 };
+
+/**
+ * Smallest positive normal double. `>> double` reports anything closer to zero as a range
+ * error, so the design text carries no subnormal number (the only real one: the aspect ratio).
+ */
+export const DOUBLE_MIN_NORMAL = 2.2250738585072014e-308;

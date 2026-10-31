@@ -456,9 +456,9 @@
               },
               "corridorWidth": {
                 "type": "integer",
-                "minimum": 0,
+                "minimum": 1,
                 "maximum": 2147483647,
-                "description": "Width of the dug corridor in cells. Upstream: WS cW."
+                "description": "Number of cells the crawler leaves open between the cells it fills and those already filled; at least 1. Upstream: WS cW."
               },
               "genes": {
                 "type": "object",
@@ -506,7 +506,7 @@
               },
               "open": {
                 "type": "boolean",
-                "description": "Whether the crawler digs open cells (true) or closed cells (false). Upstream: WS op."
+                "description": "true: the crawler always leaves an opening at the end of its run; false: it tries to connect its wall to an existing closed cell. Upstream: WS op."
               }
             },
             "additionalProperties": false
@@ -597,9 +597,9 @@
                   },
                   "corridorWidth": {
                     "type": "integer",
-                    "minimum": 0,
+                    "minimum": 1,
                     "maximum": 2147483647,
-                    "description": "Width of the dug corridor in cells. Upstream: WS cW."
+                    "description": "Number of cells the crawler leaves open between the cells it fills and those already filled; at least 1. Upstream: WS cW."
                   },
                   "genes": {
                     "type": "object",
@@ -727,9 +727,9 @@
                   },
                   "corridorWidth": {
                     "type": "integer",
-                    "minimum": 0,
+                    "minimum": 1,
                     "maximum": 2147483647,
-                    "description": "Width of the dug corridor in cells. Upstream: WS cW."
+                    "description": "Number of cells the crawler leaves open between the cells it fills and those already filled; at least 1. Upstream: WS cW."
                   },
                   "genes": {
                     "type": "object",
@@ -810,7 +810,7 @@
             "maximum": 100,
             "description": "Percent value."
           },
-          "description": "Percent chance that a tunnel widens, per tunnel width; beyond the end the last value applies. Upstream: ZU (terminator -1).",
+          "description": "Percent chance that the offspring of a tunneler gets a tunnel one cell wider, per generation of the parent; beyond the end the last value applies. Per generation, sizeUpProbability + sizeDownProbability must not exceed 100. Upstream: ZU (terminator -1).",
           "minItems": 1
         },
         "sizeDownProbability": {
@@ -821,7 +821,7 @@
             "maximum": 100,
             "description": "Percent value."
           },
-          "description": "Percent chance that a tunnel narrows, per tunnel width; beyond the end the last value applies. Upstream: ZD (terminator -1).",
+          "description": "Percent chance that the offspring of a tunneler gets a tunnel one cell narrower, per generation of the parent; beyond the end the last value applies. Upstream: ZD (terminator -1).",
           "minItems": 1
         },
         "anteroomProbability": {
@@ -842,7 +842,7 @@
             "maximum": 100,
             "description": "Percent value."
           },
-          "description": "Preference to join existing areas, per tunnel width; beyond the end the last value applies. Upstream: J (terminator -1).",
+          "description": "Preference to join existing areas, per generation. DungeonMaker 2.05 reads this list but never uses it (GetJoinPref has no caller); it only has to be non-empty. Upstream: J (terminator -1).",
           "minItems": 1
         },
         "maxAge": {
@@ -860,7 +860,7 @@
           "type": "integer",
           "minimum": 0,
           "maximum": 2147483647,
-          "description": "Generations a tunneler waits before it may widen. Upstream: M sizeUpGenDelay."
+          "description": "Generational delay for tunneler offspring that are wider than their parents; overrides the normal delay of spawnDelay.tunneler. Upstream: M sizeUpGenDelay."
         },
         "columns": {
           "type": "boolean",
@@ -1223,9 +1223,9 @@
         },
         "aspectRatio": {
           "type": "number",
-          "exclusiveMinimum": 0,
+          "minimum": 2.2250738585072014e-308,
           "exclusiveMaximum": 1,
-          "description": "Ratio of the short to the long room edge, between 0 and 1 exclusive. Upstream: M roomAspectRatio."
+          "description": "Ratio of the short to the long room edge, between 0 and 1 exclusive; the lower bound is the smallest normal double, because the design text cannot carry a subnormal number. Upstream: M roomAspectRatio."
         }
       },
       "additionalProperties": false,

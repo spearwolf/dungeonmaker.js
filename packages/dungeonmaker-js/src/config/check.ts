@@ -3,8 +3,10 @@
 /**
  * Semantic check of a `DesignConfig`: the rules the library enforces with `assert`,
  * out-of-range accesses or `exit()` (which would abort the WebAssembly core) rather
- * than with a return value. Always active in `toDesignText`, so a broken config
- * becomes a `DesignIssue` list instead of an abort.
+ * than with a return value, plus the values that send generation into an endless loop.
+ * Always active in `toDesignText`, so a broken config becomes a `DesignIssue` list
+ * instead of an abort or a hang. Values the library merely clamps or tolerates stay
+ * schema-only (`validateDesign`).
  *
  * Runs after the emit pass of `serialize.ts`, which already guarantees that every
  * value has the right JSON type, is an int32, and does not collide with a list
@@ -60,7 +62,9 @@ export function checkDesign(config: DesignConfig): DesignIssue[] {
     if (list.length === 0) issue(path, 'must have at least one entry');
   }
 
-  // 4. a tunneler must be able to do at least one of growing and shrinking each generation
+  // 4. per generation, size up + size down probability ≤ 100: both are slices of one
+  // `rand()%101` roll (DungeonMaker.cpp:2080-2087). The path names an element that exists:
+  // beyond the end of sizeUpProbability, the repeated last value is not addressable.
   const up = tunnelers.sizeUpProbability;
   const down = tunnelers.sizeDownProbability;
   if (up.length > 0 && down.length > 0) {
@@ -68,7 +72,9 @@ export function checkDesign(config: DesignConfig): DesignIssue[] {
       const total = repeatLast(up, g) + repeatLast(down, g);
       if (total > 100) {
         issue(
-          `/tunnelers/sizeUpProbability/${g}`,
+          g < up.length
+            ? `/tunnelers/sizeUpProbability/${g}`
+            : `/tunnelers/sizeDownProbability/${g}`,
           `size up and size down probability of generation ${g} add up to ${total}, more than 100`,
         );
       }
@@ -119,6 +125,43 @@ export function checkDesign(config: DesignConfig): DesignIssue[] {
   (tunnelers.seeds ?? []).forEach((t, i) => {
     if (!inside(t.location)) issue(`/tunnelers/seeds/${i}/location`, `must be ${where}`);
   });
+
+  // 9. builder values the library asserts on or never finishes with. Line numbers refer to
+  // native/vendor/dungeonmaker-2.05/DungeonMaker.cpp.
+  const atLeast = (path: string, value: number, min: number, why: string) => {
+    if (value < min) issue(path, `must be at least ${min}, got ${value}: ${why}`);
+  };
+  // Crawler corridor width: the WallCrawler constructor asserts `corridorWidth >= 0` (776),
+  // and StepAhead passes it as leftFree/rightFree to FrontFree (996), which asserts both
+  // are `>= 1` (786). Offspring and random crawlers take theirs from `crawlers.corridorWidth`
+  // (GetCorrWidth, CreateCrawler calls at 1116-1164 and 3145-3174).
+  const CORRIDOR = 'a crawler with a narrower corridor aborts the generator';
+  crawlers.corridorWidth.forEach((w, i) => {
+    atLeast(`/crawlers/corridorWidth/${i}`, w, 1, CORRIDOR);
+  });
+  // Generation: a builder whose generation is below the active one (which starts at 0) is
+  // skipped by StepAhead (984, 1498) but never deleted, so AdvanceGeneration (3530-3555)
+  // keeps reporting builders and generation never ends.
+  const GENERATION = 'a builder below generation 0 never runs and hangs the generator';
+  for (const [path, c] of seeds) {
+    atLeast(`${path}/corridorWidth`, c.corridorWidth, 1, CORRIDOR);
+    atLeast(`${path}/generation`, c.generation, 0, GENERATION);
+  }
+  (tunnelers.seeds ?? []).forEach((t, i) => {
+    const path = `/tunnelers/seeds/${i}`;
+    // Tunneler::StepAhead asserts `tunnelWidth >= 0` (1510) and `stepLength > 0` (2007).
+    atLeast(`${path}/stepLength`, t.stepLength, 1, 'a tunneler asserts a positive step length');
+    atLeast(`${path}/tunnelWidth`, t.tunnelWidth, 0, 'a tunneler asserts a tunnel width >= 0');
+    atLeast(`${path}/generation`, t.generation, 0, GENERATION);
+  });
+  // A widening tunneler puts its offspring at generation + sizeUpGenDelay (2132): a negative
+  // delay places them below the active generation, with the same endless loop.
+  atLeast(
+    '/tunnelers/sizeUpGenerationDelay',
+    tunnelers.sizeUpGenerationDelay,
+    0,
+    'offspring below the active generation never run and hang the generator',
+  );
 
   return issues;
 }

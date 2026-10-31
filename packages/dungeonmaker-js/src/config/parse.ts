@@ -37,6 +37,7 @@ import {
   DIRECTION_TOKENS,
   DIRECTIONS,
   type Direction,
+  DOUBLE_MIN_NORMAL,
 } from './tokens.js';
 
 const INTEGER = /^[+-]?\d+$/;
@@ -44,8 +45,6 @@ const REAL = /^[+-]?(\d+\.?\d*|\.\d+)([eE][+-]?\d+)?$/;
 const INT32_MIN = -2147483648;
 const INT32_MAX = 2147483647;
 const UINT32_MAX = 4294967295;
-/** Smallest positive normal double; `>> double` reports anything below as a range error. */
-const DOUBLE_MIN_NORMAL = 2.2250738585072014e-308;
 
 const DIRECTION_BY_TOKEN = new Map(DIRECTIONS.map((d) => [DIRECTION_TOKENS[d], d]));
 const CARDINAL_BY_TOKEN = new Map(CARDINAL_DIRECTIONS.map((d) => [DIRECTION_TOKENS[d], d]));

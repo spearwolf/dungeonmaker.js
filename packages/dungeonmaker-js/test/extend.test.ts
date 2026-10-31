@@ -57,3 +57,10 @@ test('__proto__ keys in a patch do not pollute', () => {
     Reflect.deleteProperty(Object.prototype, 'polluted');
   }
 });
+
+test('a value structuredClone cannot copy throws a DataCloneError, not a DesignValidationError', () => {
+  const patch = { map: { width: (() => 120) as unknown as number } };
+  expect(() => extendDesign(design5, patch)).toThrow(
+    expect.objectContaining({ name: 'DataCloneError' }),
+  );
+});

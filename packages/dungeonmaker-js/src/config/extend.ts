@@ -39,6 +39,13 @@ function merge(target: Record<string, unknown>, patch: Record<string, unknown>):
  * Derives a design from `base`: plain objects merge deeply, arrays and primitives from
  * `patch` replace the base value, `undefined` is skipped. The result shares nothing with
  * `base` or `patch`. Does not validate; `toDesignText` does.
+ *
+ * `base` and `patch` must be JSON-like plain data (structured-cloneable), because both are
+ * copied with `structuredClone`. A class instance does not throw but arrives as a plain
+ * object without its prototype and private fields.
+ *
+ * @throws DOMException named `DataCloneError` (not a `DesignValidationError`) if a value
+ *   cannot be cloned at all, such as a function or a symbol.
  */
 export function extendDesign(base: DesignConfig, patch: DesignPatch): DesignConfig {
   const result = structuredClone(base);

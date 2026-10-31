@@ -30,6 +30,7 @@ import {
   CELL_TOKENS,
   DIRECTION_TOKENS,
   DIRECTIONS,
+  DOUBLE_MIN_NORMAL,
 } from './tokens.js';
 
 const INT32_MIN = -2147483648;
@@ -90,10 +91,19 @@ class Emitter {
     return String(v || 0); // no "-0"
   }
 
-  /** `String(r)` is the shortest text that `>> double` reads back as exactly `r`. */
+  /**
+   * `String(r)` is the shortest text that `>> double` reads back as exactly `r`; a
+   * subnormal `r` is the exception, `>> double` fails on it with a range error.
+   */
   num(path: string, v: unknown): string {
     if (typeof v !== 'number' || !Number.isFinite(v)) {
       return this.#issue(path, `must be a finite number, got ${describe(v)}`);
+    }
+    if (v !== 0 && Math.abs(v) < DOUBLE_MIN_NORMAL) {
+      return this.#issue(
+        path,
+        `must be 0 or at least ${DOUBLE_MIN_NORMAL} in magnitude, the design text cannot carry the subnormal ${v}`,
+      );
     }
     return String(v || 0);
   }

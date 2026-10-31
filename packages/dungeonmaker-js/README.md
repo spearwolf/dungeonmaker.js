@@ -27,10 +27,14 @@ import { extendDesign, toDesignText } from 'dungeonmaker-js';
 import { loadCore } from 'dungeonmaker-js/core';
 import * as presets from 'dungeonmaker-js/presets';
 
-const design = extendDesign(presets.design3A, { map: { width: 80, height: 60 } });
+const design = extendDesign(presets.designEmpty, { map: { width: 80, height: 60 } });
 const core = await loadCore();
 const { width, height, cells } = core.generate(toDesignText(design), 42);
 ```
+
+The presets are shared objects: derive variants with `extendDesign`, never mutate a preset.
+`toDesignText` throws a `DesignValidationError` (with a JSON Pointer per issue) for a design the
+generator cannot run, for example rooms or builders that fall outside a smaller map.
 
 Add `"$schema": "https://unpkg.com/dungeonmaker-js/design.schema.json"` to a JSON design for
 editor autocomplete and validation; `validateDesign` from `dungeonmaker-js/schema` checks a

@@ -17,6 +17,7 @@ import {
   CARDINAL_DIRECTIONS,
   CELL_NAMES,
   DIRECTIONS,
+  DOUBLE_MIN_NORMAL,
 } from '../config/tokens.js';
 
 export const DESIGN_SCHEMA_ID = 'https://unpkg.com/dungeonmaker-js/design.schema.json';
@@ -110,7 +111,10 @@ const crawlerBaseFields = {
     { min: 0 },
   ),
   stepLength: int('Length of one straight run in cells. Upstream: WS sL.', { min: 1 }),
-  corridorWidth: int('Width of the dug corridor in cells. Upstream: WS cW.', { min: 0 }),
+  corridorWidth: int(
+    'Number of cells the crawler leaves open between the cells it fills and those already filled; at least 1. Upstream: WS cW.',
+    { min: 1 },
+  ),
   genes: genesOf('Gene set the crawler hands down to its offspring. Upstream: WS genes.'),
 };
 
@@ -118,7 +122,7 @@ export const CrawlerSeedSchema = Type.Object(
   {
     ...crawlerBaseFields,
     open: bool(
-      'Whether the crawler digs open cells (true) or closed cells (false). Upstream: WS op.',
+      'true: the crawler always leaves an opening at the end of its run; false: it tries to connect its wall to an existing closed cell. Upstream: WS op.',
     ),
   },
   strict,
@@ -433,11 +437,11 @@ const DesignConfigObject = Type.Object(
     tunnelers: Type.Object(
       {
         sizeUpProbability: percentList(
-          'Percent chance that a tunnel widens, per tunnel width; beyond the end the last value applies. Upstream: ZU (terminator -1).',
+          'Percent chance that the offspring of a tunneler gets a tunnel one cell wider, per generation of the parent; beyond the end the last value applies. Per generation, sizeUpProbability + sizeDownProbability must not exceed 100. Upstream: ZU (terminator -1).',
           { minItems: 1 },
         ),
         sizeDownProbability: percentList(
-          'Percent chance that a tunnel narrows, per tunnel width; beyond the end the last value applies. Upstream: ZD (terminator -1).',
+          'Percent chance that the offspring of a tunneler gets a tunnel one cell narrower, per generation of the parent; beyond the end the last value applies. Upstream: ZD (terminator -1).',
           { minItems: 1 },
         ),
         anteroomProbability: Type.Array(
@@ -448,7 +452,7 @@ const DesignConfigObject = Type.Object(
           },
         ),
         joinPreference: percentList(
-          'Preference to join existing areas, per tunnel width; beyond the end the last value applies. Upstream: J (terminator -1).',
+          'Preference to join existing areas, per generation. DungeonMaker 2.05 reads this list but never uses it (GetJoinPref has no caller); it only has to be non-empty. Upstream: J (terminator -1).',
           { minItems: 1 },
         ),
         maxAge: Type.Array(int('Maximum age in steps.', { min: 1 }), {
@@ -457,7 +461,7 @@ const DesignConfigObject = Type.Object(
             'Maximum age per generation; beyond the end the last value applies. Upstream: AT (terminator 0).',
         }),
         sizeUpGenerationDelay: int(
-          'Generations a tunneler waits before it may widen. Upstream: M sizeUpGenDelay.',
+          'Generational delay for tunneler offspring that are wider than their parents; overrides the normal delay of spawnDelay.tunneler. Upstream: M sizeUpGenDelay.',
           {
             min: 0,
           },
@@ -534,10 +538,10 @@ const DesignConfigObject = Type.Object(
           { ...strict, description: 'Room size distributions. Upstream: GS, GB.' },
         ),
         aspectRatio: Type.Number({
-          exclusiveMinimum: 0,
+          minimum: DOUBLE_MIN_NORMAL,
           exclusiveMaximum: 1,
           description:
-            'Ratio of the short to the long room edge, between 0 and 1 exclusive. Upstream: M roomAspectRatio.',
+            'Ratio of the short to the long room edge, between 0 and 1 exclusive; the lower bound is the smallest normal double, because the design text cannot carry a subnormal number. Upstream: M roomAspectRatio.',
         }),
       },
       { ...strict, description: 'Room generation. Upstream: T, GS, GB, M.' },

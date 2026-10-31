@@ -3,7 +3,7 @@
 // Packs dungeonmaker-js, installs the tarball into an empty project outside the repo and
 // generates a dungeon through the published entry point. Proves the shipped files work.
 import { execFileSync } from 'node:child_process';
-import { mkdtempSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -11,6 +11,16 @@ import { fileURLToPath } from 'node:url';
 const repo = fileURLToPath(new URL('../', import.meta.url));
 const design = join(repo, 'native/vendor/dungeonmaker-2.05/design3A');
 const expected = '99cc67de'; // golden FNV-1a of design3A, seed 42
+
+// The README's JSON example runs verbatim against the tarball, so it cannot rot.
+const README_SECTION = '## JSON designs and presets';
+const readme = readFileSync(join(repo, 'packages/dungeonmaker-js/README.md'), 'utf8');
+const readmeExample = readme
+  .slice(readme.indexOf(README_SECTION))
+  .match(/```js\n([\s\S]*?)```/)?.[1];
+if (!readme.includes(README_SECTION) || !readmeExample) {
+  throw new Error(`README.md has no js code block under "${README_SECTION}"`);
+}
 
 const packDir = mkdtempSync(join(tmpdir(), 'dm-pack-'));
 const projectDir = mkdtempSync(join(tmpdir(), 'dm-smoke-'));
@@ -53,6 +63,17 @@ console.log('pack smoke ok: ' + hex);
 `,
   );
   run('node', ['smoke.mjs', design], projectDir);
+  writeFileSync(
+    join(projectDir, 'readme-example.mjs'),
+    `${readmeExample}
+if (!(width === design.map.width && height === design.map.height && cells.length === width * height)) {
+  console.error('README example produced ' + width + 'x' + height + ', ' + cells.length + ' cells');
+  process.exit(1);
+}
+console.log('README example ok: ' + width + 'x' + height);
+`,
+  );
+  run('node', ['readme-example.mjs'], projectDir);
 } finally {
   rmSync(packDir, { recursive: true, force: true });
   rmSync(projectDir, { recursive: true, force: true });

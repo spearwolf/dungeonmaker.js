@@ -1,6 +1,9 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
+
+import { toDesignText } from '../src/config/serialize.js';
 import { DesignValidationError, type DungeonMakerCore, loadCore } from '../src/core.js';
-import { dropRecord, fnv1a32, golden, readDesign } from './helpers.js';
+import { BROKEN_DESIGNS } from './fixtures/broken-designs.js';
+import { dropRecord, fnv1a32, golden, readDesign, vendorConfig } from './helpers.js';
 
 let core: DungeonMakerCore;
 beforeAll(async () => {
@@ -38,3 +41,15 @@ test.each([
   expect(() => core.generate(text, 1)).toThrow(DesignValidationError);
   expect(core.aborted).toBe(false);
 });
+
+// `core.generate` is synchronous: a hang here cannot be interrupted by the test timeout.
+// Each schema fixture was first probed alone in a separate process under a hard timeout.
+test.each(BROKEN_DESIGNS.filter((b) => b.stage === 'schema'))(
+  'schema-only defect "$name" passes toDesignText and generates',
+  (broken) => {
+    const d = structuredClone(vendorConfig('design5'));
+    broken.mutate(d);
+    expect(core.generate(toDesignText(d), 42).cells).toHaveLength(140 * 140);
+    expect(core.aborted).toBe(false);
+  },
+);

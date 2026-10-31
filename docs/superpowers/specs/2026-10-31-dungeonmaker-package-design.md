@@ -269,7 +269,7 @@ Alle Record-Typen des Formats werden abgedeckt: `D R BC BR BT ZU ZD F J T GS GB 
 
 Regeln, die das JSON vom Textformat abheben:
 
-- **Arrays statt Terminatoren.** Das Textformat beendet Listen je nach Record mit `-1`, `0`, `100`, `99` oder einer negativen Zahl. Im JSON gilt einheitlich: Der letzte Wert wiederholt sich. Der Serializer hängt den richtigen Terminator an.
+- **Arrays statt Terminatoren.** Das Textformat beendet Listen je nach Record mit `-1`, `0`, `100`, `99` oder einer negativen Zahl. JSON-Arrays enthalten den Terminator nie; der Serializer hängt den richtigen an und lehnt einen Wert ab, der mit ihm kollidiert. Was jenseits des Array-Endes gilt, bestimmt der Record, nicht das JSON: Bei `S`, `C`, `AC`, `AT`, `J`, `ZU` und `ZD` wiederholt sich der letzte Wert; bei `F` gilt danach 100 (immer ein Vorraum), bei `GS`/`GB` 100 % große Räume, bei `K` werden keine Crawler mehr gesetzt.
 - **Koordinaten in Bildschirmkonvention** (`x` = Spalte nach rechts, `y` = Zeile nach unten, Norden oben). Der Serializer tauscht genau an *einer* Stelle in die Library-Konvention. Die Himmelsrichtungen (`N`, `NE`, …) bleiben dabei unverändert, weil Library-Norden (`x--`) bereits »Zeile nach oben« bedeutet.
 - **Enums als lesbare Strings** (`"guaranteedClosed"`, `"insideRoomOpen"` …) mit Mapping auf die Library-Tokens.
 - **Nicht-Wirkendes wird nicht angeboten:** `showMovie` und `storeMovie` stehen nicht im Modell; `storeMovie` wird über `output.steps` gesetzt, `randSeed` kommt aus dem Request-Seed. Wirkungslos sind die Movie-Flags trotzdem nicht: Upstreams `MakeIteration()` erkennt Kartenänderungen nur, wenn eines davon gesetzt ist, sonst läuft jede Generation genau eine Iteration. Der Serializer setzt deshalb immer `showMovie = 1`; Designtext mit beiden Flags auf `0` lehnt der Import ab.
@@ -430,12 +430,14 @@ pnpm dlx dungeonmaker-js schema > design.schema.json
   "./render":      { "types": "./dist/render.d.ts",  "default": "./dist/render.js" },
   "./export":      { "types": "./dist/export.d.ts",  "default": "./dist/export.js" },
   "./node":        { "types": "./dist/node/index.d.ts", "node": "./dist/node/index.js" },
-  "./design.schema.json":  "./dist/design.schema.json",
-  "./dungeon.schema.json": "./dist/dungeon.schema.json",
-  "./dungeonmaker.wasm":   "./dist/dungeonmaker.wasm"
+  "./design.schema.json":  "./design.schema.json",
+  "./dungeon.schema.json": "./dungeon.schema.json",
+  "./dungeonmaker.wasm":   "./wasm/dungeonmaker.wasm"
 },
 "sideEffects": false
 ```
+
+Die Schemas liegen im Package-Root, nicht in `dist/`: Nur so löst die `$id`/`$schema`-URL `https://unpkg.com/dungeonmaker-js/design.schema.json` auf die ausgelieferte Datei auf. Das Wasm liegt im committeten Build-Output `wasm/` (§8.1) und wird von dort exportiert.
 
 Drin: JS, `.d.ts`, `.wasm`, Emscripten-Glue (ES-Modul), beide Schemas, README, LICENSE, NOTICE. Nicht drin: C++-Quellen, Tests, Site, Source Maps des Wasm (separat als Release-Asset). Der `./node`-Export hat bewusst nur die `node`-Condition, damit kein Browser-Bundler versehentlich `node:fs` einsammelt.
 

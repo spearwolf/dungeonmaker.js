@@ -6,7 +6,8 @@ import type { DesignConfig } from '../../src/schema/model.js';
  * A design with one defect, applied to a fresh copy of the 140 x 140 `design5`.
  *
  * - `check`: `toDesignText` throws a `DesignValidationError` with `path`.
- * - `schema`: only `validateDesign` reports it; generation is unharmed by the value.
+ * - `schema`: only `validateDesign` reports it; `toDesignText` accepts it and the core
+ *   generates without an abort or a hang (pinned in core-robustness.test.ts).
  * - no `path`: only the error type is asserted.
  */
 export interface BrokenDesign {
@@ -187,6 +188,121 @@ export const BROKEN_DESIGNS: readonly BrokenDesign[] = [
     },
   },
   {
+    name: 'pair member outside',
+    stage: 'check',
+    path: '/crawlers/pairs/0/first/location',
+    mutate: (d) => {
+      first(d.crawlers.pairs).first.location = { x: 140, y: 0 };
+    },
+  },
+  {
+    name: 'pair member with inconsistent directions',
+    stage: 'check',
+    path: '/crawlers/pairs/0/second/intendedDirection',
+    mutate: (d) => {
+      const { second } = first(d.crawlers.pairs);
+      second.direction = 'N';
+      second.intendedDirection = 'S';
+    },
+  },
+  {
+    name: 'empty tunneler max age list',
+    stage: 'check',
+    path: '/tunnelers/maxAge',
+    mutate: (d) => {
+      d.tunnelers.maxAge = [];
+    },
+  },
+  {
+    name: 'map too low',
+    stage: 'check',
+    path: '/map/height',
+    mutate: (d) => {
+      d.map.height = 2;
+    },
+  },
+  // The next ones abort the core with an assert or hang it in an endless loop.
+  {
+    name: 'crawler corridor width 0',
+    stage: 'check',
+    path: '/crawlers/seeds/0/corridorWidth',
+    mutate: (d) => {
+      first(d.crawlers.seeds).corridorWidth = 0;
+    },
+  },
+  {
+    name: 'negative pair member corridor width',
+    stage: 'check',
+    path: '/crawlers/pairs/0/second/corridorWidth',
+    mutate: (d) => {
+      first(d.crawlers.pairs).second.corridorWidth = -1;
+    },
+  },
+  {
+    name: 'negative corridor width per generation',
+    stage: 'check',
+    path: '/crawlers/corridorWidth/0',
+    mutate: (d) => {
+      d.crawlers.corridorWidth = [-1];
+    },
+  },
+  {
+    name: 'negative crawler generation',
+    stage: 'check',
+    path: '/crawlers/seeds/0/generation',
+    mutate: (d) => {
+      first(d.crawlers.seeds).generation = -1;
+    },
+  },
+  {
+    name: 'negative pair member generation',
+    stage: 'check',
+    path: '/crawlers/pairs/0/first/generation',
+    mutate: (d) => {
+      first(d.crawlers.pairs).first.generation = -1;
+    },
+  },
+  {
+    name: 'tunneler step length 0',
+    stage: 'check',
+    path: '/tunnelers/seeds/0/stepLength',
+    mutate: (d) => {
+      first(d.tunnelers.seeds).stepLength = 0;
+    },
+  },
+  {
+    name: 'negative tunnel width',
+    stage: 'check',
+    path: '/tunnelers/seeds/0/tunnelWidth',
+    mutate: (d) => {
+      first(d.tunnelers.seeds).tunnelWidth = -1;
+    },
+  },
+  {
+    name: 'negative tunneler generation',
+    stage: 'check',
+    path: '/tunnelers/seeds/0/generation',
+    mutate: (d) => {
+      first(d.tunnelers.seeds).generation = -1;
+    },
+  },
+  {
+    name: 'negative size-up generation delay',
+    stage: 'check',
+    path: '/tunnelers/sizeUpGenerationDelay',
+    mutate: (d) => {
+      d.tunnelers.sizeUpGenerationDelay = -1;
+    },
+  },
+  {
+    name: 'subnormal aspect ratio',
+    stage: 'check',
+    path: '/rooms/aspectRatio',
+    mutate: (d) => {
+      d.rooms.aspectRatio = 1e-310;
+    },
+  },
+  {
     name: 'missing rooms',
     stage: 'check',
     mutate: (d) => {
@@ -215,6 +331,33 @@ export const BROKEN_DESIGNS: readonly BrokenDesign[] = [
     path: '/crawlers/random/genes/changeDirection',
     mutate: (d) => {
       d.crawlers.random.genes.changeDirection = -5;
+    },
+  },
+  {
+    // tilesLaid = 0 moves the crawler to the default IntCoordinate (0, 0): odd, not fatal
+    name: 'crawler step length 0',
+    stage: 'schema',
+    path: '/crawlers/seeds/0/stepLength',
+    mutate: (d) => {
+      first(d.crawlers.seeds).stepLength = 0;
+    },
+  },
+  {
+    // a builder with maxAge <= 0 dies on its first step
+    name: 'negative crawler max age per generation',
+    stage: 'schema',
+    path: '/crawlers/maxAge/0',
+    mutate: (d) => {
+      d.crawlers.maxAge = [-2];
+    },
+  },
+  {
+    // AcceptDesign clamps gDLC < 1 to 1
+    name: 'negative last-chance generation delay',
+    stage: 'schema',
+    path: '/tunnelers/lastChance/generationDelay',
+    mutate: (d) => {
+      d.tunnelers.lastChance.generationDelay = -1;
     },
   },
   {
