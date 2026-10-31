@@ -8,7 +8,7 @@
  * Where upstream silently normalises or drops data, so does this parser, so the config
  * means exactly what the text meant. Where upstream would fail, assert or keep garbage,
  * it throws a `DesignValidationError`. It is stricter than `AcceptDesign` in places
- * (exact upper-case tags, no duplicate records, flags only 0 or 1), never different.
+ * (exact upper-case tags, no duplicate records, `WS` op only 0 or 1), never different.
  */
 
 import { DesignValidationError } from '../errors.js';
@@ -361,7 +361,10 @@ type Found = Pick<Singles, (typeof REQUIRED)[number]> & Partial<Singles>;
 const isSingleTag = (tag: string): tag is SingleTag => Object.hasOwn(SINGLE_READERS, tag);
 
 function readRectangle(r: RecordReader): Rectangle | undefined {
-  const [sX = 0, sY = 0, eX = 0, eY = 0] = r.ints(4);
+  const sX = r.int();
+  const sY = r.int();
+  const eX = r.int();
+  const eY = r.int();
   const cell = r.cell();
   // DungeonMaker::SetRect refuses inverted rectangles
   if (sX > eX || sY > eY) return undefined;
@@ -373,7 +376,10 @@ function readCrawler<Op>(r: RecordReader, readOp: (r: RecordReader) => Op) {
   const location = pointFromLibrary(r.int(), r.int());
   const direction = r.startDirection();
   const intendedDirection = r.direction();
-  const [dormancy = 0, maxAge = 0, generation = 0, stepLength = 0] = r.ints(4);
+  const dormancy = r.int();
+  const maxAge = r.int();
+  const generation = r.int();
+  const stepLength = r.int();
   const op = readOp(r);
   const member: CrawlerPairMember = {
     location,
@@ -529,6 +535,9 @@ function assemble(found: Found, { rectangles, seeds, pairs, tunnelers }: Repeate
  *   first problem, or one `missing <TAG> record` issue per missing required record.
  */
 export function parseDesignText(text: string): DesignConfig {
+  if (typeof text !== 'string') {
+    throw new DesignValidationError([{ path: '', message: 'design text must be a string' }]);
+  }
   const cursor = new Cursor(tokenize(text));
   const found: Partial<Singles> = {};
   const repeated: Repeated = { rectangles: [], seeds: [], pairs: [], tunnelers: [] };

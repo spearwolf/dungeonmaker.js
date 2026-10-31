@@ -185,6 +185,29 @@ test('a surplus integer after a complete record is skipped like upstream (design
   expect(parseDesignText(text)).toEqual(vendorConfig('design'));
 });
 
+test.each([undefined, 42, new Uint8Array([68])])(
+  'a non-string argument (%s) is rejected',
+  (value) => {
+    expect(rejected(value as unknown as string)).toEqual(['design text must be a string']);
+  },
+);
+
+test('XX as a crawler intended direction means any', () => {
+  const d = parseDesignText(`${readDesign('design')}\nWS 40 2 EA XX 0 16 0 5 1 1 0 30 0 60 40\n`);
+  expect(d.crawlers.seeds?.[0]?.intendedDirection).toBe('any');
+});
+
+test('population is absent without E1, E2, H1, H2, I1 and I2', () => {
+  const text = ['E1', 'E2', 'H1', 'H2', 'I1', 'I2'].reduce(dropRecord, readDesign('design'));
+  expect(parseDesignText(text)).not.toHaveProperty('population');
+});
+
+test('a duplicate optional record is rejected', () => {
+  expect(rejected(`${readDesign('design')}\nF 20 100\n`)).toEqual([
+    expect.stringMatching(/^line \d+: duplicate F record$/),
+  ]);
+});
+
 test('upstream normalisations', () => {
   const text = readDesign('design')
     .replace(/^PR .*$/m, 'PR -5 150 0 80 20')
