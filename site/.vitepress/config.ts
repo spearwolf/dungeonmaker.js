@@ -9,6 +9,21 @@ const apiSidebarFile = fileURLToPath(new URL('../api/typedoc-sidebar.json', impo
 const sidebar: DefaultTheme.SidebarMulti = existsSync(apiSidebarFile)
   ? { '/api/': JSON.parse(readFileSync(apiSidebarFile, 'utf8')) }
   : {};
+sidebar['/guide/'] = [
+  {
+    text: 'Guide',
+    items: [
+      { text: 'Getting started', link: '/guide/getting-started' },
+      { text: 'Worker client', link: '/guide/client' },
+      { text: 'Output layers', link: '/guide/layers' },
+      { text: 'Rendering and export', link: '/guide/render-export' },
+      { text: 'Command line', link: '/guide/cli' },
+      { text: 'Generate offline, ship data', link: '/guide/offline' },
+      { text: 'Design concepts', link: '/guide/design-concepts' },
+      { text: 'Orientation and cell values', link: '/guide/orientation' },
+    ],
+  },
+];
 sidebar['/reference/'] = [
   {
     text: 'Reference',
@@ -46,6 +61,7 @@ export default defineConfig({
     nav: [
       { text: 'Playground', link: '/' },
       { text: 'Editor', link: '/editor' },
+      { text: 'Guide', link: '/guide/getting-started' },
       {
         text: 'Reference',
         items: [
@@ -56,6 +72,10 @@ export default defineConfig({
       },
     ],
     sidebar,
+    footer: {
+      message:
+        'Released under GPL-3.0-or-later. An unofficial WebAssembly port of DungeonMaker 2.05 by Peter Henningsen. <a href="/dungeonmaker.js/license">License</a>',
+    },
     socialLinks: [{ icon: 'github', link: 'https://github.com/spearwolf/dungeonmaker.js' }],
   },
 });

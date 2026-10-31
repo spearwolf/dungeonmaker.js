@@ -28,7 +28,8 @@ outline: [2, 3]
 A design is a JSON document that \`createDungeon\` and \`createDungeonMaker\` accept next to the
 legacy design text. This page lists every field with its type, its limits and the upstream record
 of DungeonMaker 2.05 it maps to. The coordinate convention is the one from [Orientation](/guide/orientation): \`x\` is
-the column, \`y\` the row, north is up.
+the column, \`y\` the row, north is up. For the ideas behind the sections, read
+[Design concepts](/guide/design-concepts).
 
 Point your editor at the schema to get completion and hover texts:
 
