@@ -17,6 +17,9 @@ const COVERED = [
   /^site\/(src|scripts|test|components|\.vitepress)\/.*\.(ts|mjs|vue)$/,
 ];
 
+/** @param {string} path repo-relative path */
+export const isCovered = (path) => !path.endsWith('.json') && COVERED.some((re) => re.test(path));
+
 /**
  * @param {{ path: string, content: string }[]} files
  * @returns {string[]} paths whose first three lines lack the SPDX header
@@ -32,7 +35,7 @@ function main() {
     encoding: 'utf8',
   })
     .split('\n')
-    .filter((p) => p && !p.endsWith('.json') && COVERED.some((re) => re.test(p)));
+    .filter((p) => p && isCovered(p));
   const missing = findMissingSpdx(
     tracked.map((path) => ({ path, content: readFileSync(path, 'utf8') })),
   );

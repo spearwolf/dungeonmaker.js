@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-import { findMissingSpdx } from '../check-spdx.mjs';
+import { findMissingSpdx, isCovered } from '../check-spdx.mjs';
 
 const H = '// SPDX-License-Identifier: GPL-3.0-or-later';
 
@@ -30,4 +30,23 @@ test('Vue components carry the header as an HTML comment in line 1', () => {
       },
     ]),
   ).toEqual([]);
+});
+
+test('own site sources are covered, generated site output is not', () => {
+  for (const path of [
+    'site/components/X.vue',
+    'site/src/a.ts',
+    'site/scripts/e2e.mjs',
+    'site/test/a.test.ts',
+    'site/.vitepress/config.ts',
+  ]) {
+    expect(isCovered(path), path).toBe(true);
+  }
+  for (const path of [
+    'site/api/index.md',
+    'site/.vitepress/dist/x.js',
+    'site/.vitepress/cache/x.js',
+  ]) {
+    expect(isCovered(path), path).toBe(false);
+  }
 });
