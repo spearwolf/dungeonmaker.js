@@ -2,10 +2,13 @@
 // Main entry `dungeonmaker-js`: design config API and worker client (no TypeBox runtime, no Wasm).
 export { Cell } from './cell.js';
 export type {
+  AbortSignalLike,
   CallOptions,
   DungeonMaker,
   DungeonMakerOptions,
   DungeonRequest,
+  WorkerEventType,
+  WorkerLike,
 } from './client/client.js';
 export { createDungeonMaker } from './client/client.js';
 export { createDungeon } from './client/default.js';

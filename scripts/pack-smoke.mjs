@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 // SPDX-License-Identifier: GPL-3.0-or-later
 // Packs dungeonmaker-js, installs the tarball into an empty project outside the repo and
-// generates a dungeon through the published entry point. Proves the shipped files work.
+// generates a dungeon through the published entry point. Proves the shipped files work, and
+// that the declarations type-check for a consumer without the DOM lib.
 import { execFileSync } from 'node:child_process';
 import { mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -11,6 +12,7 @@ import { fileURLToPath } from 'node:url';
 const repo = fileURLToPath(new URL('../', import.meta.url));
 const design = join(repo, 'native/vendor/dungeonmaker-2.05/design3A');
 const expected = '99cc67de'; // golden FNV-1a of design3A, seed 42
+const tsc = join(repo, 'node_modules/typescript/bin/tsc');
 
 // The README's JSON example runs verbatim against the tarball, so it cannot rot.
 const README_SECTION = '## JSON designs and presets';
@@ -74,6 +76,51 @@ console.log('README example ok: ' + width + 'x' + height);
 `,
   );
   run('node', ['readme-example.mjs'], projectDir);
+
+  // A Node-only TypeScript consumer: no DOM lib, no @types at all, full lib check. Every name
+  // the declarations use must come from ES2022 or the package itself. (`dungeonmaker-js/core`
+  // is left out: it exposes `WebAssembly.Module`, which only the DOM and WebWorker libs declare.)
+  writeFileSync(
+    join(projectDir, 'tsconfig.json'),
+    JSON.stringify({
+      compilerOptions: {
+        strict: true,
+        noEmit: true,
+        target: 'ES2022',
+        lib: ['ES2022'],
+        types: [],
+        skipLibCheck: false,
+        module: 'NodeNext',
+        moduleResolution: 'NodeNext',
+      },
+      files: ['types-check.ts'],
+    }),
+  );
+  writeFileSync(
+    join(projectDir, 'types-check.ts'),
+    `import {
+  type CallOptions,
+  createDungeon,
+  createDungeonMaker,
+  type Dungeon,
+  type DungeonMakerOptions,
+  parseDesignText,
+  toDesignText,
+  type WorkerLike,
+} from 'dungeonmaker-js';
+import { design3A } from 'dungeonmaker-js/presets';
+import { validateDesign } from 'dungeonmaker-js/schema';
+
+declare const worker: () => WorkerLike;
+const options: DungeonMakerOptions = { worker, wasmUrl: 'dm.wasm', timeout: 1000 };
+const call: CallOptions = { timeout: 500 };
+export const pending: Promise<Dungeon> = createDungeonMaker(options).create({ design: design3A }, call);
+export const shared: Promise<Dungeon> = createDungeon({ design: toDesignText(design3A), seed: 1 });
+export const issues = validateDesign(parseDesignText(toDesignText(design3A)));
+`,
+  );
+  run(process.execPath, [tsc, '-p', 'tsconfig.json'], projectDir);
+  console.log('types ok: the declarations need no DOM lib');
 } finally {
   rmSync(packDir, { recursive: true, force: true });
   rmSync(projectDir, { recursive: true, force: true });

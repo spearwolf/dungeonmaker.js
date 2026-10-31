@@ -24,14 +24,37 @@ export interface DungeonRequest {
   seed?: number;
 }
 
+// The public types below are structural on purpose: the declarations of the main entry must
+// type-check without the DOM lib (a Node-only consumer importing just `parseDesignText`).
+
+/** The events the client listens to on a worker. */
+export type WorkerEventType = 'message' | 'error' | 'messageerror';
+
+/** What the client needs from a worker; a DOM `Worker` satisfies it. */
+export interface WorkerLike {
+  postMessage(message: unknown, transfer?: object[]): void;
+  terminate(): void;
+  addEventListener(type: WorkerEventType, listener: (event: unknown) => void): void;
+  removeEventListener(type: WorkerEventType, listener: (event: unknown) => void): void;
+}
+
+/** What the client needs from an abort signal; a DOM `AbortSignal` satisfies it. */
+export interface AbortSignalLike {
+  readonly aborted: boolean;
+  readonly reason?: unknown;
+  addEventListener(type: 'abort', listener: () => void, options?: { once?: boolean }): void;
+  removeEventListener(type: 'abort', listener: () => void): void;
+}
+
 export interface CallOptions {
-  signal?: AbortSignal;
+  signal?: AbortSignalLike;
   timeout?: number;
 }
 
 export interface DungeonMakerOptions {
-  worker?: () => Worker;
-  wasmUrl?: string | URL;
+  worker?: () => WorkerLike;
+  /** A string or a `URL` (anything with an `href`); a relative string is resolved against the page. */
+  wasmUrl?: string | { readonly href: string };
   timeout?: number;
   validate?: boolean;
 }
@@ -73,20 +96,23 @@ function checkTimeout(timeout: number): number {
   );
 }
 
-/** A URL object becomes its href; a relative string is resolved against the page (not this module). */
-function resolveWasmUrl(url: string | URL): string {
+/**
+ * A URL object becomes its href; a relative string is resolved against the page (not this
+ * module). Throws a TypeError if the page's location is no valid base (`about:blank`, …).
+ */
+function resolveWasmUrl(url: string | { readonly href: string }): string {
   if (typeof url !== 'string') return url.href;
   const base = (globalThis as { location?: { href?: string } }).location?.href;
   return base ? new URL(url, base).href : url;
 }
 
-function abortReason(signal: AbortSignal): unknown {
+function abortReason(signal: AbortSignalLike): unknown {
   return signal.reason ?? new DOMException('This operation was aborted', 'AbortError');
 }
 
 /** Everything that belongs to one spawned worker. */
 interface WorkerState {
-  worker: Worker;
+  worker: WorkerLike;
   ready: Deferred;
   /** Removes every listener this client attached to the worker. */
   detach(): void;
@@ -99,7 +125,7 @@ interface Job {
   design: DesignConfig | string;
   seed: number;
   timeout: number;
-  signal: AbortSignal | undefined;
+  signal: AbortSignalLike | undefined;
   resolve(dungeon: Dungeon): void;
   reject(reason: unknown): void;
   /** Runs when the job settles, whatever the outcome (timer, abort listener). Must not throw. */
@@ -161,24 +187,33 @@ export function createDungeonMaker(options: DungeonMakerOptions = {}): DungeonMa
   }
 
   function spawn(): WorkerState {
-    let worker: Worker;
+    // Resolved before the factory runs: a bad URL must not leave a worker behind.
+    let wasmUrl: string | undefined;
+    if (options.wasmUrl !== undefined) {
+      try {
+        wasmUrl = resolveWasmUrl(options.wasmUrl);
+      } catch (e) {
+        throw new WorkerError('invalid wasmUrl', { cause: e });
+      }
+    }
+    let worker: WorkerLike;
     try {
       worker = (options.worker ?? spawnDefaultWorker)();
     } catch (e) {
       throw new WorkerError('could not create the worker', { cause: e });
     }
     const state: WorkerState = { worker, ready: deferred(), detach: () => {} };
-    const onMessage = (event: Event) => handleMessage(state, (event as MessageEvent).data);
-    const onError = (event: Event) => {
-      const message = (event as ErrorEvent).message;
+    const onMessage = (event: unknown) => handleMessage(state, (event as { data?: unknown }).data);
+    const onError = (event: unknown) => {
+      const message = (event as { message?: unknown }).message;
       workerFailed(
         state,
-        message
+        typeof message === 'string' && message
           ? new WorkerError(`worker error: ${message}`, { cause: message })
           : new WorkerError('worker error', { cause: event }),
       );
     };
-    const onMessageError = (event: Event) =>
+    const onMessageError = (event: unknown) =>
       workerFailed(
         state,
         new WorkerError('a message from the worker could not be deserialized', { cause: event }),
@@ -192,7 +227,7 @@ export function createDungeonMaker(options: DungeonMakerOptions = {}): DungeonMa
       worker.removeEventListener('messageerror', onMessageError);
     };
     const init: ToWorker = { type: 'init', v: PROTOCOL_VERSION };
-    if (options.wasmUrl !== undefined) init.wasmUrl = resolveWasmUrl(options.wasmUrl);
+    if (wasmUrl !== undefined) init.wasmUrl = wasmUrl;
     current = state;
     try {
       worker.postMessage(init);

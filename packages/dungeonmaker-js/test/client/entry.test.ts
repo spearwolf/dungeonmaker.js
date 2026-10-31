@@ -4,7 +4,7 @@ import { afterEach, expect, test, vi } from 'vitest';
 import { createDungeonMaker } from '../../src/client/client.js';
 import { createDungeon } from '../../src/client/default.js';
 import { spawnDefaultWorker } from '../../src/client/spawn.js';
-import { DesignValidationError, GenerationError } from '../../src/errors.js';
+import { DesignValidationError, GenerationError, WorkerError } from '../../src/errors.js';
 import * as entry from '../../src/index.js';
 import { design3A } from '../../src/presets.js';
 import { fnv1a32, golden, readDesign, SEEDS } from '../helpers.js';
@@ -94,6 +94,18 @@ test('a URL object is sent as href, without location the string as is', async ()
   const b = fakeFactory(autoWorker);
   await createDungeonMaker({ worker: b.factory, wasmUrl: 'assets/dm.wasm' }).ready();
   expect(b.workers[0]?.posted[0]).toMatchObject({ wasmUrl: 'assets/dm.wasm' });
+});
+
+test('a relative wasmUrl without a usable page base rejects with WorkerError and spawns nothing', async () => {
+  vi.stubGlobal('location', { href: 'about:blank' });
+  const factory = vi.fn(() => autoWorker() as unknown as Worker);
+  const dm = createDungeonMaker({ worker: factory, wasmUrl: 'assets/dm.wasm' });
+  const e = await dm.create({ design: design3A, seed: 1 }).catch((x: unknown) => x);
+  expect(e).toBeInstanceOf(WorkerError);
+  expect((e as WorkerError).message).toMatch(/wasmUrl/);
+  expect((e as WorkerError).cause).toBeInstanceOf(TypeError);
+  await expect(dm.ready()).rejects.toBeInstanceOf(WorkerError);
+  expect(factory).not.toHaveBeenCalled();
 });
 
 test('the main entry exports the client API', () => {
