@@ -1,0 +1,28 @@
+{
+  "emscripten": "emcc (Emscripten gcc/clang-like replacement + linker emulating GNU ld) 6.0.13 (e13ee988ce3d87a738dd8f3661d02223308c412a)",
+  "image": "emscripten/emsdk:6.0.13@sha256:fb7864e398acfda863dfcea78b8bc8adad359fa60c6a0bbeb845931de64aa68a",
+  "flags": [
+    "-std=c++17",
+    "-O3",
+    "-flto",
+    "-fno-exceptions",
+    "-fno-rtti",
+    "-Wno-null-arithmetic",
+    "-Wno-sometimes-uninitialized",
+    "-Wno-unused-private-field",
+    "-sMODULARIZE",
+    "-sEXPORT_ES6",
+    "-sEXPORT_NAME=loadDungeonMakerWasm",
+    "-sENVIRONMENT=worker,node",
+    "-sFILESYSTEM=0",
+    "-sALLOW_MEMORY_GROWTH",
+    "-sINITIAL_MEMORY=4MB",
+    "-sEXPORTED_FUNCTIONS=_dm_generate,_dm_width,_dm_height,_dm_cells,_dm_last_error,_dm_reset,_malloc,_free",
+    "-sEXPORTED_RUNTIME_METHODS=HEAPU8,stringToUTF8,lengthBytesUTF8,UTF8ToString",
+    "-sINCOMING_MODULE_JS_API=locateFile,instantiateWasm,print,printErr",
+    "-sSTRICT",
+    "--extern-pre-js",
+    "native/src/license-banner.js"
+  ],
+  "nativeSourceHash": "sha256:5a1acc23272e30e5de5e9f3e7ad5ffc22994bcb254e3169e1f3742ff05873424"
+}

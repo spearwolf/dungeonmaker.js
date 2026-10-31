@@ -2,5 +2,4 @@ node_modules/
 dist/
 coverage/
 *.tsbuildinfo
-native/.emcache/
 .DS_Store
