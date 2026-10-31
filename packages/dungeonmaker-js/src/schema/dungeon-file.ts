@@ -1,0 +1,161 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+
+/**
+ * The exported dungeon file as a TypeBox schema: the single source for the `DungeonFile`
+ * type and for `dungeon.schema.json` (published under CC0-1.0, unlike the code). The file
+ * holds data only: map, layers, metadata and legend; never a design text of an upstream
+ * preset.
+ */
+
+import Type, { type Static } from 'typebox';
+import { CELL_NAMES } from '../config/tokens.js';
+
+export const DUNGEON_SCHEMA_ID = 'https://unpkg.com/dungeonmaker-js/dungeon.schema.json';
+
+const strict = { additionalProperties: false } as const;
+
+const nat = (description: string) => Type.Integer({ minimum: 0, description });
+
+const Base64Schema = Type.Object(
+  {
+    encoding: Type.Literal('base64'),
+    data: Type.String({ description: 'Base64 of the little-endian bytes.' }),
+  },
+  strict,
+);
+
+const CellsSchema = Type.Union(
+  [
+    Type.Object(
+      {
+        encoding: Type.Literal('base64'),
+        data: Type.String({ description: 'Base64 of width * height bytes, one per cell.' }),
+      },
+      strict,
+    ),
+    Type.Object(
+      {
+        encoding: Type.Literal('rows'),
+        alphabet: Type.String({
+          description: 'One character per cell value (index = cell); lossless.',
+        }),
+        data: Type.Array(Type.String(), {
+          description: 'One string of `width` characters per row.',
+        }),
+      },
+      strict,
+    ),
+    Type.Object(
+      {
+        encoding: Type.Literal('array'),
+        data: Type.Array(Type.Integer({ minimum: 0, maximum: 19 }), {
+          description: 'width * height cell values, row-major.',
+        }),
+      },
+      strict,
+    ),
+  ],
+  { description: 'The map, row-major, north up: index = y * width + x.' },
+);
+
+const legendProperties = Object.fromEntries(
+  CELL_NAMES.map((name, value) => [String(value), Type.Literal(name)]),
+);
+
+const RoomSchema = Type.Object(
+  {
+    id: nat('Index + 1 in creation order; matches the values in roomIds.'),
+    area: Type.Union([Type.Literal('labyrinth'), Type.Literal('dungeon')]),
+    size: nat('Number of squares.'),
+    bounds: Type.Object(
+      { x: nat('Column.'), y: nat('Row.'), width: nat('Width.'), height: nat('Height.') },
+      strict,
+    ),
+  },
+  strict,
+);
+
+const EntitySchema = Type.Object(
+  {
+    kind: Type.Union([Type.Literal('mob'), Type.Literal('treasure')]),
+    x: nat('Column.'),
+    y: nat('Row.'),
+    level: nat("Index in the design's population list."),
+  },
+  strict,
+);
+
+export const DungeonFileSchema = Type.Object(
+  {
+    format: Type.Literal('dungeonmaker-js/dungeon'),
+    formatVersion: Type.Literal(1),
+    generator: Type.String({ description: 'dungeonmaker-js@<version>' }),
+    width: nat('Map width in cells.'),
+    height: nat('Map height in cells.'),
+    seed: nat('Seed the dungeon was generated with.'),
+    source: Type.Optional(
+      Type.Union(
+        [
+          Type.Object(
+            { preset: Type.String({ description: 'Name of an upstream preset.' }) },
+            strict,
+          ),
+          Type.Object(
+            {
+              designHash: Type.String({
+                pattern: '^sha256:[0-9a-f]{64}$',
+                description: 'SHA-256 of the UTF-8 design text.',
+              }),
+              design: Type.Optional(
+                Type.Object(
+                  {},
+                  {
+                    additionalProperties: true,
+                    description: 'The embedded design (see design.schema.json); only on request.',
+                  },
+                ),
+              ),
+            },
+            strict,
+          ),
+        ],
+        { description: 'Where the design came from: a preset name, or its hash.' },
+      ),
+    ),
+    legend: Type.Object(legendProperties, {
+      ...strict,
+      description: 'Cell value to cell name.',
+    }),
+    cells: CellsSchema,
+    rooms: Type.Optional(
+      Type.Object(
+        { roomIds: Base64Schema, rooms: Type.Array(RoomSchema) },
+        { ...strict, description: 'Room id per cell (uint16 LE, base64) and the room table.' },
+      ),
+    ),
+    entities: Type.Optional(Type.Array(EntitySchema, { description: 'MOBs, then treasure.' })),
+    steps: Type.Optional(
+      Type.Object(
+        {
+          offsets: Type.String({
+            description: 'Base64 uint32 LE; frame k = index[offsets[k]..offsets[k+1]).',
+          }),
+          index: Type.String({ description: 'Base64 uint32 LE; y * width + x.' }),
+          cell: Type.String({ description: 'Base64 bytes; the cell value set at index.' }),
+        },
+        { ...strict, description: 'Recorded generation steps.' },
+      ),
+    ),
+  },
+  {
+    ...strict,
+    $id: DUNGEON_SCHEMA_ID,
+    $schema: 'https://json-schema.org/draft/2020-12/schema',
+    $comment:
+      'SPDX-License-Identifier: CC0-1.0. This schema file is dedicated to the public domain.',
+    title: 'DungeonMaker dungeon',
+    description: 'A dungeon generated by dungeonmaker-js: map, optional layers and metadata.',
+  },
+);
+
+export type DungeonFile = Static<typeof DungeonFileSchema>;

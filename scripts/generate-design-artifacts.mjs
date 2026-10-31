@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // SPDX-License-Identifier: GPL-3.0-or-later
-// Writes the committed design artifacts (design.schema.json and the preset modules in
+// Writes the committed design artifacts (design.schema.json, dungeon.schema.json and the preset modules in
 // src/presets/) from the built package. Run via `pnpm --filter dungeonmaker-js generate`
 // (builds first); the drift test in packages/dungeonmaker-js/test/validate.test.ts fails
 // if the committed schema is stale, the preset tests if a preset differs from its vendor file.
@@ -38,6 +38,7 @@ async function importBuilt(relative) {
 }
 
 const { DesignConfigSchema } = await importBuilt('dist/schema.js');
+const { DungeonFileSchema } = await importBuilt('dist/schema/dungeon-file.js');
 const { parseDesignText } = await importBuilt('dist/config/parse.js');
 
 const written = [];
@@ -48,6 +49,7 @@ const write = (relative, text) => {
 };
 
 write('design.schema.json', `${JSON.stringify(DesignConfigSchema, null, 2)}\n`);
+write('dungeon.schema.json', `${JSON.stringify(DungeonFileSchema, null, 2)}\n`);
 
 mkdirSync(new URL('src/presets/', pkgUrl), { recursive: true });
 for (const name of DESIGNS) {

@@ -1,0 +1,393 @@
+{
+  "type": "object",
+  "required": [
+    "format",
+    "formatVersion",
+    "generator",
+    "width",
+    "height",
+    "seed",
+    "legend",
+    "cells"
+  ],
+  "properties": {
+    "format": {
+      "type": "string",
+      "const": "dungeonmaker-js/dungeon"
+    },
+    "formatVersion": {
+      "type": "number",
+      "const": 1
+    },
+    "generator": {
+      "type": "string",
+      "description": "dungeonmaker-js@<version>"
+    },
+    "width": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Map width in cells."
+    },
+    "height": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Map height in cells."
+    },
+    "seed": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Seed the dungeon was generated with."
+    },
+    "source": {
+      "anyOf": [
+        {
+          "type": "object",
+          "required": ["preset"],
+          "properties": {
+            "preset": {
+              "type": "string",
+              "description": "Name of an upstream preset."
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": ["designHash"],
+          "properties": {
+            "designHash": {
+              "type": "string",
+              "pattern": "^sha256:[0-9a-f]{64}$",
+              "description": "SHA-256 of the UTF-8 design text."
+            },
+            "design": {
+              "type": "object",
+              "properties": {},
+              "additionalProperties": true,
+              "description": "The embedded design (see design.schema.json); only on request."
+            }
+          },
+          "additionalProperties": false
+        }
+      ],
+      "description": "Where the design came from: a preset name, or its hash."
+    },
+    "legend": {
+      "type": "object",
+      "required": [
+        "0",
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        "10",
+        "11",
+        "12",
+        "13",
+        "14",
+        "15",
+        "16",
+        "17",
+        "18",
+        "19"
+      ],
+      "properties": {
+        "0": {
+          "type": "string",
+          "const": "open"
+        },
+        "1": {
+          "type": "string",
+          "const": "closed"
+        },
+        "2": {
+          "type": "string",
+          "const": "guaranteedOpen"
+        },
+        "3": {
+          "type": "string",
+          "const": "guaranteedClosed"
+        },
+        "4": {
+          "type": "string",
+          "const": "nonJoinOpen"
+        },
+        "5": {
+          "type": "string",
+          "const": "nonJoinClosed"
+        },
+        "6": {
+          "type": "string",
+          "const": "nonJoinGuaranteedOpen"
+        },
+        "7": {
+          "type": "string",
+          "const": "nonJoinGuaranteedClosed"
+        },
+        "8": {
+          "type": "string",
+          "const": "insideRoomOpen"
+        },
+        "9": {
+          "type": "string",
+          "const": "insideTunnelOpen"
+        },
+        "10": {
+          "type": "string",
+          "const": "insideAnteroomOpen"
+        },
+        "11": {
+          "type": "string",
+          "const": "horizontalDoor"
+        },
+        "12": {
+          "type": "string",
+          "const": "verticalDoor"
+        },
+        "13": {
+          "type": "string",
+          "const": "mob1"
+        },
+        "14": {
+          "type": "string",
+          "const": "mob2"
+        },
+        "15": {
+          "type": "string",
+          "const": "mob3"
+        },
+        "16": {
+          "type": "string",
+          "const": "treasure1"
+        },
+        "17": {
+          "type": "string",
+          "const": "treasure2"
+        },
+        "18": {
+          "type": "string",
+          "const": "treasure3"
+        },
+        "19": {
+          "type": "string",
+          "const": "column"
+        }
+      },
+      "additionalProperties": false,
+      "description": "Cell value to cell name."
+    },
+    "cells": {
+      "anyOf": [
+        {
+          "type": "object",
+          "required": ["encoding", "data"],
+          "properties": {
+            "encoding": {
+              "type": "string",
+              "const": "base64"
+            },
+            "data": {
+              "type": "string",
+              "description": "Base64 of width * height bytes, one per cell."
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": ["encoding", "alphabet", "data"],
+          "properties": {
+            "encoding": {
+              "type": "string",
+              "const": "rows"
+            },
+            "alphabet": {
+              "type": "string",
+              "description": "One character per cell value (index = cell); lossless."
+            },
+            "data": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "One string of `width` characters per row."
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": ["encoding", "data"],
+          "properties": {
+            "encoding": {
+              "type": "string",
+              "const": "array"
+            },
+            "data": {
+              "type": "array",
+              "items": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 19
+              },
+              "description": "width * height cell values, row-major."
+            }
+          },
+          "additionalProperties": false
+        }
+      ],
+      "description": "The map, row-major, north up: index = y * width + x."
+    },
+    "rooms": {
+      "type": "object",
+      "required": ["roomIds", "rooms"],
+      "properties": {
+        "roomIds": {
+          "type": "object",
+          "required": ["encoding", "data"],
+          "properties": {
+            "encoding": {
+              "type": "string",
+              "const": "base64"
+            },
+            "data": {
+              "type": "string",
+              "description": "Base64 of the little-endian bytes."
+            }
+          },
+          "additionalProperties": false
+        },
+        "rooms": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["id", "area", "size", "bounds"],
+            "properties": {
+              "id": {
+                "type": "integer",
+                "minimum": 0,
+                "description": "Index + 1 in creation order; matches the values in roomIds."
+              },
+              "area": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "const": "labyrinth"
+                  },
+                  {
+                    "type": "string",
+                    "const": "dungeon"
+                  }
+                ]
+              },
+              "size": {
+                "type": "integer",
+                "minimum": 0,
+                "description": "Number of squares."
+              },
+              "bounds": {
+                "type": "object",
+                "required": ["x", "y", "width", "height"],
+                "properties": {
+                  "x": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "description": "Column."
+                  },
+                  "y": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "description": "Row."
+                  },
+                  "width": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "description": "Width."
+                  },
+                  "height": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "description": "Height."
+                  }
+                },
+                "additionalProperties": false
+              }
+            },
+            "additionalProperties": false
+          }
+        }
+      },
+      "additionalProperties": false,
+      "description": "Room id per cell (uint16 LE, base64) and the room table."
+    },
+    "entities": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["kind", "x", "y", "level"],
+        "properties": {
+          "kind": {
+            "anyOf": [
+              {
+                "type": "string",
+                "const": "mob"
+              },
+              {
+                "type": "string",
+                "const": "treasure"
+              }
+            ]
+          },
+          "x": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Column."
+          },
+          "y": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Row."
+          },
+          "level": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Index in the design's population list."
+          }
+        },
+        "additionalProperties": false
+      },
+      "description": "MOBs, then treasure."
+    },
+    "steps": {
+      "type": "object",
+      "required": ["offsets", "index", "cell"],
+      "properties": {
+        "offsets": {
+          "type": "string",
+          "description": "Base64 uint32 LE; frame k = index[offsets[k]..offsets[k+1])."
+        },
+        "index": {
+          "type": "string",
+          "description": "Base64 uint32 LE; y * width + x."
+        },
+        "cell": {
+          "type": "string",
+          "description": "Base64 bytes; the cell value set at index."
+        }
+      },
+      "additionalProperties": false,
+      "description": "Recorded generation steps."
+    }
+  },
+  "additionalProperties": false,
+  "$id": "https://unpkg.com/dungeonmaker-js/dungeon.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$comment": "SPDX-License-Identifier: CC0-1.0. This schema file is dedicated to the public domain.",
+  "title": "DungeonMaker dungeon",
+  "description": "A dungeon generated by dungeonmaker-js: map, optional layers and metadata."
+}

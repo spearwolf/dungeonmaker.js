@@ -43,7 +43,12 @@
       "types": "./dist/render.d.ts",
       "default": "./dist/render.js"
     },
+    "./export": {
+      "types": "./dist/export.d.ts",
+      "default": "./dist/export.js"
+    },
     "./design.schema.json": "./design.schema.json",
+    "./dungeon.schema.json": "./dungeon.schema.json",
     "./core": {
       "types": "./dist/core.d.ts",
       "default": "./dist/core.js"
@@ -57,6 +62,7 @@
   "files": [
     "dist",
     "design.schema.json",
+    "dungeon.schema.json",
     "wasm/dungeonmaker.js",
     "wasm/dungeonmaker.wasm",
     "wasm/BUILD-INFO.json",
@@ -69,7 +75,8 @@
   },
   "scripts": {
     "typecheck": "tsc -p tsconfig.json",
-    "build": "tsc -p tsconfig.build.json",
+    "build": "node ../../scripts/write-version.mjs && tsc -p tsconfig.build.json",
+    "version": "node ../../scripts/write-version.mjs && git add src/version.ts",
     "generate": "pnpm run build && node ../../scripts/generate-design-artifacts.mjs",
     "test": "vitest run",
     "test:browser": "pnpm run build && tsc -p test/browser/tsconfig.json && vitest run -c vitest.browser.config.ts",
