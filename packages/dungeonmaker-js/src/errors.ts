@@ -29,3 +29,23 @@ export class GenerationError extends Error {
     this.diagnostics = diagnostics;
   }
 }
+
+/** Generation took longer than the requested timeout; the worker was terminated. */
+export class TimeoutError extends Error {
+  override readonly name = 'TimeoutError';
+  readonly timeout: number;
+
+  constructor(timeout: number) {
+    super(`generation timed out after ${timeout} ms`);
+    this.timeout = timeout;
+  }
+}
+
+/** The worker failed, crashed, was disposed or spoke an unexpected protocol. */
+export class WorkerError extends Error {
+  override readonly name = 'WorkerError';
+
+  constructor(message: string, options?: ErrorOptions) {
+    super(message, options);
+  }
+}
