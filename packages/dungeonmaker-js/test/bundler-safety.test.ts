@@ -21,7 +21,9 @@ function read(file: string): string {
 const files = [
   'wasm/dungeonmaker.js',
   ...readdirSync(new URL('src/', ROOT), { recursive: true, encoding: 'utf8' })
-    .filter((f) => f.endsWith('.ts') && !f.endsWith('.d.ts'))
+    // `src/node/` is exempt: the `./node` export has only the `node` condition, so browser
+    // bundlers never resolve it and static `node:` imports are fine there.
+    .filter((f) => f.endsWith('.ts') && !f.endsWith('.d.ts') && !f.startsWith('node/'))
     .map((f) => `src/${f.replaceAll('\\', '/')}`),
 ];
 

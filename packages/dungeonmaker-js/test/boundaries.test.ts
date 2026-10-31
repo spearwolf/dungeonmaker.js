@@ -52,9 +52,13 @@ test('client/validate.ts loads the schema only dynamically', () => {
   expect([...source.matchAll(FROM)].filter(([, c]) => !/^type\b/.test(c ?? ''))).toEqual([]);
 });
 
-test.each(files.filter((f) => !f.startsWith('schema/') && f !== 'schema.ts' && f !== DYNAMIC_ONLY))(
-  'src/%s loads neither typebox nor a schema module at runtime',
-  (file) => {
-    expect(runtimeImports(readFileSync(new URL(file, SRC), 'utf8'))).toEqual([]);
-  },
-);
+// `node/` may load the schema runtime: the CLI validates designs with it, and the `./node`
+// entry is reachable under the `node` condition only, never by browser bundlers.
+test.each(
+  files.filter(
+    (f) =>
+      !f.startsWith('schema/') && !f.startsWith('node/') && f !== 'schema.ts' && f !== DYNAMIC_ONLY,
+  ),
+)('src/%s loads neither typebox nor a schema module at runtime', (file) => {
+  expect(runtimeImports(readFileSync(new URL(file, SRC), 'utf8'))).toEqual([]);
+});

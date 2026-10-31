@@ -47,6 +47,10 @@
       "types": "./dist/export.d.ts",
       "default": "./dist/export.js"
     },
+    "./node": {
+      "types": "./dist/node/index.d.ts",
+      "node": "./dist/node/index.js"
+    },
     "./design.schema.json": "./design.schema.json",
     "./dungeon.schema.json": "./dungeon.schema.json",
     "./core": {
