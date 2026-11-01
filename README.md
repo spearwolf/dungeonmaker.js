@@ -1,6 +1,9 @@
 <p align="center"><img src="site/public/dungeonmaker-js.png" alt="DungeonMaker.js" width="560"></p>
 
-# dungeonmaker.js
+<p align="center">
+  <a href="https://www.npmjs.com/package/dungeonmaker-js"><img src="https://img.shields.io/npm/v/dungeonmaker-js" alt="npm version"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/npm/l/dungeonmaker-js" alt="license: GPL-3.0-or-later"></a>
+</p>
 
 An **unofficial** WebAssembly port of [DungeonMaker 2.05](http://dungeonmaker.sourceforge.net/)
 by Peter Henningsen, a procedural dungeon generator, created and maintained by
