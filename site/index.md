@@ -6,7 +6,7 @@ title: Playground
 
 <div class="vp-doc dm-home">
 
-# ![DungeonMaker.js](/dungeonmaker-js.png){.dm-logo}
+# dungeonmaker-js
 
 Procedural dungeons in the browser: an unofficial WebAssembly port of
 [DungeonMaker 2.05](http://dungeonmaker.sourceforge.net/) by Peter Henningsen, created by

@@ -106,15 +106,15 @@ export const checks = [
     },
   },
   {
-    name: 'the logo loads in the nav and on the home page',
+    name: 'the logo loads in the nav',
     async run(page, base) {
       await page.goto(base);
       const logos = page.locator('img[src$="/dungeonmaker-js.png"]');
-      await logos.last().waitFor();
+      await logos.first().waitFor();
       const widths = await logos.evaluateAll((imgs) =>
         Promise.all(imgs.map((img) => img.decode().then(() => img.naturalWidth))),
       );
-      assert(widths.length === 2, `expected 2 logos, found ${widths.length}`);
+      assert(widths.length === 1, `expected 1 logo, found ${widths.length}`);
       assert(
         widths.every((w) => w === 1110),
         `logo widths ${widths.join(', ')}`,
