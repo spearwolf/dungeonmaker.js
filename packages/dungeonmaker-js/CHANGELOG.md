@@ -6,6 +6,8 @@ All notable changes to `dungeonmaker-js` are documented here. The format follows
 
 ## [Unreleased]
 
+## [1.0.2] - 2026-11-01
+
 ### Changed
 
 - The README shows the DungeonMaker.js logo.

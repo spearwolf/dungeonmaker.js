@@ -1,6 +1,6 @@
 {
   "name": "dungeonmaker-js",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Procedural dungeon generator: an unofficial WebAssembly port of DungeonMaker 2.05",
   "keywords": [
     "dungeon",
