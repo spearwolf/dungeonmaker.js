@@ -49,3 +49,19 @@
   margin: 0 auto;
   padding: 32px 24px 96px;
 }
+
+/* The logo is a wide wordmark (1110 x 184): taller than the default 24px in the nav, and capped
+   on the home page so the playground stays above the fold. */
+.VPNavBarTitle .logo {
+  height: 32px;
+}
+.dm-home h1 {
+  margin: 0 0 24px;
+  line-height: 1;
+}
+.dm-logo {
+  display: block;
+  width: 100%;
+  max-width: 720px;
+  height: auto;
+}

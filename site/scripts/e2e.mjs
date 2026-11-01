@@ -106,6 +106,22 @@ export const checks = [
     },
   },
   {
+    name: 'the logo loads in the nav and on the home page',
+    async run(page, base) {
+      await page.goto(base);
+      const logos = page.locator('img[src$="/dungeonmaker-js.png"]');
+      await logos.last().waitFor();
+      const widths = await logos.evaluateAll((imgs) =>
+        Promise.all(imgs.map((img) => img.decode().then(() => img.naturalWidth))),
+      );
+      assert(widths.length === 2, `expected 2 logos, found ${widths.length}`);
+      assert(
+        widths.every((w) => w === 1110),
+        `logo widths ${widths.join(', ')}`,
+      );
+    },
+  },
+  {
     name: 'playground renders design3A seed 42',
     async run(page, base) {
       await openPlayground(page, base);

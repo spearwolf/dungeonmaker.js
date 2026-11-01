@@ -30,3 +30,13 @@ test('the footer credits upstream and links spearwolf and the about page', () =>
   expect(message).toContain('<a href="https://www.spearwolf.de">spearwolf</a>');
   expect(message).toContain('/dungeonmaker.js/about');
 });
+
+test('the nav shows the logo from site/public instead of a text title', () => {
+  const logo = config.themeConfig?.logo as { src: string; alt: string };
+  expect(logo.src).toBe('/dungeonmaker-js.png');
+  expect(logo.alt).toBeTruthy();
+  expect(config.themeConfig?.siteTitle).toBe(false);
+  expect(
+    readFileSync(new URL('../public/dungeonmaker-js.png', import.meta.url)).length,
+  ).toBeGreaterThan(0);
+});

@@ -64,6 +64,9 @@ export default defineConfig({
     },
   },
   themeConfig: {
+    // The logo is the wordmark, so the text title next to it would repeat it.
+    logo: { src: '/dungeonmaker-js.png', alt: 'DungeonMaker.js' },
+    siteTitle: false,
     search: { provider: 'local' },
     nav: [
       { text: 'Playground', link: '/' },
