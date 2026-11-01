@@ -1245,7 +1245,7 @@
           "type": "integer",
           "minimum": 0,
           "maximum": 2147483647,
-          "description": "Steps a builder tolerates without progress before it gives up. Upstream: M patience."
+          "description": "How reluctantly tunnelers build rooms when they spawn twice: a room is spawned only when a roll of 0 … 100 exceeds this value, so 0 builds rooms at almost every chance and 100 or more never. Higher values build rooms later or not at all. Upstream: M patience."
         },
         "noHeadingProbability": {
           "type": "integer",

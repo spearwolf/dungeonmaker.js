@@ -552,7 +552,7 @@ const DesignConfigObject = Type.Object(
           min: 0,
         }),
         patience: int(
-          'Steps a builder tolerates without progress before it gives up. Upstream: M patience.',
+          'How reluctantly tunnelers build rooms when they spawn twice: a room is spawned only when a roll of 0 … 100 exceeds this value, so 0 builds rooms at almost every chance and 100 or more never. Higher values build rooms later or not at all. Upstream: M patience.',
           {
             min: 0,
           },

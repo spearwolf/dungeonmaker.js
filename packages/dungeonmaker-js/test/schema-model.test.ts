@@ -60,3 +60,12 @@ test('every property is documented', () => {
   walk(DesignConfigSchema, '');
   expect(missing).toEqual([]);
 });
+
+test('patience describes the room gate of double spawning, as upstream uses it', () => {
+  // Upstream: a double-spawning tunneler spawns a room only if rand() % 101 > patience.
+  const patience = DesignConfigSchema.properties.behaviour.properties.patience as unknown;
+  const d = String((patience as Record<string, unknown>).description);
+  expect(d).toMatch(/room/i);
+  expect(d).toContain('100');
+  expect(d).not.toMatch(/gives up/i);
+});
