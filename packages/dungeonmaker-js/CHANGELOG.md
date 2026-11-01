@@ -6,6 +6,11 @@ All notable changes to `dungeonmaker-js` are documented here. The format follows
 
 ## [Unreleased]
 
+### Fixed
+
+- `author` carries the homepage URL again; the name in 1.0.1 contained parentheses, which npm
+  reads as the URL part.
+
 ## [1.0.1] - 2026-11-01
 
 ### Fixed

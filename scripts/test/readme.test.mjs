@@ -33,6 +33,9 @@ test('the package ships its CHANGELOG and points homepage at the site', () => {
   const pkg = JSON.parse(read('packages/dungeonmaker-js/package.json'));
   expect(pkg.files).toContain('CHANGELOG.md');
   expect(pkg.homepage).toBe(SITE);
+  // npm reads "(…)" in a name as the URL part of the author string, so the name has none.
+  expect(pkg.author.name).not.toMatch(/[()<>]/);
+  expect(pkg.author.url).toBe('https://www.spearwolf.de');
   expect(read('package.json')).toContain('"compliance": "node scripts/compliance-check.mjs"');
 });
 
