@@ -6,6 +6,8 @@ All notable changes to `dungeonmaker-js` are documented here. The format follows
 
 ## [Unreleased]
 
+## [1.0.1] - 2026-11-01
+
 ### Fixed
 
 - The schema description of `behaviour.patience` now says what the generator does with it: a
