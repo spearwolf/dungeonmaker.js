@@ -6,6 +6,17 @@ All notable changes to `dungeonmaker-js` are documented here. The format follows
 
 ## [Unreleased]
 
+### Fixed
+
+- The schema description of `behaviour.patience` now says what the generator does with it: a
+  double-spawning tunneler builds a room only when a roll of 0 … 100 exceeds `patience` (it was
+  described as the steps a builder tolerates without progress).
+
+### Changed
+
+- README and `author` credit the port to spearwolf (<https://www.spearwolf.de>) next to the
+  upstream authors.
+
 ## [1.0.0] - 2026-11-01
 
 ### Added

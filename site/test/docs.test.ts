@@ -54,3 +54,17 @@ test('the license page names the upstream author, the license and the CC0 format
     expect(page).toContain(s);
   }
 });
+
+test('the about page credits upstream and the port with equal weight', () => {
+  const page = read('about.md');
+  for (const s of [
+    '## Where DungeonMaker comes from',
+    'Peter Henningsen',
+    'Aaron Dalton',
+    '## Who carries it on',
+    '[spearwolf](https://www.spearwolf.de)',
+    'unofficial',
+  ]) {
+    expect(page).toContain(s);
+  }
+});

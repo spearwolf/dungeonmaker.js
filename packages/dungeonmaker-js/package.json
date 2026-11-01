@@ -11,7 +11,11 @@
     "map"
   ],
   "license": "GPL-3.0-or-later",
-  "author": "Wolfger Schramm <wolfger@spearwolf.de>",
+  "author": {
+    "name": "Wolfger Schramm (spearwolf)",
+    "email": "wolfger@spearwolf.de",
+    "url": "https://www.spearwolf.de"
+  },
   "homepage": "https://spearwolf.github.io/dungeonmaker.js/",
   "bugs": "https://github.com/spearwolf/dungeonmaker.js/issues",
   "repository": {

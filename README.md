@@ -1,7 +1,8 @@
 # dungeonmaker.js
 
 An **unofficial** WebAssembly port of [DungeonMaker 2.05](http://dungeonmaker.sourceforge.net/)
-by Peter Henningsen, a procedural dungeon generator. It ships as the npm package
+by Peter Henningsen, a procedural dungeon generator, created and maintained by
+[spearwolf](https://www.spearwolf.de). It ships as the npm package
 [`dungeonmaker-js`](packages/dungeonmaker-js): WebAssembly core, Web Worker client, render and
 export helpers, and a Node CLI. The same design and seed give the same dungeon on every platform.
 
@@ -30,6 +31,17 @@ sh native/build.sh      # rebuilds the wasm in a pinned Emscripten container
 `CLAUDE.md` has the full command list, the determinism contract and the gotchas of the vendored
 library. Releases are described in [`RELEASING.md`](RELEASING.md).
 
+## Origins
+
+DungeonMaker was written by Dr. Peter Henningsen (alifegames) from 2001 on; Aaron Dalton
+contributed to it and prepared release 2.05 in 2005, the last one upstream. Its sources are
+vendored unchanged in [`native/vendor/dungeonmaker-2.05`](native/vendor/dungeonmaker-2.05).
+
+[spearwolf](https://www.spearwolf.de) carries the project on out of joy in dungeons, mazes and
+JavaScript, and because it seemed a shame to leave the original lying around orphaned: first as an asm.js port in 2014, since 2026 as
+the WebAssembly package, CLI and site. More on the
+[About page](https://spearwolf.github.io/dungeonmaker.js/about).
+
 ## Legacy
 
 The original 2014 asm.js version is preserved at the git tag `legacy-2014`, its demo at
@@ -38,4 +50,4 @@ The original 2014 asm.js version is preserved at the git tag `legacy-2014`, its 
 ## License
 
 GPL-3.0-or-later; includes a modified version of DungeonMaker 2.05 © Peter Henningsen.
-See `LICENSE` and `NOTICE`.
+Port, package and site by [spearwolf](https://www.spearwolf.de). See `LICENSE` and `NOTICE`.

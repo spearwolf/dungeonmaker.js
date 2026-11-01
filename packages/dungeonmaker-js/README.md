@@ -1,7 +1,8 @@
 # dungeonmaker-js
 
 Procedural dungeon generation for JavaScript: an **unofficial** WebAssembly port of
-[DungeonMaker 2.05](http://dungeonmaker.sourceforge.net/) by Peter Henningsen. Same design, same
+[DungeonMaker 2.05](http://dungeonmaker.sourceforge.net/) by Peter Henningsen, created and
+maintained by [spearwolf](https://www.spearwolf.de). Same design, same
 seed, same dungeon on every platform; the generator runs in a Web Worker or on the command line.
 
 Demo, guides and API reference: <https://spearwolf.github.io/dungeonmaker.js/>
@@ -62,12 +63,13 @@ The presets are shared objects: derive variants with `extendDesign`, never mutat
 - [Design concepts](https://spearwolf.github.io/dungeonmaker.js/guide/design-concepts) and [orientation](https://spearwolf.github.io/dungeonmaker.js/guide/orientation)
 - [Config reference](https://spearwolf.github.io/dungeonmaker.js/reference/config) and [dungeon file format](https://spearwolf.github.io/dungeonmaker.js/reference/dungeon-format)
 - [API reference](https://spearwolf.github.io/dungeonmaker.js/api/)
-- [License notes](https://spearwolf.github.io/dungeonmaker.js/license)
+- [License notes](https://spearwolf.github.io/dungeonmaker.js/license) and [about the project](https://spearwolf.github.io/dungeonmaker.js/about)
 
 ## License
 
 GPL-3.0-or-later. This package includes a modified version of DungeonMaker 2.05,
-© Peter Henningsen; see `LICENSE` and `NOTICE`.
+© Peter Henningsen, with contributions by Aaron Dalton. The port and the package are by
+[spearwolf](https://www.spearwolf.de). See `LICENSE` and `NOTICE`.
 
 If you build this package into an application you ship (a web bundle counts), assume that the
 application must be released under a GPL-compatible license. Dungeons generated offline and

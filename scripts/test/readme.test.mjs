@@ -35,3 +35,11 @@ test('the package ships its CHANGELOG and points homepage at the site', () => {
   expect(pkg.homepage).toBe(SITE);
   expect(read('package.json')).toContain('"compliance": "node scripts/compliance-check.mjs"');
 });
+
+test('both READMEs credit the upstream author and link spearwolf', () => {
+  for (const file of ['README.md', 'packages/dungeonmaker-js/README.md']) {
+    const md = read(file);
+    expect(md, file).toContain('Peter Henningsen');
+    expect(md, file).toContain('[spearwolf](https://www.spearwolf.de)');
+  }
+});

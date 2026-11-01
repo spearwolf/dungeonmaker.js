@@ -23,3 +23,10 @@ test('the nav shows the package version with links to the changelog and npm', ()
   expect(JSON.stringify(item)).toContain('CHANGELOG.md');
   expect(JSON.stringify(item)).toContain('npmjs.com/package/dungeonmaker-js');
 });
+
+test('the footer credits upstream and links spearwolf and the about page', () => {
+  const message = String(config.themeConfig?.footer?.message);
+  expect(message).toContain('Peter Henningsen');
+  expect(message).toContain('<a href="https://www.spearwolf.de">spearwolf</a>');
+  expect(message).toContain('/dungeonmaker.js/about');
+});

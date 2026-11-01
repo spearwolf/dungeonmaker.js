@@ -77,6 +77,7 @@ export default defineConfig({
           { text: 'API', link: '/api/' },
         ],
       },
+      { text: 'About', link: '/about' },
       {
         text: version,
         items: [
@@ -91,7 +92,7 @@ export default defineConfig({
     sidebar,
     footer: {
       message:
-        'Released under GPL-3.0-or-later. An unofficial WebAssembly port of DungeonMaker 2.05 by Peter Henningsen. <a href="/dungeonmaker.js/license">License</a>',
+        'DungeonMaker 2.05 © Peter Henningsen. WebAssembly port, package and site created by <a href="https://www.spearwolf.de">spearwolf</a>. Released under GPL-3.0-or-later. <a href="/dungeonmaker.js/about">About</a> · <a href="/dungeonmaker.js/license">License</a>',
     },
     socialLinks: [{ icon: 'github', link: 'https://github.com/spearwolf/dungeonmaker.js' }],
   },

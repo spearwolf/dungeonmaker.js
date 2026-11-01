@@ -40,6 +40,6 @@ for it in any language under any license, without this package.
 ## Credits
 
 - **Peter Henningsen** wrote DungeonMaker and published it as free software through alifegames.
-- **Aaron Dalton** contributed to the upstream project.
-- The WebAssembly port, the TypeScript package and this site are by the dungeonmaker.js
-  contributors.
+- **Aaron Dalton** contributed to the upstream project and prepared release 2.05.
+- The WebAssembly port, the TypeScript package, the CLI and this site are created and maintained
+  by [spearwolf](https://www.spearwolf.de). The [About](/about) page tells the whole story.
