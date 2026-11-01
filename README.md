@@ -1,3 +1,5 @@
+<p align="center"><img src="site/public/dungeonmaker-js.png" alt="DungeonMaker.js" width="560"></p>
+
 # dungeonmaker.js
 
 An **unofficial** WebAssembly port of [DungeonMaker 2.05](http://dungeonmaker.sourceforge.net/)

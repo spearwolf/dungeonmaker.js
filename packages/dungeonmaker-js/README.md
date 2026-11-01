@@ -1,3 +1,5 @@
+<p align="center"><img src="https://spearwolf.github.io/dungeonmaker.js/dungeonmaker-js.png" alt="DungeonMaker.js" width="560"></p>
+
 # dungeonmaker-js
 
 Procedural dungeon generation for JavaScript: an **unofficial** WebAssembly port of

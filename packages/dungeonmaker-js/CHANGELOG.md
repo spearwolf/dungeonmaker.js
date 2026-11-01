@@ -6,6 +6,10 @@ All notable changes to `dungeonmaker-js` are documented here. The format follows
 
 ## [Unreleased]
 
+### Changed
+
+- The README shows the DungeonMaker.js logo.
+
 ### Fixed
 
 - `author` carries the homepage URL again; the name in 1.0.1 contained parentheses, which npm
