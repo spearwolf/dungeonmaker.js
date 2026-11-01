@@ -6,6 +6,8 @@ All notable changes to `dungeonmaker-js` are documented here. The format follows
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-11-01
+
 ### Added
 
 - JSON designs: `parseDesignText`, `toDesignText` and `extendDesign` in the main entry, plus the
