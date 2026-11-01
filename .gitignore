@@ -13,3 +13,5 @@ site/api/
 site/reference/config.md
 site/reference/_dungeon-fields.md
 site/guide/_cell-legend.md
+.obsidian/
+docs/publish/
