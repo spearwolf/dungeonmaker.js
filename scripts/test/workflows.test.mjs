@@ -41,11 +41,12 @@ test('npm publish gets an explicit file path, not something npm reads as a GitHu
 });
 
 test('the tag job waits long enough for a fresh version to appear on the registry', () => {
-  // The 0.0.2 release showed about a minute between npm publish and the version being fetchable.
+  // The 0.0.2 release took about a minute between npm publish and the version being fetchable,
+  // 1.0.1 more than nine minutes ("Your package is being processed").
   const step = load('release.yml').jobs.tag.steps.find((s) => s.run?.includes('npm pack'));
   const tries = Number(step?.run.match(/for _ in \$\(seq 1 (\d+)\)/)?.[1] ?? 0);
   const sleep = Number(step?.run.match(/sleep (\d+)/)?.[1] ?? 0);
-  expect(tries * sleep).toBeGreaterThanOrEqual(300);
+  expect(tries * sleep).toBeGreaterThanOrEqual(900);
 });
 
 test('browser tests are part of the required ci gate and run all three engines', () => {

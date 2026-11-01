@@ -74,8 +74,9 @@ jobs:
       - name: Fetch the published tarball
         run: |
           mkdir -p out
-          # A fresh version can take a minute or more to become fetchable; wait up to 5 minutes.
-          for _ in $(seq 1 20); do
+          # A fresh version can take ten minutes or more to become fetchable while npm processes
+          # it; wait up to 15 minutes.
+          for _ in $(seq 1 60); do
             npm pack "dungeonmaker-js@$VERSION" --pack-destination out && break
             sleep 15
           done
